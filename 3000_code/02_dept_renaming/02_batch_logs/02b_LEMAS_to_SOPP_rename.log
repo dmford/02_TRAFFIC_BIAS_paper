@@ -1,0 +1,2299 @@
+
+  ___  ____  ____  ____  ____ (R)
+ /__    /   ____/   /   ____/
+___/   /   /___/   /   /___/   16.1   Copyright 1985-2019 StataCorp LLC
+  Statistics/Data analysis            StataCorp
+                                      4905 Lakeway Drive
+                                      College Station, Texas 77845 USA
+                                      800-STATA-PC        https://www.stata.com
+                                      979-696-4600        stata@stata.com
+                                      979-696-4601 (fax)
+
+Stata license: 4-user network perpetual
+Serial number: 501606358866
+  Licensed to: Michael Bates
+               University of California, Riverside
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. New update available; type -update all-
+
+. * 02b_LEMAS_to_SOPP_rename
+
+. 
+. 
+. 
+. clear all
+
+. 
+. 
+. 
+. * (1) HPCC cluster, and (2) personal machine: 
+
+. 
+. cd "/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper"
+/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper
+
+. 
+. *cd "~\coding\02_TRAFFIC_BIAS_paper\"
+
+. 
+. 
+. 
+. *****************************************************************************
+> ***
+
+. 
+. 
+. 
+. log using "1000_notes/200_smcl_logs/02_dept_renaming/02b_LEMAS_to_SOPP_rename
+> ", replace
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/1000_note
+> s/200_smcl_logs/02_dept_renaming/02b_LEMAS_to_SOPP_rename.smcl
+  log type:  smcl
+ opened on:  26 Nov 2024, 11:37:58
+
+. 
+. 
+. 
+. * this is the list of all RENAMED departments that appear in the SOPP dataset
+> s: 
+
+. 
+. * I want to rename LEMAS to align with SOPP, so I convert this to Excel for v
+> iewing: 
+
+. 
+. *use "~\coding\02_TRAFFIC_BIAS_paper\2000_data\SOPP_renamed_dept_list.dta", r
+> eplace
+
+. 
+. *char department_name[_de_col_width_] 100
+
+. 
+. *export excel using "2000_data/SOPP_renamed_dept_list", replace
+
+. 
+. 
+. 
+. use state_abbrev agency_name year agency_id_unique ori_9 agency_type agency_t
+> ype_old using "2000_data/300_cleaning/40_LEMAS/LEMAS_appended.dta", replace
+(Law Enforcement Management and Administrative Statistics, 1987, Dataset 0001)
+
+. 
+. drop if (year<2007)
+(21,382 observations deleted)
+
+. 
+. drop if (state_abbrev=="DC")
+(3 observations deleted)
+
+. 
+. order state_abbrev agency_name 
+
+. 
+. sort state_abbrev agency_name
+
+. 
+. 
+. 
+. * for simplicity: making all lowercase, removing leading/trailing spaces, rem
+> oving double spaces: 
+
+. 
+. replace agency_name = lower(agency_name)
+(8,482 real changes made)
+
+. 
+. replace agency_name = itrim(agency_name) 
+(12 real changes made)
+
+. 
+. 
+. 
+. * some more simply prelim fixes, and de-duping what remains: 
+
+. 
+. replace agency_name = subinstr(agency_name, "police dept", "police department
+> ", .)
+(2,448 real changes made)
+
+. 
+. replace agency_name = subinstr(agency_name, " co sheriff", " county sheriff",
+>  .)
+(27 real changes made)
+
+. 
+. replace agency_name = subinstr(agency_name, "sheriff dept", "sheriff's office
+> ", .)
+(22 real changes made)
+
+. 
+. replace agency_name = subinstr(agency_name, "sheriffs dept", "sheriff's offic
+> e", .)
+(398 real changes made)
+
+. 
+. replace agency_name = subinstr(agency_name, "sheriff's dept", "sheriff's offi
+> ce", .)
+(3 real changes made)
+
+. 
+. replace agency_name = subinstr(agency_name, "sheriff department", "sheriff's 
+> office", .)
+(34 real changes made)
+
+. 
+. replace agency_name = subinstr(agency_name, "sheriffs department", "sheriff's
+>  department", .)
+(44 real changes made)
+
+. 
+. replace agency_name = subinstr(agency_name, "sheriff's department", "sheriff'
+> s office", .)
+(93 real changes made)
+
+. 
+. replace agency_name = subinstr(agency_name, "sheriff office", "sheriff's offi
+> ce", .)
+(71 real changes made)
+
+. 
+. replace agency_name = subinstr(agency_name, "sheriffs office", "sheriff's off
+> ice", .)
+(813 real changes made)
+
+. 
+. replace agency_name = subinstr(agency_name, "dept of public safety", "departm
+> ent of public safety", .)
+(29 real changes made)
+
+. 
+. replace agency_name = subinstr(agency_name, "dept public safety", "department
+>  of public safety", .)
+(1 real change made)
+
+. 
+. replace agency_name = subinstr(agency_name, "dept. of public safety", "depart
+> ment of public safety", .)
+(1 real change made)
+
+. 
+. replace agency_name = subinstr(agency_name, "dept of public sfty", "departmen
+> t of public safety", .)
+(5 real changes made)
+
+. 
+. 
+. 
+. * fix for "abc police" and "abc sheriff": 
+
+. 
+. replace agency_name = subinstr(agency_name, "police", "police department", .)
+> 
+(6,144 real changes made)
+
+. 
+. replace agency_name = subinstr(agency_name, "police department department", "
+> police department", .)
+(5,859 real changes made)
+
+. 
+. replace agency_name = subinstr(agency_name, "sheriff", "sheriff's office", .)
+> 
+(2,126 real changes made)
+
+. 
+. replace agency_name = subinstr(agency_name, "sheriff's offices", "sheriff's o
+> ffice", .)
+(25 real changes made)
+
+. 
+. replace agency_name = subinstr(agency_name, "sheriff's office's office", "she
+> riff's office", .)
+(2,006 real changes made)
+
+. 
+. replace agency_name = subinstr(agency_name, "police department authority", "p
+> olice authority", .)
+(3 real changes made)
+
+. 
+. replace agency_name = subinstr(agency_name, "tribal police department", "trib
+> al police", .)
+(28 real changes made)
+
+. 
+. 
+. 
+. * Alaska: 
+
+. 
+. replace agency_name = "alaska state troopers" if inlist(agency_name, "alaska 
+> state trooopers") & (state_abbrev=="AK")
+(1 real change made)
+
+. 
+. 
+. 
+. * Alabama: 
+
+. 
+. replace agency_name = "alabama department of public safety" if inlist(agency_
+> name, "alabama department of public") & (state_abbrev=="AL")
+(1 real change made)
+
+. 
+. replace agency_name = "barbour county sheriff's office" if inlist(agency_name
+> , "barbourcounty sheriff's office") & (state_abbrev=="AL")
+(0 real changes made)
+
+. 
+. replace agency_name = "opelika police department" if inlist(agency_name, "ope
+> ilka police department") & (state_abbrev=="AL")
+(1 real change made)
+
+. 
+. replace agency_name = "poarch creek tribal police department" if inlist(agenc
+> y_name, "poarch creek tribal public safety") & (state_abbrev=="AL")
+(1 real change made)
+
+. 
+. 
+. 
+. * Arkansas: 
+
+. 
+. replace agency_name = "arkansas state police" if inlist(agency_name, "arkansa
+> s state police department") & (state_abbrev=="AR")
+(3 real changes made)
+
+. 
+. replace agency_name = "carroll county sheriff's office" if inlist(agency_name
+> , "carroll county") & (state_abbrev=="AR")
+(1 real change made)
+
+. 
+. replace agency_name = "fayetteville police department" if inlist(agency_name,
+>  "faytteville police department") & (state_abbrev=="AR")
+(1 real change made)
+
+. 
+. replace agency_name = "independence county sheriff's office" if inlist(agency
+> _name, "independence county sheriff's offices offic") & (state_abbrev=="AR")
+(0 real changes made)
+
+. 
+. replace agency_name = "north little rock police department" if inlist(agency_
+> name, "n. little rock police department", "north little rock police departmen
+> t depart") & (state_abbrev=="AR")
+(2 real changes made)
+
+. 
+. 
+. 
+. * Arizona: 
+
+. 
+. replace agency_name = "arizona department of public safety" if inlist(agency_
+> name, "arizona department of public", "arizona dept of public safety") & (sta
+> te_abbrev=="AZ")
+(1 real change made)
+
+. 
+. 
+. 
+. * California: 
+
+. 
+. drop if inlist(agency_name, "manager", "office of the sheriff's office")
+(3 observations deleted)
+
+. 
+. replace agency_name = "contra costa county sheriff's office" if inlist(agency
+> _name, "contra costa county sheriff's office/coroner") & (state_abbrev=="CA")
+> 
+(1 real change made)
+
+. 
+. replace agency_name = "cypress police department" if inlist(agency_name, "cyp
+> ness police department") & (state_abbrev=="CA")
+(1 real change made)
+
+. 
+. replace agency_name = "kern county sheriff's office" if inlist(agency_name, "
+> kern county sd coroner") & (state_abbrev=="CA")
+(1 real change made)
+
+. 
+. replace agency_name = "monterey county sheriff's office" if inlist(agency_nam
+> e, "monterey county") & (state_abbrev=="CA")
+(1 real change made)
+
+. 
+. replace agency_name = "orange county sheriff's office" if inlist(agency_name,
+>  "orange county sheriff's office coroner dept", "orange county sheriff's offi
+> ce-coroner department")  & (state_abbrev=="CA")
+(2 real changes made)
+
+. 
+. replace agency_name = "placer county sheriff's office" if inlist(agency_name,
+>  "placer county sheriff's office/coroner") & (state_abbrev=="CA")
+(1 real change made)
+
+. 
+. replace agency_name = "sacramento county sheriff's office" if inlist(agency_n
+> ame, "sacramento county sheriff's office s") & (state_abbrev=="CA")
+(1 real change made)
+
+. 
+. replace agency_name = "salinas police department" if inlist(agency_name, "sal
+> inas poilce department") & (state_abbrev=="CA")
+(1 real change made)
+
+. 
+. replace agency_name = "san luis obispo sheriff's office" if inlist(agency_nam
+> e, "san luis obispo county sheriff's office/coroner's office")  & (state_abbr
+> ev=="CA")
+(1 real change made)
+
+. 
+. replace agency_name = "solano county sheriff's office" if inlist(agency_name,
+>  "solano ocunty sheriff's office") & (state_abbrev=="CA")
+(1 real change made)
+
+. 
+. replace agency_name = "stanislaus county sheriff's office" if inlist(agency_n
+> ame, "stanislaus county") & (state_abbrev=="CA")
+(1 real change made)
+
+. 
+. replace agency_name = "sunnyvale department of public safety" if inlist(agenc
+> y_name, "sunnyvale dept of public safety") & (state_abbrev=="CA")
+(0 real changes made)
+
+. 
+. replace agency_name = "ventura police department" if inlist(agency_name, "ven
+> tura police department buenaventura") & (state_abbrev=="CA")
+(1 real change made)
+
+. 
+. replace agency_name = "visalia police department" if inlist(agency_name, "vis
+> alia department of public safety") & (state_abbrev=="CA")
+(1 real change made)
+
+. 
+. 
+. 
+. * Colorado: 
+
+. 
+. replace agency_name = "fort collins police department" if inlist(agency_name,
+>  "fort collins police department services") & (state_abbrev=="CO")
+(2 real changes made)
+
+. 
+. 
+. 
+. * Connecticut: 
+
+. 
+. replace agency_name = "connecticut state police" if inlist(agency_name, "conn
+> ecticut state police department") & (state_abbrev=="CT")
+(3 real changes made)
+
+. 
+. replace agency_name = "darien police department" if inlist(agency_name, "dari
+> en connecticut police department") & (state_abbrev=="CT")
+(1 real change made)
+
+. 
+. 
+. 
+. * Delaware: 
+
+. 
+. replace agency_name = "delaware state police" if inlist(agency_name, "delawar
+> e state police department") & (state_abbrev=="DE")
+(3 real changes made)
+
+. 
+. replace agency_name = "new castle police department" if inlist(agency_name, "
+> new castle (city) police department") & (state_abbrev=="DE")
+(1 real change made)
+
+. 
+. 
+. 
+. * Florida: 
+
+. 
+. replace agency_name = "bradenton police department" if inlist(agency_name, "b
+> radenton police department ddepartment") & (state_abbrev=="FL")
+(1 real change made)
+
+. 
+. replace agency_name = "brevard county sheriff's office" if inlist(agency_name
+> , "brevard sheriff's office") & (state_abbrev=="FL")
+(1 real change made)
+
+. 
+. replace agency_name = "broward county sheriff's office" if inlist(agency_name
+> , "broward sheriff's office") & (state_abbrev=="FL")
+(1 real change made)
+
+. 
+. replace agency_name = "delray beach police department" if inlist(agency_name,
+>  "decray beach police department") & (state_abbrev=="FL")
+(1 real change made)
+
+. 
+. replace agency_name = "escambia county sheriff's office" if inlist(agency_nam
+> e, "escambia sheriff's office") & (state_abbrev=="FL")
+(1 real change made)
+
+. 
+. replace agency_name = "indian river county sheriff's office" if inlist(agency
+> _name, "indian river county sheriff's office ofc") & (state_abbrev=="FL")
+(1 real change made)
+
+. 
+. replace agency_name = "miami-dade police department" if inlist(agency_name, "
+> miami-dade county police department", "miamidade police department") & (state
+> _abbrev=="FL")
+(2 real changes made)
+
+. 
+. replace agency_name = "ocean ridge police department" if inlist(agency_name, 
+> "ocean ridge public safety department") & (state_abbrev=="FL")
+(1 real change made)
+
+. 
+. replace agency_name = "pasco county sheriff's office" if inlist(agency_name, 
+> "pasco sheriff's office") & (state_abbrev=="FL")
+(1 real change made)
+
+. 
+. replace agency_name = "port st lucie police department" if inlist(agency_name
+> , "port st. lucie police department") & (state_abbrev=="FL")
+(1 real change made)
+
+. 
+. replace agency_name = "st lucie county sheriff's office" if inlist(agency_nam
+> e, "saint lucie county sheriff's office", "st. lucie county sheriff's office"
+> ) & (state_abbrev=="FL")
+(2 real changes made)
+
+. 
+. replace agency_name = "st petersburg police department" if inlist(agency_name
+> , "saint petersburg police department", "st. petersburg police department") &
+>  (state_abbrev=="FL")
+(2 real changes made)
+
+. 
+. replace agency_name = "st cloud police department" if inlist(agency_name, "st
+> . cloud police department") & (state_abbrev=="FL")
+(1 real change made)
+
+. 
+. replace agency_name = "st johns county sheriff's office" if inlist(agency_nam
+> e, "st. johns county sheriff's office") & (state_abbrev=="FL")
+(1 real change made)
+
+. 
+. replace agency_name = "st augustine police department" if inlist(agency_name,
+>  "st. augustine police department") & (state_abbrev=="FL")
+(1 real change made)
+
+. 
+. replace agency_name = "volusia county sheriff's office" if inlist(agency_name
+> , "volusia county") & (state_abbrev=="FL")
+(1 real change made)
+
+. 
+. 
+. 
+. * Georgia: 
+
+. 
+. replace agency_name = "athens-clarke county police department" if inlist(agen
+> cy_name, "athens clarke county police department") & (state_abbrev=="GA")
+(1 real change made)
+
+. 
+. replace agency_name = "bainbridge department of public safety" if inlist(agen
+> cy_name, "bainbridge public safety") & (state_abbrev=="GA")
+(1 real change made)
+
+. 
+. replace agency_name = "clayton county police department" if inlist(agency_nam
+> e, "clayton police department") & (state_abbrev=="GA")
+(1 real change made)
+
+. 
+. replace agency_name = "college park police department" if inlist(agency_name,
+>  "college park polic dept") & (state_abbrev=="GA")
+(1 real change made)
+
+. 
+. replace agency_name = "savannah-chatham metro police department" if inlist(ag
+> ency_name, "savannah chatham metro police department") & (state_abbrev=="GA")
+> 
+(1 real change made)
+
+. 
+. replace agency_name = "springfield police department" if inlist(agency_name, 
+> "springfield police department deaprtment") & (state_abbrev=="GA")
+(1 real change made)
+
+. 
+. 
+. 
+. * Hawaii: 
+
+. 
+. replace agency_name = "hawaii police department" if inlist(agency_name, "hawa
+> ii county police department") & (state_abbrev=="HI")
+(1 real change made)
+
+. 
+. replace agency_name = "honolulu police department" if inlist(agency_name, "ho
+> nolulu county police department") & (state_abbrev=="HI")
+(1 real change made)
+
+. 
+. replace agency_name = "kauai police department" if inlist(agency_name, "kauai
+>  county police department") & (state_abbrev=="HI")
+(1 real change made)
+
+. 
+. replace agency_name = "maui police department" if inlist(agency_name, "maui c
+> ounty police department") & (state_abbrev=="HI")
+(2 real changes made)
+
+. 
+. 
+. 
+. * Iowa: 
+
+. 
+. replace agency_name = "iowa state patrol" if inlist(agency_name, "iowa depart
+> ment of public safety") & (state_abbrev=="IA")
+(2 real changes made)
+
+. 
+. replace agency_name = "le mars police department" if inlist(agency_name, "lem
+> ars police department") & (state_abbrev=="IA")
+(1 real change made)
+
+. 
+. replace agency_name = "manchester police department" if inlist(agency_name, "
+> manchester iowa police department") & (state_abbrev=="IA")
+(1 real change made)
+
+. 
+. replace agency_name = "pottawattamie county sheriff's office" if inlist(agenc
+> y_name, "pottawattamie county sheriff's office offi") & (state_abbrev=="IA")
+(1 real change made)
+
+. 
+. replace agency_name = "sac county sheriff's office" if inlist(agency_name, "s
+> ac county iowa") & (state_abbrev=="IA")
+(1 real change made)
+
+. 
+. 
+. 
+. * Idaho: 
+
+. 
+. replace agency_name = "idaho state police" if inlist(agency_name, "idaho stat
+> e police department")  & (state_abbrev=="ID")
+(2 real changes made)
+
+. 
+. 
+. 
+. * Illinois: 
+
+. 
+. replace agency_name = "bloomington police department" if inlist(agency_name, 
+> "bloomington il police department") & (state_abbrev=="IL")
+(1 real change made)
+
+. 
+. replace agency_name = "clark county sheriff's office" if inlist(agency_name, 
+> "clark co il sheriff's office") & (state_abbrev=="IL")
+(1 real change made)
+
+. 
+. replace agency_name = "clay county sheriff's office" if inlist(agency_name, "
+> clay county illinois") & (state_abbrev=="IL")
+(1 real change made)
+
+. 
+. replace agency_name = "east st louis police department" if inlist(agency_name
+> , "east saint louis police department") & (state_abbrev=="IL")
+(1 real change made)
+
+. 
+. replace agency_name = "dupage county sheriff's office" if inlist(agency_name,
+>  "du page county sheriff's office") & (state_abbrev=="IL")
+(1 real change made)
+
+. 
+. replace agency_name = "marquette heights police department" if inlist(agency_
+> name, "marquette heights police department departmen") & (state_abbrev=="IL")
+> 
+(1 real change made)
+
+. 
+. replace agency_name = "milan police department" if inlist(agency_name, "milan
+>  il police department") & (state_abbrev=="IL")
+(1 real change made)
+
+. 
+. replace agency_name = "peoria police department" if inlist(agency_name, "peor
+> ia il police department") & (state_abbrev=="IL")
+(1 real change made)
+
+. 
+. replace agency_name = "pulaski county sheriff's office" if inlist(agency_name
+> , "pulaski county sheriff's officepula") & (state_abbrev=="IL")
+(1 real change made)
+
+. 
+. replace agency_name = "rosemont public safety department" if inlist(agency_na
+> me, "rosemont police department") & (state_abbrev=="IL")
+(1 real change made)
+
+. 
+. replace agency_name = "st clair county sheriff's office" if inlist(agency_nam
+> e, "saint clair county sheriff's office") & (state_abbrev=="IL")
+(1 real change made)
+
+. 
+. 
+. 
+. * Indiana: 
+
+. 
+. replace agency_name = "adams county sheriff's office" if inlist(agency_name, 
+> "adams county indiana sheriff's office") & (state_abbrev=="IN")
+(1 real change made)
+
+. 
+. replace agency_name = "indiana state police" if inlist(agency_name, "indiana 
+> state police department") & (state_abbrev=="IN")
+(3 real changes made)
+
+. 
+. replace agency_name = "indianapolis metropolitan police department" if inlist
+> (agency_name, "indianapolis metro police department") & (state_abbrev=="IN")
+(1 real change made)
+
+. 
+. replace agency_name = "richmond police department" if inlist(agency_name, "ri
+> chmond indiana police department") & (state_abbrev=="IN")
+(1 real change made)
+
+. 
+. replace agency_name = "st joseph county sheriff's office" if inlist(agency_na
+> me, "saint joseph county sheriff's office") & (state_abbrev=="IN")
+(1 real change made)
+
+. 
+. replace agency_name = "st john police department" if inlist(agency_name, "st.
+>  john police department") & (state_abbrev=="IN")
+(1 real change made)
+
+. 
+. 
+. 
+. * Kansas: 
+
+. 
+. replace agency_name = "allen county sheriff's office" if inlist(agency_name, 
+> "allen county law enforcement") & (state_abbrev=="KS")
+(1 real change made)
+
+. 
+. replace agency_name = "butler county sheriff's office" if inlist(agency_name,
+>  "butler co kansas sheriff's office") & (state_abbrev=="KS")
+(1 real change made)
+
+. 
+. replace agency_name = "gardner police department" if inlist(agency_name, "gar
+> dner department of public safety", "gardner public safety department") & (sta
+> te_abbrev=="KS")
+(2 real changes made)
+
+. 
+. replace agency_name = "iowa tribal police" if inlist(agency_name, "iowa (of k
+> s and ne) tribal police") & (state_abbrev=="KS")
+(1 real change made)
+
+. 
+. replace agency_name = "sumner county sheriff's office" if inlist(agency_name,
+>  "summer county sheriff's office") & (state_abbrev=="KS")
+(1 real change made)
+
+. 
+. 
+. 
+. * Kentucky: 
+
+. 
+. replace agency_name = "kentucky state police" if inlist(agency_name, "kentuck
+> y state police department") & (state_abbrev=="KY")
+(3 real changes made)
+
+. 
+. replace agency_name = "lexington division of police" if inlist(agency_name, "
+> lexington division of police department") & (state_abbrev=="KY")
+(2 real changes made)
+
+. 
+. replace agency_name = "lexington police department" if inlist(agency_name, "l
+> exington division of police", "lexington-fayette county police department") &
+>  (state_abbrev=="KY")
+(3 real changes made)
+
+. 
+. replace agency_name = "nicholas county sheriff's office" if inlist(agency_nam
+> e, "nicholas county") & (state_abbrev=="KY")
+(1 real change made)
+
+. 
+. 
+. 
+. * Louisiana: 
+
+. 
+. replace agency_name = "baton rouge police department" if inlist(agency_name, 
+> "baton rouge city police department") & (state_abbrev=="LA")
+(1 real change made)
+
+. 
+. replace agency_name = "bossier parish sheriff's office" if inlist(agency_name
+> , "bossier sheriff's office") & (state_abbrev=="LA")
+(1 real change made)
+
+. 
+. replace agency_name = "east baton rouge parish sheriff's office" if inlist(ag
+> ency_name, "e baton rouge parish sheriff's office") & (state_abbrev=="LA")
+(1 real change made)
+
+. 
+. replace agency_name = "iberia parish sheriff's office" if inlist(agency_name,
+>  "iberia parish sheridd") & (state_abbrev=="LA")
+(1 real change made)
+
+. 
+. replace agency_name = "st charles parish sheriff's office" if inlist(agency_n
+> ame, "st charles sheriff's office") & (state_abbrev=="LA")
+(1 real change made)
+
+. 
+. replace agency_name = "st bernard parish sheriff's office" if inlist(agency_n
+> ame, "st. bernard parish sheriff's office") & (state_abbrev=="LA")
+(1 real change made)
+
+. 
+. replace agency_name = "st charles parish sheriff's office" if inlist(agency_n
+> ame, "st. charles parish sheriff's office") & (state_abbrev=="LA")
+(1 real change made)
+
+. 
+. replace agency_name = "st john the baptist parish sheriff's office" if inlist
+> (agency_name, "st. john the baptist parish sheriff's office") & (state_abbrev
+> =="LA")
+(1 real change made)
+
+. 
+. replace agency_name = "st landry parish sheriff's office" if inlist(agency_na
+> me, "st. landry parish sheriff's office") & (state_abbrev=="LA")
+(1 real change made)
+
+. 
+. replace agency_name = "st mary parish sheriff's office" if inlist(agency_name
+> , "st. mary parish sheriff's office") & (state_abbrev=="LA")
+(1 real change made)
+
+. 
+. 
+. 
+. * Massachusetts: 
+
+. 
+. replace agency_name = "massachusetts state police" if inlist(agency_name, "ma
+> ssachusetts state police department", "massachusetts department of state p") 
+> & (state_abbrev=="MA")
+(3 real changes made)
+
+. 
+. 
+. 
+. * Maryland: 
+
+. 
+. replace agency_name = "frederick city police department" if inlist(agency_nam
+> e, "frederick police department") & (state_abbrev=="MD")
+(2 real changes made)
+
+. 
+. replace agency_name = "frederick county sheriff's office" if inlist(agency_na
+> me, "fredrick county sheriff's office") & (state_abbrev=="MD")
+(1 real change made)
+
+. 
+. replace agency_name = "prince george's county sheriff's office" if inlist(age
+> ncy_name, "office of the sheriff's office for prince") & (state_abbrev=="MD")
+> 
+(1 real change made)
+
+. 
+. replace agency_name = "prince george's county police department" if inlist(ag
+> ency_name, "prince georges county police department") & (state_abbrev=="MD")
+(1 real change made)
+
+. 
+. replace agency_name = "st mary's county sheriff's office" if inlist(agency_na
+> me, "st marys county sheriff's office", "saint marys county sheriff's office"
+> ) & (state_abbrev=="MD")
+(2 real changes made)
+
+. 
+. 
+. 
+. * Maine: 
+
+. 
+. replace agency_name = "maine state police" if inlist(agency_name, "maine stat
+> e police department") & (state_abbrev=="ME")
+(2 real changes made)
+
+. 
+.  
+. 
+. * Michigan: 
+
+. 
+. replace agency_name = "clinton township police department" if inlist(agency_n
+> ame, "clinton charter township police department") & (state_abbrev=="MI")
+(1 real change made)
+
+. 
+. replace agency_name = "farmington department of public safety" if inlist(agen
+> cy_name, "farmington public safety") & (state_abbrev=="MI")
+(1 real change made)
+
+. 
+. replace agency_name = "grosse pointe woods department of public safety" if in
+> list(agency_name, "grosse pointe woods dps", "grosse pointe woods police depa
+> rtment") & (state_abbrev=="MI")
+(2 real changes made)
+
+. 
+. replace agency_name = "madison township police department" if inlist(agency_n
+> ame, "madison twp police department") & (state_abbrev=="MI")
+(1 real change made)
+
+. 
+. replace agency_name = "metamora township police department" if inlist(agency_
+> name, "metamora police department") & (state_abbrev=="MI")
+(1 real change made)
+
+. 
+. replace agency_name = "michigan state police" if inlist(agency_name, "michiga
+> n state police department") & (state_abbrev=="MI")
+(3 real changes made)
+
+. 
+. replace agency_name = "oakland county sheriff's office" if inlist(agency_name
+> , "oakland country sheriff's office") & (state_abbrev=="MI")
+(1 real change made)
+
+. 
+. replace agency_name = "office of genesee county sheriff" if inlist(agency_nam
+> e, "office of sheriff's office genesee county") & (state_abbrev=="MI")
+(1 real change made)
+
+. 
+. replace agency_name = "plymouth city police department" if inlist(agency_name
+> , "plymouth (city) police department") & (state_abbrev=="MI")
+(1 real change made)
+
+. 
+. replace agency_name = "plymouth township police department" if inlist(agency_
+> name, "plymouth twp police department") & (state_abbrev=="MI")
+(1 real change made)
+
+. 
+. replace agency_name = "st joseph charter township police department" if inlis
+> t(agency_name, "st. joseph police department") & (state_abbrev=="MI")
+(1 real change made)
+
+. 
+. replace agency_name = "st clair shores police department" if inlist(agency_na
+> me, "st. clair shores police department") & (state_abbrev=="MI")
+(1 real change made)
+
+. 
+. replace agency_name = "st ignace police department" if inlist(agency_name, "s
+> t. ignace police department") & (state_abbrev=="MI")
+(1 real change made)
+
+. 
+. replace agency_name = "st johns police department" if inlist(agency_name, "st
+> . johns police department") & (state_abbrev=="MI")
+(1 real change made)
+
+. 
+. replace agency_name = "tittabawassee township police department" if inlist(ag
+> ency_name, "tittabawassee twp police department") & (state_abbrev=="MI")
+(1 real change made)
+
+. 
+. replace agency_name = "troy police department" if inlist(agency_name, "troy m
+> ichigan police department") & (state_abbrev=="MI")
+(1 real change made)
+
+. 
+. 
+. 
+. * Minnesota: 
+
+. 
+. replace agency_name = "inver grove heights police department" if inlist(agenc
+> y_name, "inver grove heights public safety dep.") & (state_abbrev=="MN")
+(1 real change made)
+
+. 
+. replace agency_name = "red lake tribal department of public safety" if inlist
+> (agency_name, "red lake tribal dps") & (state_abbrev=="MN")
+(1 real change made)
+
+. 
+. replace agency_name = "rochester police department" if inlist(agency_name, "r
+> ocehster police department") & (state_abbrev=="MN")
+(1 real change made)
+
+. 
+. replace agency_name = "st anthony police department" if inlist(agency_name, "
+> saint anthony police department") & (state_abbrev=="MN")
+(1 real change made)
+
+. 
+. replace agency_name = "st cloud police department" if inlist(agency_name, "sa
+> int cloud police department", "st. cloud police department") & (state_abbrev=
+> ="MN")
+(2 real changes made)
+
+. 
+. replace agency_name = "st paul police department" if inlist(agency_name, "sai
+> nt paul police department", "st. paul police department") & (state_abbrev=="M
+> N")
+(2 real changes made)
+
+. 
+. 
+. 
+. * Missouri: 
+
+. 
+. replace agency_name = "barry county sheriff's office" if inlist(agency_name, 
+> "barry county mo") & (state_abbrev=="MO")
+(1 real change made)
+
+. 
+. replace agency_name = "carroll county sheriff's office" if inlist(agency_name
+> , "chief deputy") & (state_abbrev=="MO")
+(1 real change made)
+
+. 
+. replace agency_name = "o'fallon police department" if inlist(agency_name, "ci
+> ty of o'fallon mo police department") & (state_abbrev=="MO")
+(1 real change made)
+
+. 
+. replace agency_name = "cole camp police department" if inlist(agency_name, "c
+> ole camp missouri police department") & (state_abbrev=="MO")
+(1 real change made)
+
+. 
+. replace agency_name = "gladstone police department" if inlist(agency_name, "g
+> ladstone department of public safety") & (state_abbrev=="MO")
+(2 real changes made)
+
+. 
+. replace agency_name = "lee's summit police department" if inlist(agency_name,
+>  "lees summit police department") & (state_abbrev=="MO")
+(2 real changes made)
+
+. 
+. replace agency_name = "st ann police department" if inlist(agency_name, "sain
+> t ann police department") & (state_abbrev=="MO")
+(1 real change made)
+
+. 
+. replace agency_name = "st charles police department" if inlist(agency_name, "
+> saint charles police department") & (state_abbrev=="MO")
+(1 real change made)
+
+. 
+. replace agency_name = "st clair county sheriff's office" if inlist(agency_nam
+> e, "saint clair county sheriff's office") & (state_abbrev=="MO")
+(1 real change made)
+
+. 
+. replace agency_name = "st joseph police department" if inlist(agency_name, "s
+> aint joseph police department", "st. joseph police department") & (state_abbr
+> ev=="MO")
+(2 real changes made)
+
+. 
+. replace agency_name = "st louis metropolitan police department" if inlist(age
+> ncy_name, "saint louis city police department", "st. louis metropolitan polic
+> e department") & (state_abbrev=="MO")
+(2 real changes made)
+
+. 
+. replace agency_name = "st louis county police department" if inlist(agency_na
+> me, "saint louis county police department", "st. louis county police departme
+> nt") & (state_abbrev=="MO")
+(2 real changes made)
+
+. 
+. replace agency_name = "st mary police department" if inlist(agency_name, "sai
+> nt mary police department") & (state_abbrev=="MO")
+(1 real change made)
+
+. 
+. replace agency_name = "sikeston police department" if inlist(agency_name, "si
+> keston public safety") & (state_abbrev=="MO")
+(1 real change made)
+
+. 
+. 
+. 
+. * Mississippi: 
+
+. 
+. replace agency_name = "mississippi highway patrol" if inlist(agency_name, "mi
+> ssissippi department of public safety") & (state_abbrev=="MS")
+(1 real change made)
+
+. 
+. 
+. 
+. * Montana: 
+
+. 
+. replace agency_name = "cascade county sheriff's office" if inlist(agency_name
+> , "cascade county sheriff's office and") & (state_abbrev=="MT")
+(1 real change made)
+
+. 
+. replace agency_name = "granite county sheriff's office" if inlist(agency_name
+> , "granite county") & (state_abbrev=="MT")
+(1 real change made)
+
+. 
+. replace agency_name = "kalispell police department" if inlist(agency_name, "k
+> allspell police department") & (state_abbrev=="MT")
+(1 real change made)
+
+. 
+. 
+. 
+. * North Carolina: 
+
+. 
+. replace agency_name = "charlotte-mecklenburg police department" if inlist(age
+> ncy_name, "charlottemecklenburg police department") & (state_abbrev=="NC")
+(1 real change made)
+
+. 
+. replace agency_name = "havelock police department" if inlist(agency_name, "ha
+> velook police department") & (state_abbrev=="NC")
+(1 real change made)
+
+. 
+. replace agency_name = "holly springs police department" if inlist(agency_name
+> , "holly springs public safety") & (state_abbrev=="NC")
+(1 real change made)
+
+. 
+. replace agency_name = "new hanover county sheriff's office" if inlist(agency_
+> name, "new hanover county sheriff's office's") & (state_abbrev=="NC")
+(1 real change made)
+
+. 
+. replace agency_name = "north carolina state highway patrol" if inlist(agency_
+> name, "north carolina state hwy patrol") & (state_abbrev=="NC")
+(1 real change made)
+
+. 
+. replace agency_name = "rowan county sheriff's office" if inlist(agency_name, 
+> "rowan sheriff's office") & (state_abbrev=="NC")
+(1 real change made)
+
+. 
+. replace agency_name = "winston-salem police department" if inlist(agency_name
+> , "winstonsalem police department") & (state_abbrev=="NC")
+(1 real change made)
+
+. 
+. 
+. 
+. * North Daokta: 
+
+. 
+. replace agency_name = "griggs county sheriff's office" if inlist(agency_name,
+>  "griggs county nd") & (state_abbrev=="ND")
+(1 real change made)
+
+. 
+. replace agency_name = "kidder county sheriff's office" if inlist(agency_name,
+>  "kidder county") & (state_abbrev=="ND")
+(1 real change made)
+
+. 
+. replace agency_name = "north dakota highway patrol" if inlist(agency_name, "n
+> d highway patrol", "north dakota state highway patrol") & (state_abbrev=="ND"
+> )
+(2 real changes made)
+
+. 
+. replace agency_name = "renville county sheriff's office" if inlist(agency_nam
+> e, "renville county so") & (state_abbrev=="ND")
+(1 real change made)
+
+. 
+. replace agency_name = "williams county sheriff's office" if inlist(agency_nam
+> e, "williams county so") & (state_abbrev=="ND")
+(1 real change made)
+
+. 
+. 
+. 
+. * Nebraska: 
+
+. 
+. replace agency_name = "fillmore county sheriff's office" if inlist(agency_nam
+> e, "fillmore county") & (state_abbrev=="NE")
+(1 real change made)
+
+. 
+. replace agency_name = "wheeler county sheriff's office" if inlist(agency_name
+> , "wheeler county sheriff's office nebraska") & (state_abbrev=="NE")
+(1 real change made)
+
+. 
+. 
+. 
+. * New Hampshire: 
+
+. 
+. replace agency_name = "amherst police department" if inlist(agency_name, "amh
+> erst nh police department") & (state_abbrev=="NH")
+(1 real change made)
+
+. 
+. replace agency_name = "hillsborough county sheriff's office" if inlist(agency
+> _name, "hillsborough county sheriff's office offic") & (state_abbrev=="NH")
+(1 real change made)
+
+. 
+. replace agency_name = "new hampshire state police" if inlist(agency_name, "ne
+> w hampshire state police department") & (state_abbrev=="NH")
+(3 real changes made)
+
+. 
+. 
+. 
+. * New Jersey: 
+
+. 
+. replace agency_name = subinstr(agency_name, "twp police department", "townshi
+> p police department", .) if (state_abbrev=="NJ")
+(46 real changes made)
+
+. 
+. replace agency_name = "asbury park police department" if inlist(agency_name, 
+> "asbury park public safety dept") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "barnegat township police department" if inlist(agency_
+> name, "barnegat police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "belleville police department" if inlist(agency_name, "
+> belleville township police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "bellmawr police department" if inlist(agency_name, "be
+> llmawr borough police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "bloomfield police department" if inlist(agency_name, "
+> bloomfield township police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "boonton police department" if inlist(agency_name, "boo
+> nton township police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "brick township police department" if inlist(agency_nam
+> e, "brick police department", "brick twp department of public safety") & (sta
+> te_abbrev=="NJ")
+(2 real changes made)
+
+. 
+. replace agency_name = "bridgeton police department" if inlist(agency_name, "b
+> ridgewater township police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "camden county police department" if inlist(agency_name
+> , "camden police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "cape may police department" if inlist(agency_name, "ca
+> pe may city police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "cranford township police department" if inlist(agency_
+> name, "cranford police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "edison police department" if inlist(agency_name, "edis
+> on township police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "far hills police department" if inlist(agency_name, "f
+> ar hills boro police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "lakewood police department" if inlist(agency_name, "la
+> kewood township police department") & (state_abbrev=="NJ")
+(2 real changes made)
+
+. 
+. replace agency_name = "long branch police department" if inlist(agency_name, 
+> "long branch (city) pub sfty dept") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "new brunswick police department" if inlist(agency_name
+> , "new brunswick city police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "new jersey state police" if inlist(agency_name, "new j
+> ersey state police department") & (state_abbrev=="NJ")
+(3 real changes made)
+
+. 
+. replace agency_name = "north bergen police department" if inlist(agency_name,
+>  "north bergen township police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "orange township police department" if inlist(agency_na
+> me, "orange (city of) township police department", "orange police department"
+> ) & (state_abbrev=="NJ")
+(3 real changes made)
+
+. 
+. replace agency_name = "parsippany-troy hills police department" if inlist(age
+> ncy_name, "parsippany-troy hills township police department") & (state_abbrev
+> =="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "plainfield police department" if inlist(agency_name, "
+> plainfield police department division") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "ringwood police department" if inlist(agency_name, "ri
+> ngwood boro police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "roselle park police department" if inlist(agency_name,
+>  "roselle park borough police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "sussex county sheriff's office" if inlist(agency_name,
+>  "sheriff's office sussex county") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "south brunswick police department" if inlist(agency_na
+> me, "south brunswick township police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "teaneck police department" if inlist(agency_name, "tea
+> neck township police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "tinton falls police department" if inlist(agency_name,
+>  "tinto falls police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "toms river police department" if inlist(agency_name, "
+> toms river township police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "washington township police department" if inlist(agenc
+> y_name, "washington twp (gloucester co.) police department") & (state_abbrev=
+> ="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "west orange police department" if inlist(agency_name, 
+> "west orange township police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. replace agency_name = "woodbridge police department" if inlist(agency_name, "
+> woodbridge township police department") & (state_abbrev=="NJ")
+(1 real change made)
+
+. 
+. 
+. 
+. * New Mexico: 
+
+. 
+. replace agency_name = "new mexico state police" if inlist(agency_name, "new m
+> exico state police department") & (state_abbrev=="NM")
+(3 real changes made)
+
+. 
+. 
+. 
+. * Nevada: 
+
+. 
+. replace agency_name = "las vegas metropolitan police department" if inlist(ag
+> ency_name, "las vegas metro police department") & (state_abbrev=="NV")
+(2 real changes made)
+
+. 
+. 
+. 
+. * New York: 
+
+. 
+. replace agency_name = "albany police department" if inlist(agency_name, "alba
+> ny (city) police department", "albany city police department") & (state_abbre
+> v=="NY")
+(2 real changes made)
+
+. 
+. replace agency_name = "amherst police department" if inlist(agency_name, "amh
+> erst (town) police department", "amherst town police department") & (state_ab
+> brev=="NY")
+(2 real changes made)
+
+. 
+. replace agency_name = "auburn police department" if inlist(agency_name, "aubu
+> rn city police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "bedford police department" if inlist(agency_name, "bed
+> ford town police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "binghamton police department" if inlist(agency_name, "
+> binghamton city police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "buffalo police department" if inlist(agency_name, "buf
+> falo (city) police department", "buffalo city police department") & (state_ab
+> brev=="NY")
+(2 real changes made)
+
+. 
+. replace agency_name = "cheektowaga police department" if inlist(agency_name, 
+> "cheektowaga (town) police department", "cheektowaga town police department")
+>  & (state_abbrev=="NY")
+(2 real changes made)
+
+. 
+. replace agency_name = "clarkstown police department" if inlist(agency_name, "
+> clarkstown (town) police department", "clarkstown town police department") & 
+> (state_abbrev=="NY")
+(2 real changes made)
+
+. 
+. replace agency_name = "colonie police department" if inlist(agency_name, "col
+> onie (town) police department", "colonie town police department") & (state_ab
+> brev=="NY")
+(2 real changes made)
+
+. 
+. replace agency_name = "depew police department" if inlist(agency_name, "depew
+>  (vlg) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "east fishkill town police department" if inlist(agency
+> _name, "east fishkill (town) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "ellenville village police department" if inlist(agency
+> _name, "ellenville (vlg) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "geneva police department" if inlist(agency_name, "gene
+> va city police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "goshen police department" if inlist(agency_name, "gosh
+> en (vlg) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "gouverneur village police department" if inlist(agency
+> _name, "gouverneur (vlg) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "greenburgh town police department" if inlist(agency_na
+> me, "greenburgh (town) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "harrison police department" if inlist(agency_name, "ha
+> rrison (vlg) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "hempstead police department" if inlist(agency_name, "h
+> empstead (vlg) police department", "hempstead village police department") & (
+> state_abbrev=="NY")
+(2 real changes made)
+
+. 
+. replace agency_name = "huntington bay police department" if inlist(agency_nam
+> e, "huntington bay village police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "long beach police department" if inlist(agency_name, "
+> long beach city police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "middletown police department" if inlist(agency_name, "
+> middletown (city) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "mount vernon police department" if inlist(agency_name,
+>  "mount vernon (city) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "new rochelle police department" if inlist(agency_name,
+>  "new rochelle (city) police department", "new rochelle city police departmen
+> t") & (state_abbrev=="NY")
+(2 real changes made)
+
+. 
+. replace agency_name = "newburgh police department" if inlist(agency_name, "ne
+> wburgh (city) police department", "newburgh city police department") & (state
+> _abbrev=="NY")
+(2 real changes made)
+
+. 
+. replace agency_name = "niagara falls police department" if inlist(agency_name
+> , "niagara falls (city) police department", "niagara falls city police depart
+> ment") & (state_abbrev=="NY")
+(2 real changes made)
+
+. 
+. replace agency_name = "north castle police department" if inlist(agency_name,
+>  "north castle town police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "plattsburgh police department" if inlist(agency_name, 
+> "plattsburgh (city) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "ramapo police department" if inlist(agency_name, "rama
+> po town police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "rensselaer city police department" if inlist(agency_na
+> me, "rensselaer (city) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "rochester police department" if inlist(agency_name, "r
+> ochester (city) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "suffolk county sheriff's office" if inlist(agency_name
+> , "sc sheriff's office") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "schenectady police department" if inlist(agency_name, 
+> "schenectady city police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "sleepy hollow village police department" if inlist(age
+> ncy_name, "sleepy hollow (vlg) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "southampton town police department" if inlist(agency_n
+> ame, "southampton (town) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "stony point police department" if inlist(agency_name, 
+> "stony point town police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "syracuse police department" if inlist(agency_name, "sy
+> racuse city police department", "syracuse (city) police department") & (state
+> _abbrev=="NY")
+(2 real changes made)
+
+. 
+. replace agency_name = "tonawanda town police department" if inlist(agency_nam
+> e, "tonawanda (town) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "troy police department" if inlist(agency_name, "troy (
+> city) police department", "troy city police department") & (state_abbrev=="NY
+> ")
+(2 real changes made)
+
+. 
+. replace agency_name = "utica police department" if inlist(agency_name, "utica
+>  (city) police department", "utica city police department") & (state_abbrev==
+> "NY")
+(2 real changes made)
+
+. 
+. replace agency_name = "vestal town police department" if inlist(agency_name, 
+> "vestal (town) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "watertown police department" if inlist(agency_name, "w
+> atertown (city) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "west seneca police department" if inlist(agency_name, 
+> "west seneca (town) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "westchester county department of public safety" if inl
+> ist(agency_name, "westchester county dept of pub sfty", "westchester county d
+> ps") & (state_abbrev=="NY")
+(2 real changes made)
+
+. 
+. replace agency_name = "white plains police department" if inlist(agency_name,
+>  "white plains (city) police department", "white plains department of public 
+> safety") & (state_abbrev=="NY")
+(2 real changes made)
+
+. 
+. replace agency_name = "windham town police department" if inlist(agency_name,
+>  "windham (town) police department") & (state_abbrev=="NY")
+(1 real change made)
+
+. 
+. replace agency_name = "yonkers police department" if inlist(agency_name, "yon
+> kers (city) police department", "yonkers city police department") & (state_ab
+> brev=="NY")
+(2 real changes made)
+
+. 
+. 
+. 
+. * Ohio: 
+
+. 
+. replace agency_name = "bowling green police division" if inlist(agency_name, 
+> "bowling green police department division") & (state_abbrev=="OH")
+(1 real change made)
+
+. 
+. replace agency_name = "cleveland division of police" if inlist(agency_name, "
+> cleveland division of police department", "cleveland police department") & (s
+> tate_abbrev=="OH")
+(3 real changes made)
+
+. 
+. replace agency_name = "columbus division of police" if inlist(agency_name, "c
+> olumbus division of police department", "columbus police department") & (stat
+> e_abbrev=="OH")
+(3 real changes made)
+
+. 
+. replace agency_name = "grove city division of police" if inlist(agency_name, 
+> "grove city division of police department", "grove city police department") &
+>  (state_abbrev=="OH")
+(2 real changes made)
+
+. 
+. replace agency_name = "hamilton county sheriff's office" if inlist(agency_nam
+> e, "hamilton county ohio sheriff's office") & (state_abbrev=="OH")
+(1 real change made)
+
+. 
+. replace agency_name = "miami township police department" if inlist(agency_nam
+> e, "miami twp (clermont co) police department") & (state_abbrev=="OH")
+(1 real change made)
+
+. 
+. replace agency_name = "middletown division of police" if inlist(agency_name, 
+> "middletown division of police department", "middletown police department") &
+>  (state_abbrev=="OH")
+(2 real changes made)
+
+. 
+. replace agency_name = "moraine police division" if inlist(agency_name, "morai
+> ne police department division") & (state_abbrev=="OH")
+(1 real change made)
+
+. 
+. replace agency_name = "newark division of police" if inlist(agency_name, "new
+> ark division of police department") & (state_abbrev=="OH")
+(1 real change made)
+
+. 
+. replace agency_name = "oxford division of police" if inlist(agency_name, "oxf
+> ord division of police department") & (state_abbrev=="OH")
+(1 real change made)
+
+. 
+. replace agency_name = "pataskala division of police" if inlist(agency_name, "
+> pataskala division of police department") & (state_abbrev=="OH")
+(1 real change made)
+
+. 
+. replace agency_name = "wooster police division" if inlist(agency_name, "woost
+> er police department", "wooster police department division") & (state_abbrev=
+> ="OH")
+(2 real changes made)
+
+. 
+. 
+. 
+. * Oklahoma: 
+
+. 
+. replace agency_name = "altus police department" if inlist(agency_name, "altas
+>  police department") & (state_abbrev=="OK")
+(1 real change made)
+
+. 
+. replace agency_name = "choctaw nation tribal law enforcement" if inlist(agenc
+> y_name, "choctaw nation tribal le") & (state_abbrev=="OK")
+(1 real change made)
+
+. 
+. replace agency_name = "el reno police department" if inlist(agency_name, "elr
+> eno police department") & (state_abbrev=="OK")
+(1 real change made)
+
+. 
+. replace agency_name = "mccurtain police department" if inlist(agency_name, "m
+> c curtain police department") & (state_abbrev=="OK")
+(1 real change made)
+
+. 
+. replace agency_name = "oklahoma highway patrol" if inlist(agency_name, "oklah
+> oma highway patrol dps") & (state_abbrev=="OK")
+(1 real change made)
+
+. 
+. replace agency_name = "stilwell police department" if inlist(agency_name, "st
+> illwell police department") & (state_abbrev=="OK")
+(1 real change made)
+
+. 
+. 
+. 
+. * Oregon: 
+
+. 
+. replace agency_name = "tribal police confederated trips" if inlist(agency_nam
+> e, "coos,umpqua,siuslaw tribal police") & (state_abbrev=="OR")
+(1 real change made)
+
+. 
+. replace agency_name = "jackson county sheriff's office" if inlist(agency_name
+> , "jackson county sheriff's office county") & (state_abbrev=="OR")
+(1 real change made)
+
+. 
+. replace agency_name = "oregon state police" if inlist(agency_name, "oregon st
+> ate police department") & (state_abbrev=="OR")
+(3 real changes made)
+
+. 
+. replace agency_name = "portland police bureau" if inlist(agency_name, "portla
+> nd police department bureau") & (state_abbrev=="OR")
+(3 real changes made)
+
+. 
+. 
+. 
+. * Pennsylvania: 
+
+. 
+. replace agency_name = "allentown police department" if inlist(agency_name, "a
+> llentown city police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "bristol township police department" if inlist(agency_n
+> ame, "bristol twp police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "bryn athyn police department" if inlist(agency_name, "
+> bryn athyn borough police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "chester police department" if inlist(agency_name, "che
+> ster city police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "erie bureau of police" if inlist(agency_name, "erie bu
+> reau of police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "falls township police department" if inlist(agency_nam
+> e, "falls twp police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "forks township police department" if inlist(agency_nam
+> e, "forks twp police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "gettysburg borough police department" if inlist(agency
+> _name, "gettysburg boroug police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "hampden township police department" if inlist(agency_n
+> ame, "hampden twp police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "horsham police department" if inlist(agency_name, "hor
+> sham twp police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "lehighton police department" if inlist(agency_name, "l
+> ehighton borough police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "lower merion township police department" if inlist(age
+> ncy_name, "lower merion twp police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "masontown police department" if inlist(agency_name, "m
+> asontown borough police department") & (state_abbrev=="PA")
+(2 real changes made)
+
+. 
+. replace agency_name = "middletown township police department" if inlist(agenc
+> y_name, "middletown twp police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "montoursville police department" if inlist(agency_name
+> , "montoursville borough police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "north huntington township police department" if inlist
+> (agency_name, "north huntingdon township police department") & (state_abbrev=
+> ="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "northampton borough police department" if inlist(agenc
+> y_name, "northamptontownship police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "pennsylvania state police" if inlist(agency_name, "pen
+> nsylvania state police department") & (state_abbrev=="PA")
+(3 real changes made)
+
+. 
+. replace agency_name = "philadelphia police department" if inlist(agency_name,
+>  "philadelphia city police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "pittsburgh bureau of police department" if inlist(agen
+> cy_name, "pittsburgh city police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "pottsville bureau of police" if inlist(agency_name, "p
+> ottsville bureau of police department", "pottsville police department") & (st
+> ate_abbrev=="PA")
+(2 real changes made)
+
+. 
+. replace agency_name = "punxsutawney police department" if inlist(agency_name,
+>  "punxsutawney borough police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "reading police department" if inlist(agency_name, "rea
+> ding city police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "roseto police department" if inlist(agency_name, "rose
+> to borough police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "scranton police department" if inlist(agency_name, "sc
+> ranton city police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "steelton police department" if inlist(agency_name, "st
+> eelton borough police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "warrington police department" if inlist(agency_name, "
+> warrington township police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "waynesboro police department" if inlist(agency_name, "
+> waynesboro borough police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "weatherly police department" if inlist(agency_name, "w
+> eatherly borough dept") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "yeadon police department" if inlist(agency_name, "yead
+> on borough police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. replace agency_name = "wilkes barre township police department" if inlist(age
+> ncy_name, "wilkes barre (city) police department") & (state_abbrev=="PA")
+(1 real change made)
+
+. 
+. 
+. 
+. * Rhode Island: 
+
+. 
+. replace agency_name = "rhode island state police" if inlist(agency_name, "rho
+> de island state police department") & (state_abbrev=="RI")
+(2 real changes made)
+
+. 
+. 
+. 
+. * South Carolina: 
+
+. 
+. replace agency_name = "greenville county sheriff's office" if inlist(agency_n
+> ame, "greenville sheriff's office county") & (state_abbrev=="SC")
+(1 real change made)
+
+. 
+. replace agency_name = "north myrtle beach police department" if inlist(agency
+> _name, "north myrtle beach department", "north myrtle beach dps") & (state_ab
+> brev=="SC")
+(2 real changes made)
+
+. 
+. 
+. 
+. * South Dakota: 
+
+. 
+. replace agency_name = "oglala sioux tribal dps" if inlist(agency_name, "ogala
+>  sioux tribe dps") & (state_abbrev=="SD")
+(1 real change made)
+
+. 
+. replace agency_name = "sioux falls police department" if inlist(agency_name, 
+> "sioux falls police department depatment") & (state_abbrev=="SD")
+(1 real change made)
+
+. 
+. 
+. 
+. * Tennessee: 
+
+. 
+. replace agency_name = "metro nashville police department" if inlist(agency_na
+> me, "nashville metro police department") & (state_abbrev=="TN")
+(1 real change made)
+
+. 
+. replace agency_name = "tennessee highway patrol" if inlist(agency_name, "tenn
+> essee department of safety") & (state_abbrev=="TN")
+(2 real changes made)
+
+. 
+. replace agency_name = "washington county sheriff's office" if inlist(agency_n
+> ame, "washington county tn sheriff's office ofc") & (state_abbrev=="TN")
+(1 real change made)
+
+. 
+. 
+. 
+. * Texas: 
+
+. 
+. replace agency_name = "arlington police department" if inlist(agency_name, "a
+> rlington tx police department") & (state_abbrev=="TX")
+(1 real change made)
+
+. 
+. replace agency_name = "denton county sheriff's office" if inlist(agency_name,
+>  "dentan county sheriff's office") & (state_abbrev=="TX")
+(1 real change made)
+
+. 
+. replace agency_name = "euless police department" if inlist(agency_name, "eule
+> ss texas police department") & (state_abbrev=="TX")
+(1 real change made)
+
+. 
+. replace agency_name = "floyd county sheriff's office" if inlist(agency_name, 
+> "floydn county sheriff's office") & (state_abbrev=="TX")
+(1 real change made)
+
+. 
+. replace agency_name = "highland park department of public safety" if inlist(a
+> gency_name, "highland park dept of pub safety", "highland park dps") & (state
+> _abbrev=="TX")
+(2 real changes made)
+
+. 
+. replace agency_name = "killeen police department" if inlist(agency_name, "kil
+> een police department") & (state_abbrev=="TX")
+(1 real change made)
+
+. 
+. replace agency_name = "la salle county sheriff's office" if inlist(agency_nam
+> e, "lasalle county sheriff's office") & (state_abbrev=="TX")
+(1 real change made)
+
+. 
+. replace agency_name = "mount pleasant police department" if inlist(agency_nam
+> e, "mt pleasant police department") & (state_abbrev=="TX")
+(1 real change made)
+
+. 
+. replace agency_name = "edwards county sheriff's office" if inlist(agency_name
+> , "office of the sheriff's office edwards cotx") & (state_abbrev=="TX")
+(1 real change made)
+
+. 
+. 
+. 
+. * Utah: 
+
+. 
+. replace agency_name = "duchesne sheriff's office" if inlist(agency_name, "duc
+> hesne utah") & (state_abbrev=="UT")
+(1 real change made)
+
+. 
+. replace agency_name = "logan police department" if inlist(agency_name, "logan
+>  city police department") & (state_abbrev=="UT")
+(2 real changes made)
+
+. 
+. replace agency_name = "ogden police department" if inlist(agency_name, "ogden
+>  city police department") & (state_abbrev=="UT")
+(1 real change made)
+
+. 
+. replace agency_name = "orem police department" if inlist(agency_name, "orem d
+> epartment of public safety") & (state_abbrev=="UT")
+(1 real change made)
+
+. 
+. replace agency_name = "price police department" if inlist(agency_name, "price
+>  city police department") & (state_abbrev=="UT")
+(1 real change made)
+
+. 
+. replace agency_name = "provo police department" if inlist(agency_name, "provo
+>  city police department") & (state_abbrev=="UT")
+(1 real change made)
+
+. 
+. replace agency_name = "st george police department" if inlist(agency_name, "s
+> t. george police department") & (state_abbrev=="UT")
+(1 real change made)
+
+. 
+. replace agency_name = "utah highway patrol" if inlist(agency_name, "utah depa
+> rtment of public safety") & (state_abbrev=="UT")
+(2 real changes made)
+
+. 
+. replace agency_name = "west jordan police department" if inlist(agency_name, 
+> "west jordan city police department") & (state_abbrev=="UT")
+(1 real change made)
+
+. 
+. 
+. 
+. * Virginia: 
+
+. 
+. replace agency_name = "albemarle county police department" if inlist(agency_n
+> ame, "albemarle county dept") & (state_abbrev=="VA")
+(1 real change made)
+
+. 
+. replace agency_name = "arlington county police department" if inlist(agency_n
+> ame, "arlington police department") & (state_abbrev=="VA")
+(1 real change made)
+
+. 
+. replace agency_name = "chesterfield county police department" if inlist(agenc
+> y_name, "chesterfield police department") & (state_abbrev=="VA")
+(1 real change made)
+
+. 
+. replace agency_name = "fairfax county police department" if inlist(agency_nam
+> e, "fairfax police department") & (state_abbrev=="VA")
+(1 real change made)
+
+. 
+. replace agency_name = "hampton police division" if inlist(agency_name, "hampt
+> on police department division", "hampton police department") & (state_abbrev=
+> ="VA")
+(3 real changes made)
+
+. 
+. replace agency_name = "henrico county division of police" if inlist(agency_na
+> me, "henrico county division of police department", "henrico county police de
+> partment") & (state_abbrev=="VA")
+(3 real changes made)
+
+. 
+. replace agency_name = "manassas police department" if inlist(agency_name, "ma
+> nassas (city) police department") & (state_abbrev=="VA")
+(1 real change made)
+
+. 
+. replace agency_name = "petersburg bureau of police" if inlist(agency_name, "p
+> etersburg bureau of police department", "petersburg police department") & (st
+> ate_abbrev=="VA")
+(3 real changes made)
+
+. 
+. replace agency_name = "roanoke police department" if inlist(agency_name, "roa
+> noke (city) police department", "roanoke city police department") & (state_ab
+> brev=="VA")
+(2 real changes made)
+
+. 
+. replace agency_name = "spotsylvania county sheriff's office" if inlist(agency
+> _name, "spotsylvania sheriff's office") & (state_abbrev=="VA")
+(1 real change made)
+
+. 
+. replace agency_name = "sussex county sheriff's office" if inlist(agency_name,
+>  "sussex sheriff's office") & (state_abbrev=="VA")
+(1 real change made)
+
+. 
+. replace agency_name = "virginia state police" if inlist(agency_name, "virgini
+> a dept of state police department", "virginia state police department") & (st
+> ate_abbrev=="VA")
+(3 real changes made)
+
+. 
+. 
+. 
+. * Vermont: 
+
+. 
+. replace agency_name = "vermont state police department" if inlist(agency_name
+> , "vermont department of public safety") & (state_abbrev=="VT")
+(1 real change made)
+
+. 
+. 
+. 
+. * Washington: 
+
+. 
+. replace agency_name = "bingen-white salmon police department" if inlist(agenc
+> y_name, "bingen-white salmonbingen police department") & (state_abbrev=="WA")
+> 
+(1 real change made)
+
+. 
+. 
+. 
+. * Wisconsin: 
+
+. 
+. replace agency_name = "brandon-fairwater police department" if inlist(agency_
+> name, "brandonfairwater police department") & (state_abbrev=="WI")
+(1 real change made)
+
+. 
+. replace agency_name = "colby-abbotsford police department" if inlist(agency_n
+> ame, "colbyabbotsford police department") & (state_abbrev=="WI")
+(1 real change made)
+
+. 
+. replace agency_name = "la crosse county sheriff's office" if inlist(agency_na
+> me, "la crosse county sheriff's office departme") & (state_abbrev=="WI")
+(1 real change made)
+
+. 
+. replace agency_name = "madison police department" if inlist(agency_name, "mad
+> ison (town) police department") & (state_abbrev=="WI")
+(1 real change made)
+
+. 
+. replace agency_name = "manitowoc county sheriff's office" if inlist(agency_na
+> me, "manitowoc sheriff's office") & (state_abbrev=="WI")
+(1 real change made)
+
+. 
+. replace agency_name = "manitowok police department" if inlist(agency_name, "m
+> anitowok police department de[t") & (state_abbrev=="WI")
+(1 real change made)
+
+. 
+. 
+. 
+. * West Virginia: 
+
+. 
+. replace agency_name = "west virginia state police" if inlist(agency_name, "we
+> st virginia state police department") & (state_abbrev=="WV")
+(3 real changes made)
+
+. 
+. 
+. 
+. * Wyoming: 
+
+. 
+. replace agency_name = "goshen county sheriff's office" if inlist(agency_name,
+>  "goshen county so") & (state_abbrev=="WY")
+(1 real change made)
+
+. 
+. replace agency_name = "johnson county sheriff's office" if inlist(agency_name
+> , "johnson county so") & (state_abbrev=="WY")
+(1 real change made)
+
+. 
+. replace agency_name = "laramie county sheriff's office" if inlist(agency_name
+> , "laramie county sherrifs dept") & (state_abbrev=="WY")
+(1 real change made)
+
+. 
+. replace agency_name = "natrona county sheriff's office" if inlist(agency_name
+> , "natrona county so") & (state_abbrev=="WY")
+(1 real change made)
+
+. 
+. replace agency_name = "sweetwater county sheriff's office" if inlist(agency_n
+> ame, "sweetwater county so") & (state_abbrev=="WY")
+(1 real change made)
+
+. 
+. replace agency_name = "uinta county sheriff's office" if inlist(agency_name, 
+> "uinta county so") & (state_abbrev=="WY")
+(1 real change made)
+
+. 
+. 
+. 
+. save "2000_data/400_base/LEMAS_base.dta", replace
+file 2000_data/400_base/LEMAS_base.dta saved
+
+. 
+. 
+. 
+. log close
+      name:  <unnamed>
+       log:  /bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/1000_note
+> s/200_smcl_logs/02_dept_renaming/02b_LEMAS_to_SOPP_rename.smcl
+  log type:  smcl
+ closed on:  26 Nov 2024, 11:37:59
+-------------------------------------------------------------------------------
+
+. 
+. 

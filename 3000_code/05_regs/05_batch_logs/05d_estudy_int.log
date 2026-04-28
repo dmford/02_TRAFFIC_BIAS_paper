@@ -1,0 +1,3315 @@
+
+  ___  ____  ____  ____  ____ (R)
+ /__    /   ____/   /   ____/
+___/   /   /___/   /   /___/   16.1   Copyright 1985-2019 StataCorp LLC
+  Statistics/Data analysis            StataCorp
+                                      4905 Lakeway Drive
+     MP - Parallel Edition            College Station, Texas 77845 USA
+                                      800-STATA-PC        https://www.stata.com
+                                      979-696-4600        stata@stata.com
+                                      979-696-4601 (fax)
+
+Stata license: 4-user 32-core network perpetual
+Serial number: 501606358866
+  Licensed to: Michael Bates
+               University of California, Riverside
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000; see help set_maxvar.
+      5. New update available; type -update all-
+
+. * 05d_estudy_int.do
+
+. 
+. 
+. 
+. clear all
+
+. 
+. 
+. 
+. * (1) HPCC cluster, and (2) personal machine: 
+
+. 
+. cd "/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper"
+/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper
+
+. 
+. *cd "~\coding\02_TRAFFIC_BIAS_paper\"
+
+. 
+. 
+. 
+. *****************************************************************************
+> ***
+
+. 
+. 
+. 
+. capture log close
+
+. 
+. log using "3000_code/05_regs/05_SMCL_logs/05d_estudy_int", smcl replace
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/3000_code
+> /05_regs/05_SMCL_logs/05d_estudy_int.smcl
+  log type:  smcl
+ opened on:   6 Sep 2025, 16:27:07
+
+. 
+. 
+. 
+. about 
+
+Stata/MP 16.1 for Unix (Linux 64-bit x86-64)
+Revision 11 Oct 2022
+Copyright 1985-2019 StataCorp LLC
+
+Total usable memory: 1007.68 GB
+
+Stata license: 4-user 32-core network perpetual
+Serial number: 501606358866
+  Licensed to: Michael Bates
+               University of California, Riverside
+
+. 
+. 
+. 
+. set maxvar 32767
+
+. 
+. 
+. 
+. set varabbrev off
+
+. 
+. 
+. 
+. * bin-size: 
+
+. 
+. local k=14
+
+. 
+. 
+. 
+. * event-window, +/- b: 
+
+. 
+. local b=14
+
+. 
+. 
+. 
+. *forvalues k = 7(7)28 {
+
+. 
+. forvalues s = 1(1)2 {
+  2. 
+. if (`s' == 1) local suffix = "_full_etwfe"
+  3. 
+. if (`s' == 2) local suffix = "_wbal_etwfe"
+  4. 
+. 
+. 
+. if (`s' == 1) local load_if = "(unreliable_bstops!=1)"
+  5. 
+. if (`s' == 2) local load_if = "(unreliable_bstops!=1) & (weak_bal>=`b')"
+  6. 
+. 
+. 
+. use "2000_data/500_working/`k'_days/reg_prep.dta" if `load_if', replace
+  7. 
+. * use "~/coding/02_TRAFFIC_BIAS_paper/2000_data/500_working/14_days/reg_prep.
+> dta" if (unreliable_bstops!=1) & (weak_bal>=14), replace
+. 
+. 
+. 
+. * defining lower and upper event-window bookends: 
+. 
+. replace b0_`k' = 1 if ((b0_`k'<27-`b') & (b0_`k'>=1))
+  8. 
+. replace b0_`k' = 52 if ((b0_`k'>26+`b') & (b0_`k'<=52))
+  9. 
+. 
+. 
+. ** department-based scrutiny: scr2
+. 
+. *qui gen scr2=0
+. 
+. *qui replace scr2=1 if (treat==1)
+. 
+. *qui replace scr2=2 if inlist(event_id, 79, 21, 77, 18, 87, 16, 64, 75, 31, 3
+> 5, 53, 63, 13, 70, 58, 1, 65, 7, 72, 23, 80, 76, 34, 27, 54, 32, 62, 61, 3, 8
+> 1, 36)
+. 
+. 
+. 
+. foreach o in bstop_share bsearch_share bhit_share bsearch_rate bhit_rate bhit
+> _bstop_ratio n_stops n_bstops n_searches n_bsearches n_hits n_bhits {
+ 10. 
+. display ""
+ 11. 
+. 
+. 
+. local i_absorb = "i.dept_year i.year_mo i.memorial i.labor i.fourth i.tg i.xm
+> as i.nye i.NOLA_Bourbon i.Philly_DNC i.WA_mar_2017"
+ 12. 
+. local absorb = "dept_year year_mo memorial labor fourth tg xmas nye NOLA_Bour
+> bon Philly_DNC WA_mar_2017"
+ 13. 
+. 
+. 
+. * Setting AWEIGHTS: 
+. 
+. if ("`o'" == "bstop_share") local aweight = "[aweight=n_stops_weight]"
+ 14. 
+. if ("`o'" == "bsearch_share") local aweight = "[aweight=n_searches_weight]"
+ 15. 
+. if ("`o'" == "bhit_share") local aweight = "[aweight=n_hits_weight]"
+ 16. 
+. if ("`o'" == "bsearch_rate") local aweight = "[aweight=n_bstops_weight]"
+ 17. 
+. if ("`o'" == "bhit_rate") local aweight = "[aweight=n_bsearches_weight]"
+ 18. 
+. if ("`o'" == "bhit_bstop_ratio") local aweight = "[aweight=n_bstops_weight]"
+ 19. 
+. if ("`o'" == "n_stops") local aweight = ""
+ 20. 
+. if ("`o'" == "n_bstops") local aweight = ""
+ 21. 
+. if ("`o'" == "n_searches") local aweight = ""
+ 22. 
+. if ("`o'" == "n_bsearches") local aweight = ""
+ 23. 
+. if ("`o'" == "n_hits") local aweight = ""
+ 24. 
+. if ("`o'" == "n_bhits") local aweight = ""
+ 25. 
+. 
+. 
+. * Setting WEIGHTS: 
+. 
+. if ("`o'" == "bstop_share") local weight = "[weight=n_stops_weight]"
+ 26. 
+. if ("`o'" == "bsearch_share") local weight = "[weight=n_searches_weight]"
+ 27. 
+. if ("`o'" == "bhit_share") local weight = "[weight=n_hits_weight]"
+ 28. 
+. if ("`o'" == "bsearch_rate") local weight = "[weight=n_bstops_weight]"
+ 29. 
+. if ("`o'" == "bhit_rate") local weight = "[weight=n_bsearches_weight]"
+ 30. 
+. if ("`o'" == "bhit_bstop_ratio") local weight = "[weight=n_bstops_weight]"
+ 31. 
+. if ("`o'" == "n_stops") local weight = ""
+ 32. 
+. if ("`o'" == "n_bstops") local weight = ""
+ 33. 
+. if ("`o'" == "n_searches") local weight = ""
+ 34. 
+. if ("`o'" == "n_bsearches") local weight = ""
+ 35. 
+. if ("`o'" == "n_hits") local weight = ""
+ 36. 
+. if ("`o'" == "n_bhits") local weight = ""
+ 37. 
+. 
+. 
+. * Setting IFS: 
+. 
+. if ("`o'" == "bstop_share") local ifs = ""
+ 38. 
+. if ("`o'" == "bsearch_share") local ifs = "& (unreliable_searches!=1)"
+ 39. 
+. if ("`o'" == "bhit_share") local ifs = "& (unreliable_searches!=1) & (unrelia
+> ble_hits!=1)"
+ 40. 
+. if ("`o'" == "bsearch_rate") local ifs = "& (unreliable_searches!=1)"
+ 41. 
+. if ("`o'" == "bhit_rate") local ifs = "& (unreliable_searches!=1) & (unreliab
+> le_hits!=1)"
+ 42. 
+. if ("`o'" == "bhit_bstop_ratio") local ifs = "& (unreliable_searches!=1) & (u
+> nreliable_hits!=1)"
+ 43. 
+. if ("`o'" == "n_stops") local ifs = ""
+ 44. 
+. if ("`o'" == "n_bstops") local ifs = ""
+ 45. 
+. if ("`o'" == "n_searches") local ifs = "& (unreliable_searches!=1)"
+ 46. 
+. if ("`o'" == "n_bsearches") local ifs = "& (unreliable_searches!=1)"
+ 47. 
+. if ("`o'" == "n_hits") local ifs = "& (unreliable_searches!=1) & (unreliable_
+> hits!=1)"
+ 48. 
+. if ("`o'" == "n_bhits") local ifs = "& (unreliable_searches!=1) & (unreliable
+> _hits!=1)"
+ 49. 
+. 
+. 
+. * Setting OUTCOME DESCRIPTIONS: 
+. 
+. if ("`o'" == "bstop_share") local o_desc = "Black Share of Stops"
+ 50. 
+. if ("`o'" == "bsearch_share") local o_desc = "Black Share of Searches"
+ 51. 
+. if ("`o'" == "bhit_share") local o_desc = "Black Share of Hits"
+ 52. 
+. if ("`o'" == "bsearch_rate") local o_desc = "Black Search Rate"
+ 53. 
+. if ("`o'" == "bhit_rate") local o_desc = "Black Hit Rate"
+ 54. 
+. if ("`o'" == "bhit_bstop_ratio") local o_desc = "Black Hits-to-Stops Ratio"
+ 55. 
+. if ("`o'" == "n_stops") local o_desc = "Overall Stop Volume"
+ 56. 
+. if ("`o'" == "n_bstops") local o_desc = "Black Stop Volume"
+ 57. 
+. if ("`o'" == "n_searches") local o_desc = "Overall Search Volume"
+ 58. 
+. if ("`o'" == "n_bsearches") local o_desc = "Black Search Volume"
+ 59. 
+. if ("`o'" == "n_hits") local o_desc = "Overall Hit Volume"
+ 60. 
+. if ("`o'" == "n_bhits") local o_desc = "Black Hit Volume"
+ 61. 
+. 
+. 
+. display ""
+ 62. 
+. display "********************************************************************
+> *"
+ 63. 
+. display "Eq4: Estudy Int, outcome=""`o'"": `o_desc'"
+ 64. 
+. display "********************************************************************
+> *"
+ 65. 
+. 
+. 
+. * CT Hartford has very abnormal stop patterns, and even moreso for searches: 
+> 
+. 
+. drop if (num_dept==90) & (date<19663)
+ 66. 
+. drop if (num_dept==90) & (year>2015)
+ 67. 
+. 
+. 
+. xtset num_dept date 
+ 68. 
+. 
+. 
+. display ""
+ 69. 
+. display "Main Specification: ""`o'""" 
+ 70. 
+. reghdfe `o' ib26.b0_`k'##2.scr `aweight' if (date>1) `ifs', a(`i_absorb') cl(
+> num_dept) base resid 
+ 71. 
+. est save "4000_outputs/`k'_days/eq4/`o'/estudy_int_main`suffix'", replace 
+ 72. 
+. gen emain_`o' = (e(sample)==1)
+ 73. 
+. 
+. 
+. ***display ""
+. 
+. ***display "A01, Dropping T-1: ""`o'""" 
+. 
+. ***reghdfe `o' ib25.b0_`k'##2.scr `aweight' if (b0_`k' != 11) `ifs', a(i.(`ab
+> sorb')) cl(num_dept) base resid 
+. 
+. ***est save "4000_outputs/`k'_days/eq4/`o'/estudy_int_A01`suffix'", replace 
+. 
+. ***gen eA01_`o' = (e(sample)==1)
+. 
+. 
+. 
+. ***display ""
+. 
+. ***display "A02, Pretrend Controls: ""`o'""" 
+. 
+. ***reghdfe `o' ib26.b0_`k'##2.scr (1.treat#event_id#0.post0#c.date) `aweight'
+>  if (date>1) `ifs', a(i.(`absorb')) cl(num_dept) base resid 
+. 
+. ***est save "4000_outputs/`k'_days/eq4/`o'/estudy_int_A02`suffix'", replace 
+. 
+. ***gen eA02_`o' = (e(sample)==1)
+. 
+. 
+. 
+. ***display ""
+. 
+. ***display "A05, Non-Statewide Depts: ""`o'""" 
+. 
+. ***reghdfe `o' ib26.b0_`k'##2.scr `aweight' if (statewide==0) `ifs', a(i.(`ab
+> sorb')) cl(num_dept) base resid 
+. 
+. ***est save "4000_outputs/`k'_days/eq4/`o'/estudy_int_A05`suffix'", replace 
+. 
+. ***gen eA05_`o' = (e(sample)==1)
+. 
+. 
+. 
+. ***display ""
+. 
+. ***display "A06, Statewide Depts: ""`o'""" 
+. 
+. ***reghdfe `o' ib26.b0_`k'##2.scr `aweight' if (statewide==1) `ifs', a(i.(`ab
+> sorb')) cl(num_dept) base resid 
+. 
+. ***est save "4000_outputs/`k'_days/eq4/`o'/estudy_int_A06`suffix'", replace 
+. 
+. ***gen eA06_`o' = (e(sample)==1)
+. 
+. 
+. 
+. ***display ""
+. 
+. ***display "A07, Single Event Depts: ""`o'""" 
+. 
+. ***reghdfe `o' ib26.b0_`k'##2.scr `aweight' if (multi_dept==0) `ifs', a(i.(`a
+> bsorb')) cl(num_dept) base resid 
+. 
+. ***est save "4000_outputs/`k'_days/eq4/`o'/estudy_int_A07`suffix'", replace 
+. 
+. ***gen eA07_`o' = (e(sample)==1)
+. 
+. 
+. 
+. ***display ""
+. 
+. ***display "A08, Multi Event Depts: ""`o'""" 
+. 
+. ***reghdfe `o' ib26.b0_`k'##2.scr `aweight' if (multi_dept==1) `ifs', a(i.(`a
+> bsorb')) cl(num_dept) base resid 
+. 
+. ***est save "4000_outputs/`k'_days/eq4/`o'/estudy_int_A08`suffix'", replace 
+. 
+. ***gen eA08_`o' = (e(sample)==1)
+. 
+. }
+ 74. 
+. keep if (post0==0 & treat==1)
+ 75. 
+. save "2000_data/500_working/`k'_days/eq4_esamples`suffix'.dta", replace
+ 76. 
+. }
+(6,725 real changes made)
+(5,973 real changes made)
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=bstop_share: Black Share of Stops
+*********************************************************************
+(7 observations deleted)
+(266 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bstop_share
+(dropped 5 singleton observations)
+(MWFE estimator converged in 8 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,662,125
+Absorbing 11 HDFE groups                          F(  59,   1867) =     466.49
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.8246
+                                                  Adj R-squared   =     0.8237
+                                                  Within R-sq.    =     0.0003
+Number of clusters (num_dept) =      1,868        Root MSE        =     0.0711
+
+                           (Std. Err. adjusted for 1,868 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+ bstop_share |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.0045027    .002182    -2.06   0.039    -.0087821   -.0002234
+         13  |  -.0049833   .0032273    -1.54   0.123    -.0113128    .0013463
+         14  |  -.0044287   .0024876    -1.78   0.075    -.0093075    .0004501
+         15  |  -.0032159   .0023612    -1.36   0.173    -.0078468     .001415
+         16  |  -.0026421   .0027179    -0.97   0.331    -.0079726    .0026884
+         17  |  -.0043945   .0023466    -1.87   0.061    -.0089967    .0002077
+         18  |  -.0024637   .0028693    -0.86   0.391     -.008091    .0031636
+         19  |  -.0028492   .0022251    -1.28   0.201    -.0072131    .0015147
+         20  |  -.0030928   .0022096    -1.40   0.162    -.0074264    .0012407
+         21  |  -.0007347   .0018188    -0.40   0.686    -.0043017    .0028323
+         22  |  -.0024772   .0017059    -1.45   0.147    -.0058229    .0008685
+         23  |  -.0021953   .0017917    -1.23   0.221    -.0057093    .0013188
+         24  |  -.0018241   .0017043    -1.07   0.285    -.0051666    .0015185
+         25  |    .000385   .0014461     0.27   0.790    -.0024512    .0032212
+         26  |          0  (base)
+         27  |  -.0027442    .001278    -2.15   0.032    -.0052506   -.0002378
+         28  |  -.0042974   .0019672    -2.18   0.029    -.0081555   -.0004393
+         29  |  -.0042374   .0022448    -1.89   0.059    -.0086401    .0001653
+         30  |  -.0021751   .0018186    -1.20   0.232    -.0057417    .0013916
+         31  |  -.0040178   .0024907    -1.61   0.107    -.0089027     .000867
+         32  |  -.0042765   .0021402    -2.00   0.046    -.0084738   -.0000791
+         33  |  -.0034295   .0020087    -1.71   0.088    -.0073691    .0005101
+         34  |  -.0077542   .0020915    -3.71   0.000    -.0118561   -.0036523
+         35  |   -.004755   .0033935    -1.40   0.161    -.0114106    .0019005
+         36  |   -.004886   .0035332    -1.38   0.167    -.0118156    .0020435
+         37  |  -.0024677   .0036611    -0.67   0.500    -.0096481    .0047126
+         38  |  -.0011334   .0035963    -0.32   0.753    -.0081866    .0059199
+         39  |   .0006305    .003395     0.19   0.853    -.0060279    .0072888
+         40  |  -.0039286   .0035512    -1.11   0.269    -.0108933    .0030362
+         52  |  -.0069441   .0019969    -3.48   0.001    -.0108605   -.0030276
+             |
+         scr |
+          2  |  -.0045948   .0062032    -0.74   0.459    -.0167608    .0075712
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |  -.0072348   .0059895    -1.21   0.227    -.0189816     .004512
+       13 2  |  -.0009942   .0043903    -0.23   0.821    -.0096047    .0076162
+       14 2  |   .0012602   .0059915     0.21   0.833    -.0104904    .0130109
+       15 2  |  -.0103026   .0074351    -1.39   0.166    -.0248846    .0042793
+       16 2  |  -.0072199   .0087586    -0.82   0.410    -.0243976    .0099577
+       17 2  |   -.009485   .0079687    -1.19   0.234    -.0251134    .0061434
+       18 2  |  -.0100357   .0088515    -1.13   0.257    -.0273955    .0073241
+       19 2  |  -.0049987   .0083296    -0.60   0.549     -.021335    .0113375
+       20 2  |  -.0080091   .0073137    -1.10   0.274    -.0223529    .0063347
+       21 2  |  -.0138467   .0055203    -2.51   0.012    -.0246732   -.0030201
+       22 2  |  -.0030507   .0047493    -0.64   0.521    -.0123652    .0062637
+       23 2  |   -.007913   .0038703    -2.04   0.041    -.0155035   -.0003225
+       24 2  |  -.0041512   .0027667    -1.50   0.134    -.0095774    .0012751
+       25 2  |  -.0055399   .0030211    -1.83   0.067     -.011465    .0003853
+       27 2  |  -.0037237   .0052397    -0.71   0.477    -.0140001    .0065526
+       28 2  |  -.0014772   .0042019    -0.35   0.725    -.0097182    .0067638
+       29 2  |  -.0042756    .004274    -1.00   0.317    -.0126579    .0041067
+       30 2  |  -.0047512   .0038773    -1.23   0.221    -.0123554    .0028531
+       31 2  |    -.00165   .0027292    -0.60   0.546    -.0070026    .0037027
+       32 2  |  -.0055845   .0048273    -1.16   0.247     -.015052    .0038829
+       33 2  |   .0001403   .0027585     0.05   0.959    -.0052698    .0055504
+       34 2  |  -.0002504   .0048651    -0.05   0.959    -.0097921    .0092912
+       35 2  |   .0058532   .0072999     0.80   0.423    -.0084635      .02017
+       36 2  |   .0054613   .0083527     0.65   0.513    -.0109204     .021843
+       37 2  |   .0056128    .008341     0.67   0.501    -.0107459    .0219715
+       38 2  |   .0024643   .0055809     0.44   0.659    -.0084812    .0134098
+       39 2  |  -.0002885   .0052151    -0.06   0.956    -.0105165    .0099395
+       40 2  |   .0048675   .0072401     0.67   0.501    -.0093321    .0190671
+       52 2  |   .0052071   .0044338     1.17   0.240    -.0034885    .0139028
+             |
+       _cons |   .1850839   .0005964   310.33   0.000     .1839142    .1862536
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      8323        8323           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/bstop_share/estudy_int_main_full_etwfe.ster saved
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=bsearch_share: Black Share of Searches
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bsearch_share
+(dropped 473 singleton observations)
+(MWFE estimator converged in 8 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    300,936
+Absorbing 11 HDFE groups                          F(  59,   1238) =    2234.39
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.6393
+                                                  Adj R-squared   =     0.6333
+                                                  Within R-sq.    =     0.0004
+Number of clusters (num_dept) =      1,239        Root MSE        =     0.1615
+
+                           (Std. Err. adjusted for 1,239 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+bsearch_sh~e |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.0004215   .0076361    -0.06   0.956    -.0154025    .0145596
+         13  |   .0010034   .0110139     0.09   0.927    -.0206046    .0226114
+         14  |  -.0057894   .0119881    -0.48   0.629    -.0293086    .0177299
+         15  |   .0031098   .0083261     0.37   0.709     -.013225    .0194445
+         16  |   .0051775    .009571     0.54   0.589    -.0135997    .0239547
+         17  |   .0076769    .009365     0.82   0.413    -.0106962      .02605
+         18  |   .0020926   .0072788     0.29   0.774    -.0121875    .0163728
+         19  |  -.0034833   .0040571    -0.86   0.391    -.0114428    .0044762
+         20  |  -.0005018   .0059473    -0.08   0.933    -.0121696     .011166
+         21  |   -.003673   .0059532    -0.62   0.537    -.0153524    .0080064
+         22  |  -.0041502   .0083818    -0.50   0.621    -.0205943    .0122939
+         23  |  -.0048621   .0056127    -0.87   0.387    -.0158736    .0061495
+         24  |  -.0075381   .0067305    -1.12   0.263    -.0207425    .0056662
+         25  |  -.0076274   .0041244    -1.85   0.065     -.015719    .0004643
+         26  |          0  (base)
+         27  |  -.0067876   .0060471    -1.12   0.262    -.0186513     .005076
+         28  |  -.0080893   .0079063    -1.02   0.306    -.0236005     .007422
+         29  |  -.0026124   .0049598    -0.53   0.598     -.012343    .0071182
+         30  |  -.0033823     .00403    -0.84   0.401    -.0112887    .0045242
+         31  |  -.0058413   .0052931    -1.10   0.270    -.0162258    .0045431
+         32  |  -.0034206   .0037649    -0.91   0.364     -.010807    .0039658
+         33  |  -.0088703   .0067764    -1.31   0.191    -.0221647    .0044242
+         34  |  -.0137199   .0086323    -1.59   0.112    -.0306556    .0032157
+         35  |  -.0088899   .0068297    -1.30   0.193     -.022289    .0045092
+         36  |  -.0207616   .0064558    -3.22   0.001    -.0334271   -.0080962
+         37  |  -.0095853   .0101797    -0.94   0.347    -.0295567     .010386
+         38  |  -.0168347   .0072708    -2.32   0.021    -.0310991   -.0025702
+         39  |  -.0059606   .0076555    -0.78   0.436    -.0209799    .0090586
+         40  |  -.0060529   .0074536    -0.81   0.417     -.020676    .0085701
+         52  |  -.0064448   .0051055    -1.26   0.207    -.0164613    .0035716
+             |
+         scr |
+          2  |   .0087481   .0157162     0.56   0.578    -.0220851    .0395814
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |  -.0090581   .0257337    -0.35   0.725    -.0595445    .0414284
+       13 2  |   .0055591   .0279768     0.20   0.843    -.0493281    .0604463
+       14 2  |  -.0033791   .0263042    -0.13   0.898    -.0549848    .0482266
+       15 2  |  -.0351659   .0239759    -1.47   0.143    -.0822038    .0118719
+       16 2  |  -.0042291   .0357249    -0.12   0.906    -.0743172     .065859
+       17 2  |   -.065982   .0286825    -2.30   0.022    -.1222537   -.0097102
+       18 2  |  -.0192113   .0267968    -0.72   0.474    -.0717834    .0333608
+       19 2  |   .0009409   .0266757     0.04   0.972    -.0513936    .0532754
+       20 2  |  -.0104664   .0201564    -0.52   0.604     -.050011    .0290781
+       21 2  |  -.0091368   .0181018    -0.50   0.614    -.0446505    .0263769
+       22 2  |  -.0162653   .0190434    -0.85   0.393    -.0536263    .0210957
+       23 2  |   .0030919   .0177627     0.17   0.862    -.0317564    .0379403
+       24 2  |  -.0011011   .0154124    -0.07   0.943    -.0313383    .0291362
+       25 2  |  -.0092881   .0366632    -0.25   0.800     -.081217    .0626409
+       27 2  |   .0128208    .012436     1.03   0.303    -.0115772    .0372189
+       28 2  |  -.0099183   .0208624    -0.48   0.635    -.0508479    .0310114
+       29 2  |   .0066523   .0168572     0.39   0.693    -.0264195     .039724
+       30 2  |   .0089583   .0167315     0.54   0.592    -.0238668    .0417835
+       31 2  |  -.0071995   .0169273    -0.43   0.671    -.0404089    .0260099
+       32 2  |  -.0197477   .0397616    -0.50   0.620    -.0977553    .0582598
+       33 2  |  -.0046355   .0333768    -0.14   0.890    -.0701169    .0608458
+       34 2  |  -.0130157   .0387144    -0.34   0.737    -.0889688    .0629374
+       35 2  |   .0234459   .0144996     1.62   0.106    -.0050006    .0518924
+       36 2  |  -.0081693   .0364156    -0.22   0.823    -.0796125    .0632739
+       37 2  |  -.0142266   .0410095    -0.35   0.729    -.0946824    .0662293
+       38 2  |   .0124153   .0134376     0.92   0.356    -.0139477    .0387782
+       39 2  |  -.0366687    .014629    -2.51   0.012    -.0653691   -.0079684
+       40 2  |   .0026603   .0224102     0.12   0.906    -.0413059    .0466264
+       52 2  |  -.0195477   .0158098    -1.24   0.217    -.0505647    .0114693
+             |
+       _cons |   .2787709     .00199   140.08   0.000     .2748667     .282675
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      4758        4758           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/bsearch_share/estudy_int_main_full_etwfe.ster sav
+> ed
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=bhit_share: Black Share of Hits
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bhit_share
+(dropped 632 singleton observations)
+(MWFE estimator converged in 9 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    116,133
+Absorbing 11 HDFE groups                          F(  59,    950) =   10145.33
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.4877
+                                                  Adj R-squared   =     0.4698
+                                                  Within R-sq.    =     0.0016
+Number of clusters (num_dept) =        951        Root MSE        =     0.2203
+
+                             (Std. Err. adjusted for 951 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+  bhit_share |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   .0099366   .0089995     1.10   0.270    -.0077246    .0275978
+         13  |   -.009555   .0099548    -0.96   0.337    -.0290909     .009981
+         14  |  -.0070292   .0169927    -0.41   0.679    -.0403768    .0263184
+         15  |  -.0048897   .0119416    -0.41   0.682    -.0283246    .0185452
+         16  |   .0030789   .0125722     0.24   0.807    -.0215936    .0277514
+         17  |   .0195899   .0152161     1.29   0.198    -.0102712    .0494509
+         18  |   .0206871   .0147404     1.40   0.161    -.0082404    .0496145
+         19  |  -.0023458    .008312    -0.28   0.778    -.0186579    .0139662
+         20  |   .0170897   .0165948     1.03   0.303     -.015477    .0496564
+         21  |  -.0089344   .0058922    -1.52   0.130    -.0204977    .0026289
+         22  |  -.0036948   .0124427    -0.30   0.767    -.0281132    .0207236
+         23  |   .0035975   .0115359     0.31   0.755    -.0190413    .0262362
+         24  |   .0073319   .0177598     0.41   0.680    -.0275211    .0421848
+         25  |  -.0009747   .0051691    -0.19   0.850    -.0111189    .0091695
+         26  |          0  (base)
+         27  |   .0045405    .013263     0.34   0.732    -.0214877    .0305687
+         28  |  -.0003867   .0089442    -0.04   0.966    -.0179393    .0171659
+         29  |  -.0069009   .0108724    -0.63   0.526    -.0282376    .0144358
+         30  |   .0169283   .0101442     1.67   0.095    -.0029794    .0368361
+         31  |   -.003026   .0144091    -0.21   0.834    -.0313034    .0252514
+         32  |  -.0012348   .0124287    -0.10   0.921    -.0256257     .023156
+         33  |  -.0201809   .0083167    -2.43   0.015    -.0365022   -.0038596
+         34  |   .0016777    .014982     0.11   0.911     -.027724    .0310793
+         35  |   .0198115   .0087552     2.26   0.024     .0026298    .0369931
+         36  |  -.0237558   .0210491    -1.13   0.259     -.065064    .0175524
+         37  |   .0002162   .0130116     0.02   0.987    -.0253187     .025751
+         38  |  -.0506849   .0125241    -4.05   0.000     -.075263   -.0261068
+         39  |  -.0046537   .0087046    -0.53   0.593    -.0217361    .0124287
+         40  |   -.001776   .0165757    -0.11   0.915    -.0343053    .0307533
+         52  |   .0057417   .0101932     0.56   0.573    -.0142622    .0257455
+             |
+         scr |
+          2  |   .1028863   .0652168     1.58   0.115    -.0250993     .230872
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |  -.0196909    .105039    -0.19   0.851    -.2258263    .1864444
+       13 2  |  -.0128261   .0815046    -0.16   0.875    -.1727759    .1471237
+       14 2  |   .0120099   .1303056     0.09   0.927    -.2437102    .2677301
+       15 2  |   .0344781   .1488852     0.23   0.817    -.2577038      .32666
+       16 2  |   -.019011   .0626809    -0.30   0.762    -.1420201    .1039981
+       17 2  |  -.0607313   .1085802    -0.56   0.576     -.273816    .1523535
+       18 2  |  -.0473575   .0890492    -0.53   0.595    -.2221133    .1273984
+       19 2  |   .0150098   .0864698     0.17   0.862    -.1546842    .1847038
+       20 2  |  -.0087993   .1073904    -0.08   0.935    -.2195492    .2019506
+       21 2  |   .0060888   .1263879     0.05   0.962    -.2419429    .2541205
+       22 2  |  -.0326547   .1179091    -0.28   0.782     -.264047    .1987377
+       23 2  |   .0016403   .0591556     0.03   0.978    -.1144505    .1177312
+       24 2  |  -.0159251   .0353881    -0.45   0.653     -.085373    .0535229
+       25 2  |  -.0339595   .1046153    -0.32   0.746    -.2392632    .1713443
+       27 2  |   .0378358   .0781573     0.48   0.628     -.115545    .1912166
+       28 2  |  -.0437923   .0686148    -0.64   0.523    -.1784463    .0908617
+       29 2  |  -.0305983    .080778    -0.38   0.705    -.1891223    .1279256
+       30 2  |   .0410638   .0906327     0.45   0.651    -.1367997    .2189273
+       31 2  |  -.0692421   .0554487    -1.25   0.212    -.1780582     .039574
+       32 2  |  -.1037388   .0844211    -1.23   0.219    -.2694121    .0619345
+       33 2  |  -.0505415   .1232618    -0.41   0.682    -.2924383    .1913554
+       34 2  |    -.10004   .0636586    -1.57   0.116    -.2249677    .0248877
+       35 2  |  -.0100229   .0792409    -0.13   0.899    -.1655303    .1454844
+       36 2  |   .0050873   .0568833     0.09   0.929    -.1065442    .1167187
+       37 2  |   .0578031    .055343     1.04   0.297    -.0508056    .1664118
+       38 2  |   .0159809    .067496     0.24   0.813    -.1164776    .1484393
+       39 2  |  -.0329644   .0411493    -0.80   0.423    -.1137184    .0477896
+       40 2  |  -.1239103   .0743835    -1.67   0.096    -.2698854    .0220647
+       52 2  |  -.0950786   .0645868    -1.47   0.141    -.2218279    .0316707
+             |
+       _cons |   .2947083   .0034643    85.07   0.000     .2879098    .3015068
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      3762        3762           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/bhit_share/estudy_int_main_full_etwfe.ster saved
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=bsearch_rate: Black Search Rate
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bsearch_rate
+(dropped 259 singleton observations)
+(MWFE estimator converged in 8 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    696,571
+Absorbing 11 HDFE groups                          F(  59,   1318) =     379.61
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.3941
+                                                  Adj R-squared   =     0.3891
+                                                  Within R-sq.    =     0.0007
+Number of clusters (num_dept) =      1,319        Root MSE        =     0.0618
+
+                           (Std. Err. adjusted for 1,319 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+bsearch_rate |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |    .003263   .0040798     0.80   0.424    -.0047407    .0112666
+         13  |   .0028165   .0041261     0.68   0.495     -.005278    .0109109
+         14  |   .0007369   .0042861     0.17   0.864    -.0076714    .0091451
+         15  |   .0015852   .0039108     0.41   0.685     -.006087    .0092573
+         16  |   .0014418   .0039633     0.36   0.716    -.0063333    .0092169
+         17  |   .0013761     .00407     0.34   0.735    -.0066083    .0093605
+         18  |  -.0006078   .0026205    -0.23   0.817    -.0057486    .0045329
+         19  |  -.0001412   .0022656    -0.06   0.950    -.0045859    .0043034
+         20  |  -.0016701   .0022925    -0.73   0.466    -.0061674    .0028272
+         21  |   -.002273   .0019455    -1.17   0.243    -.0060895    .0015436
+         22  |  -.0009867   .0017093    -0.58   0.564    -.0043399    .0023665
+         23  |  -.0005354   .0014166    -0.38   0.706    -.0033144    .0022435
+         24  |  -.0008933   .0008949    -1.00   0.318    -.0026489    .0008624
+         25  |  -.0022008   .0009508    -2.31   0.021     -.004066   -.0003356
+         26  |          0  (base)
+         27  |  -.0001121   .0017553    -0.06   0.949    -.0035556    .0033314
+         28  |   .0004154   .0013292     0.31   0.755    -.0021921    .0030229
+         29  |  -.0000322   .0012108    -0.03   0.979    -.0024075     .002343
+         30  |   .0005931   .0007338     0.81   0.419    -.0008464    .0020325
+         31  |   .0001138    .001466     0.08   0.938    -.0027621    .0029897
+         32  |  -.0013021   .0014659    -0.89   0.375     -.004178    .0015737
+         33  |  -.0006201    .001397    -0.44   0.657    -.0033607    .0021204
+         34  |  -.0030647   .0025878    -1.18   0.237    -.0081413     .002012
+         35  |  -.0016926     .00261    -0.65   0.517    -.0068129    .0034277
+         36  |  -.0017359   .0026032    -0.67   0.505    -.0068427    .0033709
+         37  |   .0000993   .0022669     0.04   0.965    -.0043478    .0045464
+         38  |  -.0036789    .002396    -1.54   0.125    -.0083794    .0010215
+         39  |  -.0041107   .0035392    -1.16   0.246    -.0110538    .0028323
+         40  |  -.0033171   .0039108    -0.85   0.396    -.0109891    .0043549
+         52  |   .0001192   .0025715     0.05   0.963    -.0049254    .0051638
+             |
+         scr |
+          2  |  -.0030403   .0055652    -0.55   0.585     -.013958    .0078774
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |  -.0062073   .0046392    -1.34   0.181    -.0153084    .0028938
+       13 2  |  -.0008973   .0071771    -0.13   0.901    -.0149771    .0131825
+       14 2  |   .0037135   .0086673     0.43   0.668    -.0132896    .0207167
+       15 2  |  -.0104418   .0076905    -1.36   0.175    -.0255289    .0046452
+       16 2  |   .0114339   .0089603     1.28   0.202    -.0061442     .029012
+       17 2  |   .0091151   .0086322     1.06   0.291    -.0078192    .0260494
+       18 2  |   .0039382   .0073819     0.53   0.594    -.0105433    .0184198
+       19 2  |   .0052303   .0061485     0.85   0.395    -.0068317    .0172922
+       20 2  |   .0038491   .0067442     0.57   0.568    -.0093814    .0170796
+       21 2  |   .0048648   .0067231     0.72   0.469    -.0083243    .0180538
+       22 2  |   .0001894   .0042056     0.05   0.964    -.0080611    .0084399
+       23 2  |   .0065641   .0042851     1.53   0.126    -.0018422    .0149704
+       24 2  |  -.0050188   .0026091    -1.92   0.055    -.0101373    .0000997
+       25 2  |   .0036341   .0027982     1.30   0.194    -.0018552    .0091235
+       27 2  |   .0012222   .0034975     0.35   0.727    -.0056391    .0080835
+       28 2  |  -.0012901   .0039369    -0.33   0.743    -.0090134    .0064331
+       29 2  |  -.0033775   .0030193    -1.12   0.264    -.0093007    .0025457
+       30 2  |   .0031602   .0055212     0.57   0.567    -.0076711    .0139914
+       31 2  |   .0008555   .0031443     0.27   0.786    -.0053128    .0070238
+       32 2  |  -.0041741   .0049687    -0.84   0.401    -.0139216    .0055734
+       33 2  |  -.0015919   .0084524    -0.19   0.851    -.0181735    .0149897
+       34 2  |   .0071276   .0142998     0.50   0.618    -.0209253    .0351805
+       35 2  |   .0024381   .0098591     0.25   0.805     -.016903    .0217793
+       36 2  |   .0031353   .0073492     0.43   0.670    -.0112822    .0175528
+       37 2  |   .0121401   .0182435     0.67   0.506    -.0236493    .0479295
+       38 2  |   .0313906    .010626     2.95   0.003     .0105449    .0522363
+       39 2  |   .0497059   .0242937     2.05   0.041     .0020474    .0973643
+       40 2  |   .0375705   .0173741     2.16   0.031     .0034866    .0716544
+       52 2  |   .0360652   .0182303     1.98   0.048     .0003017    .0718287
+             |
+       _cons |   .0425734   .0007691    55.36   0.000     .0410647    .0440821
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5502        5502           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/bsearch_rate/estudy_int_main_full_etwfe.ster save
+> d
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=bhit_rate: Black Hit Rate
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bhit_rate
+(dropped 610 singleton observations)
+(MWFE estimator converged in 8 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    126,991
+Absorbing 11 HDFE groups                          F(  59,    830) =    3113.36
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.3355
+                                                  Adj R-squared   =     0.3172
+                                                  Within R-sq.    =     0.0020
+Number of clusters (num_dept) =        831        Root MSE        =     0.2104
+
+                             (Std. Err. adjusted for 831 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+   bhit_rate |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.0055108    .008525    -0.65   0.518    -.0222439    .0112222
+         13  |  -.0290673   .0112582    -2.58   0.010    -.0511653   -.0069694
+         14  |  -.0298436   .0130387    -2.29   0.022    -.0554363   -.0042509
+         15  |  -.0142563   .0182526    -0.78   0.435     -.050083    .0215703
+         16  |  -.0248748   .0090464    -2.75   0.006    -.0426313   -.0071183
+         17  |   .0080428   .0116558     0.69   0.490    -.0148355     .030921
+         18  |   .0043153   .0101372     0.43   0.670    -.0155824    .0242129
+         19  |  -.0049977   .0125363    -0.40   0.690    -.0296043    .0196088
+         20  |  -.0000951   .0105196    -0.01   0.993    -.0207432     .020553
+         21  |   .0036044   .0061259     0.59   0.556    -.0084197    .0156285
+         22  |  -.0093258   .0089509    -1.04   0.298    -.0268948    .0082432
+         23  |  -.0196836   .0130774    -1.51   0.133    -.0453523    .0059851
+         24  |  -.0241804   .0130371    -1.85   0.064    -.0497699    .0014091
+         25  |  -.0007628   .0113162    -0.07   0.946    -.0229745    .0214489
+         26  |          0  (base)
+         27  |   -.016687   .0136387    -1.22   0.221    -.0434574    .0100835
+         28  |  -.0034599   .0097572    -0.35   0.723    -.0226115    .0156917
+         29  |  -.0059493   .0096149    -0.62   0.536    -.0248216     .012923
+         30  |   .0065955   .0078861     0.84   0.403    -.0088835    .0220745
+         31  |  -.0196997   .0175624    -1.12   0.262    -.0541717    .0147723
+         32  |  -.0076541   .0149213    -0.51   0.608     -.036942    .0216338
+         33  |  -.0080343   .0139259    -0.58   0.564    -.0353684    .0192999
+         34  |   .0239028     .01539     1.55   0.121    -.0063051    .0541107
+         35  |   .0268224   .0163147     1.64   0.101    -.0052005    .0588454
+         36  |  -.0253245    .021731    -1.17   0.244    -.0679786    .0173296
+         37  |     .02092   .0134168     1.56   0.119    -.0054148    .0472548
+         38  |  -.0269289   .0172695    -1.56   0.119    -.0608258    .0069681
+         39  |   .0338681   .0228222     1.48   0.138     -.010928    .0786642
+         40  |  -.0183131   .0101741    -1.80   0.072    -.0382831    .0016569
+         52  |  -.0157329   .0124455    -1.26   0.207    -.0401611    .0086954
+             |
+         scr |
+          2  |   .0748458   .0153669     4.87   0.000     .0446834    .1050083
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |  -.0227076    .025908    -0.88   0.381    -.0735605    .0281453
+       13 2  |  -.0095355   .0354758    -0.27   0.788    -.0791683    .0600973
+       14 2  |   -.013464   .0342483    -0.39   0.694    -.0806876    .0537595
+       15 2  |  -.0177141    .041099    -0.43   0.667    -.0983842     .062956
+       16 2  |  -.0029315   .0242607    -0.12   0.904     -.050551    .0446881
+       17 2  |  -.0504144   .0200991    -2.51   0.012    -.0898654   -.0109635
+       18 2  |  -.0322266   .0176955    -1.82   0.069    -.0669597    .0025066
+       19 2  |   .0112476   .0339508     0.33   0.741    -.0553919     .077887
+       20 2  |   .0126655   .0222145     0.57   0.569    -.0309378    .0562688
+       21 2  |   .0186649   .0200844     0.93   0.353    -.0207572    .0580871
+       22 2  |   .0109723   .0173954     0.63   0.528    -.0231718    .0451164
+       23 2  |   .0396427   .0460229     0.86   0.389    -.0506923    .1299777
+       24 2  |   .0204356   .0224199     0.91   0.362    -.0235707    .0644418
+       25 2  |  -.0340302   .0297284    -1.14   0.253    -.0923818    .0243214
+       27 2  |   .0391331    .015219     2.57   0.010     .0092608    .0690055
+       28 2  |  -.0236224   .0255527    -0.92   0.356    -.0737779    .0265331
+       29 2  |  -.0146457   .0209289    -0.70   0.484    -.0557255     .026434
+       30 2  |  -.0165148   .0241833    -0.68   0.495    -.0639824    .0309528
+       31 2  |  -.0127382   .0198772    -0.64   0.522    -.0517537    .0262774
+       32 2  |   -.025699   .0237967    -1.08   0.280    -.0724078    .0210099
+       33 2  |   -.019425   .0210243    -0.92   0.356    -.0606921    .0218422
+       34 2  |  -.0496213   .0188256    -2.64   0.009    -.0865727   -.0126698
+       35 2  |  -.0439709   .0230332    -1.91   0.057    -.0891811    .0012394
+       36 2  |   .0231359   .0248113     0.93   0.351    -.0255643    .0718361
+       37 2  |  -.0684348   .0181724    -3.77   0.000     -.104104   -.0327656
+       38 2  |   .0214169   .0242097     0.88   0.377    -.0261025    .0689363
+       39 2  |  -.0185982   .0235233    -0.79   0.429    -.0647703    .0275739
+       40 2  |  -.0096402   .0192372    -0.50   0.616    -.0473995    .0281191
+       52 2  |   .0056591   .0196146     0.29   0.773    -.0328409    .0441591
+             |
+       _cons |   .2339077   .0029878    78.29   0.000     .2280432    .2397721
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      3234        3234           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/bhit_rate/estudy_int_main_full_etwfe.ster saved
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=bhit_bstop_ratio: Black Hits-to-Stops Ratio
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bhit_bstop_ratio
+(dropped 189 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    662,487
+Absorbing 11 HDFE groups                          F(  59,   1085) =     256.62
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.1112
+                                                  Adj R-squared   =     0.1041
+                                                  Within R-sq.    =     0.0003
+Number of clusters (num_dept) =      1,086        Root MSE        =     0.0334
+
+                           (Std. Err. adjusted for 1,086 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+bhit_bstop~o |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   .0003313   .0006622     0.50   0.617     -.000968    .0016306
+         13  |  -.0009463   .0007779    -1.22   0.224    -.0024726      .00058
+         14  |  -.0013916   .0012087    -1.15   0.250    -.0037634    .0009801
+         15  |   .0000334   .0010423     0.03   0.974    -.0020117    .0020786
+         16  |  -.0010322   .0006384    -1.62   0.106    -.0022849    .0002205
+         17  |    .000059   .0005841     0.10   0.920    -.0010872    .0012052
+         18  |  -.0000896   .0004951    -0.18   0.856     -.001061    .0008819
+         19  |  -.0003189   .0007999    -0.40   0.690    -.0018885    .0012507
+         20  |  -.0008208   .0006026    -1.36   0.173    -.0020033    .0003617
+         21  |  -.0005001   .0007798    -0.64   0.521    -.0020302      .00103
+         22  |  -.0007533   .0006549    -1.15   0.250    -.0020383    .0005317
+         23  |  -.0009307   .0004078    -2.28   0.023    -.0017309   -.0001306
+         24  |  -.0006384   .0005435    -1.17   0.240    -.0017048    .0004279
+         25  |  -.0008273   .0005628    -1.47   0.142    -.0019316     .000277
+         26  |          0  (base)
+         27  |  -.0010401   .0004851    -2.14   0.032    -.0019921   -.0000882
+         28  |   .0001678   .0004995     0.34   0.737    -.0008124    .0011479
+         29  |  -.0000389   .0005247    -0.07   0.941    -.0010684    .0009907
+         30  |   .0006305   .0002909     2.17   0.030     .0000596    .0012014
+         31  |  -.0008188   .0006967    -1.18   0.240    -.0021859    .0005483
+         32  |  -.0001652   .0006961    -0.24   0.812    -.0015311    .0012007
+         33  |   -.000212   .0006126    -0.35   0.729    -.0014141      .00099
+         34  |   .0003691   .0007089     0.52   0.603    -.0010218      .00176
+         35  |  -.0000143   .0004574    -0.03   0.975    -.0009117    .0008831
+         36  |  -.0009877   .0009938    -0.99   0.321    -.0029377    .0009624
+         37  |     .00053   .0007379     0.72   0.473    -.0009178    .0019778
+         38  |  -.0019976   .0008498    -2.35   0.019    -.0036651   -.0003302
+         39  |    .000381   .0010191     0.37   0.709    -.0016186    .0023805
+         40  |  -.0010474   .0006638    -1.58   0.115    -.0023499     .000255
+         52  |   -.000585   .0004997    -1.17   0.242    -.0015656    .0003955
+             |
+         scr |
+          2  |    .003796   .0010129     3.75   0.000     .0018084    .0057835
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |  -.0024093   .0018672    -1.29   0.197     -.006073    .0012544
+       13 2  |  -.0036144   .0043735    -0.83   0.409    -.0121958     .004967
+       14 2  |  -.0023659   .0022198    -1.07   0.287    -.0067214    .0019896
+       15 2  |  -.0036755   .0033216    -1.11   0.269     -.010193     .002842
+       16 2  |  -.0001521   .0018143    -0.08   0.933    -.0037121    .0034079
+       17 2  |  -.0028644   .0015743    -1.82   0.069    -.0059534    .0002246
+       18 2  |  -.0033888   .0016379    -2.07   0.039    -.0066027    -.000175
+       19 2  |   .0005898   .0032448     0.18   0.856     -.005777    .0069567
+       20 2  |   .0003128   .0024534     0.13   0.899     -.004501    .0051267
+       21 2  |   .0000802   .0019071     0.04   0.966    -.0036617    .0038222
+       22 2  |   .0002396    .002067     0.12   0.908    -.0038161    .0042953
+       23 2  |   .0029126   .0044996     0.65   0.518    -.0059164    .0117416
+       24 2  |  -.0012104   .0011742    -1.03   0.303    -.0035143    .0010935
+       25 2  |  -.0008156   .0013711    -0.59   0.552    -.0035059    .0018747
+       27 2  |   .0013543   .0014751     0.92   0.359    -.0015401    .0042487
+       28 2  |   -.002199   .0012941    -1.70   0.090    -.0047382    .0003402
+       29 2  |  -.0016912   .0011725    -1.44   0.149    -.0039918    .0006093
+       30 2  |  -.0018476   .0013735    -1.35   0.179    -.0045427    .0008475
+       31 2  |  -.0016794   .0012365    -1.36   0.175    -.0041057    .0007468
+       32 2  |  -.0036035   .0010677    -3.37   0.001    -.0056986   -.0015084
+       33 2  |  -.0026041   .0012706    -2.05   0.041    -.0050973    -.000111
+       34 2  |   -.003077   .0012931    -2.38   0.018    -.0056143   -.0005396
+       35 2  |  -.0038771    .001181    -3.28   0.001    -.0061944   -.0015598
+       36 2  |   .0013369   .0012346     1.08   0.279    -.0010855    .0037593
+       37 2  |  -.0027697   .0013237    -2.09   0.037     -.005367   -.0001724
+       38 2  |   .0079147   .0015015     5.27   0.000     .0049684    .0108609
+       39 2  |   .0114486   .0042076     2.72   0.007     .0031926    .0197047
+       40 2  |   .0064303   .0024331     2.64   0.008     .0016563    .0112043
+       52 2  |   .0090793   .0035077     2.59   0.010     .0021967    .0159619
+             |
+       _cons |   .0106148   .0001411    75.24   0.000     .0103379    .0108916
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5044        5044           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/bhit_bstop_ratio/estudy_int_main_full_etwfe.ster 
+> saved
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=n_stops: Overall Stop Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_stops
+(dropped 5 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,662,125
+Absorbing 11 HDFE groups                          F(  59,   1867) =    7003.35
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.9321
+                                                  Adj R-squared   =     0.9317
+                                                  Within R-sq.    =     0.0065
+Number of clusters (num_dept) =      1,868        Root MSE        =    94.3579
+
+                           (Std. Err. adjusted for 1,868 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+     n_stops |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -6.633323   35.24608    -0.19   0.851    -75.75918    62.49254
+         13  |  -34.71707   45.18563    -0.77   0.442    -123.3367    53.90258
+         14  |  -41.69939   41.64395    -1.00   0.317     -123.373    39.97419
+         15  |   -35.6318   34.25878    -1.04   0.298    -102.8213    31.55773
+         16  |  -105.5402   75.50456    -1.40   0.162    -253.6224    42.54198
+         17  |   55.03922   43.54233     1.26   0.206    -30.35754     140.436
+         18  |   26.01272    39.9251     0.65   0.515     -52.2898    104.3152
+         19  |  -11.73859    41.8927    -0.28   0.779    -93.90003    70.42285
+         20  |  -56.36405   40.87943    -1.38   0.168    -136.5382    23.81014
+         21  |  -35.03914   26.09177    -1.34   0.179    -86.21124    16.13295
+         22  |  -47.66865   34.67031    -1.37   0.169    -115.6653    20.32799
+         23  |  -1.697076   23.43733    -0.07   0.942    -47.66319    44.26904
+         24  |  -30.10373   22.26206    -1.35   0.176    -73.76488    13.55742
+         25  |  -20.28793   19.55968    -1.04   0.300    -58.64906     18.0732
+         26  |          0  (base)
+         27  |  -27.04346   19.17474    -1.41   0.159    -64.64963    10.56271
+         28  |  -73.38984   31.56633    -2.32   0.020    -135.2989   -11.48082
+         29  |  -22.64198   16.30475    -1.39   0.165    -54.61943    9.335475
+         30  |  -36.63961   30.53961    -1.20   0.230    -96.53497    23.25576
+         31  |   -31.9823   44.72804    -0.72   0.475    -119.7045    55.73993
+         32  |  -77.19825   36.35512    -2.12   0.034    -148.4992   -5.897289
+         33  |  -81.14631   31.39515    -2.58   0.010    -142.7196   -19.57303
+         34  |  -78.32953   33.24647    -2.36   0.019    -143.5337   -13.12538
+         35  |  -103.8797   38.91555    -2.67   0.008    -180.2023   -27.55715
+         36  |  -161.0067     62.205    -2.59   0.010    -283.0053   -39.00805
+         37  |  -138.0556    59.9333    -2.30   0.021    -255.5989   -20.51227
+         38  |  -266.7971   106.5283    -2.50   0.012    -475.7243   -57.86998
+         39  |  -274.6547   124.0206    -2.21   0.027    -517.8884   -31.42101
+         40  |  -328.3312   145.9478    -2.25   0.025    -614.5692   -42.09318
+         52  |  -213.3958   96.63229    -2.21   0.027    -402.9144    -23.8771
+             |
+         scr |
+          2  |    -68.976    49.8719    -1.38   0.167    -166.7865    28.83455
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |   10.28925   60.08053     0.17   0.864    -107.5428    128.1213
+       13 2  |   25.45902   67.30657     0.38   0.705     -106.545     157.463
+       14 2  |   44.11622   59.48609     0.74   0.458    -72.55001    160.7824
+       15 2  |   34.29085   43.98193     0.78   0.436    -51.96806    120.5498
+       16 2  |   99.38845   77.73167     1.28   0.201    -53.06166    251.8386
+       17 2  |  -34.43315   71.45748    -0.48   0.630    -174.5781    105.7118
+       18 2  |  -37.50013    47.0086    -0.80   0.425    -129.6951    54.69481
+       19 2  |   .4297938   51.85968     0.01   0.993    -101.2792    102.1388
+       20 2  |   52.44456   46.12352     1.14   0.256    -38.01452    142.9036
+       21 2  |  -5.122324   30.35476    -0.17   0.866    -64.65516    54.41052
+       22 2  |   32.32739   32.34415     1.00   0.318    -31.10711    95.76188
+       23 2  |   -14.4183   23.85764    -0.60   0.546    -61.20874    32.37215
+       24 2  |   6.271117   28.16459     0.22   0.824    -48.96627    61.50851
+       25 2  |   8.568872   27.76049     0.31   0.758    -45.87599    63.01373
+       27 2  |   33.44815   20.52507     1.63   0.103    -6.806338    73.70265
+       28 2  |   68.40468    33.9084     2.02   0.044     1.902325     134.907
+       29 2  |  -5.910585   25.19011    -0.23   0.815    -55.31432    43.49315
+       30 2  |   9.366109   35.35083     0.26   0.791     -59.9652    78.69742
+       31 2  |   9.780232   47.80065     0.20   0.838    -83.96809    103.5286
+       32 2  |   30.31345    46.8005     0.65   0.517    -61.47334    122.1003
+       33 2  |   59.24073   39.75225     1.49   0.136    -18.72279    137.2043
+       34 2  |   66.81359   37.27453     1.79   0.073    -6.290545    139.9177
+       35 2  |    64.4962   44.97265     1.43   0.152    -23.70575    152.6982
+       36 2  |    124.011   64.14512     1.93   0.053    -1.792739    249.8146
+       37 2  |   123.8245   61.82689     2.00   0.045     2.567398    245.0816
+       38 2  |   239.8355   109.4124     2.19   0.029     25.25196     454.419
+       39 2  |   251.2271   127.6042     1.97   0.049     .9653156     501.489
+       40 2  |   310.1957   148.4349     2.09   0.037      19.0799    601.3116
+       52 2  |   162.0768   102.7519     1.58   0.115    -39.44387    363.5974
+             |
+       _cons |   49.80304   .6987847    71.27   0.000     48.43256    51.17352
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      8323        8323           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/n_stops/estudy_int_main_full_etwfe.ster saved
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=n_bstops: Black Stop Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_bstops
+(dropped 5 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,662,125
+Absorbing 11 HDFE groups                          F(  59,   1867) =    2251.70
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.9061
+                                                  Adj R-squared   =     0.9057
+                                                  Within R-sq.    =     0.0072
+Number of clusters (num_dept) =      1,868        Root MSE        =    15.6819
+
+                           (Std. Err. adjusted for 1,868 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+    n_bstops |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -9.284461   8.354687    -1.11   0.267    -25.66997    7.101047
+         13  |  -10.27285   9.721986    -1.06   0.291    -29.33995    8.794256
+         14  |  -7.334191   11.49174    -0.64   0.523     -29.8722    15.20382
+         15  |  -2.782504   8.653691    -0.32   0.748    -19.75443    14.18942
+         16  |  -9.330191   13.02326    -0.72   0.474    -34.87186    16.21148
+         17  |   7.912195   8.084867     0.98   0.328    -7.944132    23.76852
+         18  |   .3588427   8.727421     0.04   0.967    -16.75768    17.47537
+         19  |  -8.334247   8.326722    -1.00   0.317    -24.66491    7.996416
+         20  |  -15.57867   9.381918    -1.66   0.097    -33.97882    2.821483
+         21  |   -8.35213   6.115544    -1.37   0.172    -20.34615    3.641892
+         22  |  -15.51128    7.99914    -1.94   0.053    -31.19948     .176917
+         23  |  -4.185689   6.509909    -0.64   0.520    -16.95315    8.581775
+         24  |  -11.62304   8.179424    -1.42   0.155    -27.66482    4.418735
+         25  |  -6.375554   6.253649    -1.02   0.308    -18.64043    5.889323
+         26  |          0  (base)
+         27  |  -10.20005   6.386607    -1.60   0.110    -22.72569    2.325589
+         28  |  -16.51302   8.443453    -1.96   0.051    -33.07262    .0465757
+         29  |  -9.741265   5.715606    -1.70   0.088    -20.95091    1.468384
+         30  |  -11.21501   7.004462    -1.60   0.110     -24.9524    2.522394
+         31  |  -16.24619   10.89476    -1.49   0.136    -37.61338    5.120991
+         32  |  -22.29087   9.794986    -2.28   0.023    -41.50115   -3.080601
+         33  |  -23.34089   9.030402    -2.58   0.010    -41.05163   -5.630147
+         34  |  -27.67227   10.20488    -2.71   0.007    -47.68644   -7.658103
+         35  |  -33.88067   12.60064    -2.69   0.007    -58.59349   -9.167841
+         36  |  -34.05089   12.30988    -2.77   0.006    -58.19347   -9.908316
+         37  |  -33.89144    15.3689    -2.21   0.028    -64.03346   -3.749417
+         38  |   -47.7963   22.01368    -2.17   0.030     -90.9703   -4.622299
+         39  |  -47.39971   23.26827    -2.04   0.042    -93.03427   -1.765154
+         40  |  -58.26315   26.16704    -2.23   0.026    -109.5829   -6.943424
+         52  |  -39.86893   16.82197    -2.37   0.018    -72.86078   -6.877085
+             |
+         scr |
+          2  |  -24.27655   12.53711    -1.94   0.053    -48.86476    .3116679
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |   3.699418   8.793884     0.42   0.674    -13.54746    20.94629
+       13 2  |   3.834896    11.3255     0.34   0.735    -18.37708    26.04687
+       14 2  |   3.673657   13.16029     0.28   0.780    -22.13676    29.48408
+       15 2  |  -3.397715   9.175025    -0.37   0.711     -21.3921    14.59667
+       16 2  |   3.960188   13.16759     0.30   0.764    -21.86455    29.78492
+       17 2  |  -11.76752   10.40451    -1.13   0.258    -32.17322    8.638177
+       18 2  |  -6.658268   9.054541    -0.74   0.462    -24.41635    11.09982
+       19 2  |   1.310595   9.473021     0.14   0.890    -17.26823    19.88942
+       20 2  |   9.101033   9.068665     1.00   0.316    -8.684755    26.88682
+       21 2  |  -5.511987   7.526052    -0.73   0.464    -20.27235    9.248372
+       22 2  |   9.925036   6.409028     1.55   0.122    -2.644576    22.49465
+       23 2  |  -1.622922   5.393207    -0.30   0.764    -12.20027    8.954427
+       24 2  |   9.613718   8.569744     1.12   0.262    -7.193567      26.421
+       25 2  |   4.507006   7.176158     0.63   0.530    -9.567129    18.58114
+       27 2  |   10.98892   6.561247     1.67   0.094    -1.879234    23.85707
+       28 2  |   15.34466    8.59412     1.79   0.074    -1.510429    32.19976
+       29 2  |   2.695431   5.753146     0.47   0.639    -8.587842     13.9787
+       30 2  |   5.385345   8.490974     0.63   0.526    -11.26745    22.03814
+       31 2  |   13.96855   10.98811     1.27   0.204    -7.581723    35.51883
+       32 2  |   16.67814   10.27022     1.62   0.105    -3.464175    36.82046
+       33 2  |   19.31427    11.5113     1.68   0.094    -3.262103    41.89065
+       34 2  |   22.06449   10.97913     2.01   0.045      .531843    43.59714
+       35 2  |   26.39368   12.88953     2.05   0.041     1.114288    51.67308
+       36 2  |   25.62435   13.21063     1.94   0.053    -.2848104     51.5335
+       37 2  |   27.89635   16.20296     1.72   0.085    -3.881458    59.67416
+       38 2  |   38.75887   23.45573     1.65   0.099    -7.243337    84.76108
+       39 2  |     37.818   24.62086     1.54   0.125     -10.4693     86.1053
+       40 2  |   52.32776   27.51426     1.90   0.057    -1.634195    106.2897
+       52 2  |   23.76669   18.63565     1.28   0.202     -12.7822    60.31558
+             |
+       _cons |    9.27346     .18426    50.33   0.000     8.912083    9.634838
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      8323        8323           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/n_bstops/estudy_int_main_full_etwfe.ster saved
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=n_searches: Overall Search Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_searches
+(dropped 2 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,316,377
+Absorbing 11 HDFE groups                          F(  59,   1345) =   40821.21
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.8868
+                                                  Adj R-squared   =     0.8862
+                                                  Within R-sq.    =     0.0030
+Number of clusters (num_dept) =      1,346        Root MSE        =     3.9050
+
+                           (Std. Err. adjusted for 1,346 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+  n_searches |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   .4606083   1.505681     0.31   0.760    -2.493131    3.414348
+         13  |   -1.31279   1.740743    -0.75   0.451    -4.727656    2.102076
+         14  |  -3.443438   2.249518    -1.53   0.126    -7.856383    .9695071
+         15  |  -1.759809   2.162029    -0.81   0.416    -6.001124    2.481507
+         16  |  -3.387611    2.56558    -1.32   0.187    -8.420585    1.645363
+         17  |  -1.109508   1.381521    -0.80   0.422    -3.819678    1.600662
+         18  |   .1611154   1.215085     0.13   0.895    -2.222552    2.544783
+         19  |  -.6993103   1.148254    -0.61   0.543    -2.951873    1.553253
+         20  |  -.4121865   .6535985    -0.63   0.528     -1.69437    .8699968
+         21  |      -2.35   1.787087    -1.31   0.189    -5.855782    1.155782
+         22  |   -1.10875   .8781597    -1.26   0.207    -2.831461    .6139621
+         23  |   -.823393   1.384111    -0.59   0.552    -3.538645    1.891859
+         24  |  -2.044252   1.145946    -1.78   0.075    -4.292288     .203784
+         25  |  -1.570007    .954397    -1.65   0.100    -3.442275    .3022619
+         26  |          0  (base)
+         27  |  -1.886561   .8508583    -2.22   0.027    -3.555715   -.2174076
+         28  |  -1.744541   1.124679    -1.55   0.121    -3.950857    .4617736
+         29  |   -1.42303   .9913531    -1.44   0.151    -3.367796    .5217364
+         30  |   .2544139   .7821943     0.33   0.745     -1.28004    1.788867
+         31  |  -1.525601     1.2844    -1.19   0.235    -4.045247    .9940441
+         32  |  -2.558648   1.392837    -1.84   0.066    -5.291017    .1737209
+         33  |  -1.639005   1.054583    -1.55   0.120    -3.707812    .4298014
+         34  |   -3.29223   1.401024    -2.35   0.019     -6.04066   -.5437994
+         35  |   -5.24549   1.881338    -2.79   0.005    -8.936166   -1.554815
+         36  |  -4.198027   1.819159    -2.31   0.021    -7.766725   -.6293281
+         37  |  -4.677513   2.055249    -2.28   0.023    -8.709356   -.6456709
+         38  |  -8.369919   3.310549    -2.53   0.012    -14.86432   -1.875518
+         39  |  -7.615704   3.613332    -2.11   0.035    -14.70408   -.5273249
+         40  |   -7.15873   3.701512    -1.93   0.053     -14.4201    .1026347
+         52  |  -7.034297   3.900563    -1.80   0.072    -14.68615    .6175529
+             |
+         scr |
+          2  |  -3.843859   1.181722    -3.25   0.001    -6.162078    -1.52564
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |  -1.219192   1.777552    -0.69   0.493    -4.706267    2.267883
+       13 2  |    .715254   1.339824     0.53   0.594    -1.913118    3.343626
+       14 2  |   3.259945   1.996545     1.63   0.103     -.656735    7.176625
+       15 2  |   1.593771   1.866183     0.85   0.393    -2.067176    5.254718
+       16 2  |   3.535916   2.324326     1.52   0.128    -1.023781    8.095614
+       17 2  |   .6550967   1.371579     0.48   0.633    -2.035569    3.345763
+       18 2  |  -1.156248   1.547368    -0.75   0.455    -4.191766     1.87927
+       19 2  |  -.3023811   1.408795    -0.21   0.830    -3.066055    2.461293
+       20 2  |  -.0799131   .9385178    -0.09   0.932    -1.921031    1.761205
+       21 2  |   1.577362   1.809553     0.87   0.384    -1.972491    5.127215
+       22 2  |    .152277   1.386223     0.11   0.913    -2.567116     2.87167
+       23 2  |   1.107576   1.346736     0.82   0.411    -1.534356    3.749508
+       24 2  |   2.384279   1.574276     1.51   0.130    -.7040242    5.472582
+       25 2  |   1.954362   1.173886     1.66   0.096    -.3484844    4.257209
+       27 2  |   2.984167   1.221621     2.44   0.015     .5876768    5.380657
+       28 2  |   1.942756   1.471344     1.32   0.187    -.9436229    4.829135
+       29 2  |   .7556545   1.121145     0.67   0.500    -1.443728    2.955037
+       30 2  |  -1.093678   1.010093    -1.08   0.279    -3.075208    .8878521
+       31 2  |   .6359177   1.337214     0.48   0.634    -1.987334    3.259169
+       32 2  |   2.083897   1.666846     1.25   0.211    -1.186004    5.353798
+       33 2  |   1.383876   1.502172     0.92   0.357    -1.562979    4.330732
+       34 2  |   3.437319   1.966468     1.75   0.081    -.4203594    7.294998
+       35 2  |    4.59638   2.271908     2.02   0.043     .1395123    9.053248
+       36 2  |    .012543   3.216564     0.00   0.997    -6.297484     6.32257
+       37 2  |  -1.030551   3.945398    -0.26   0.794    -8.770354    6.709251
+       38 2  |   4.170182   4.206547     0.99   0.322    -4.081925    12.42229
+       39 2  |   2.895094   4.016152     0.72   0.471    -4.983509     10.7737
+       40 2  |   4.459244   3.997793     1.12   0.265    -3.383344    12.30183
+       52 2  |   4.576816   4.158634     1.10   0.271    -3.581298    12.73493
+             |
+       _cons |   1.358443   .0183913    73.86   0.000     1.322364    1.394521
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      6012        6012           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/n_searches/estudy_int_main_full_etwfe.ster saved
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=n_bsearches: Black Search Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_bsearches
+(dropped 2 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,316,377
+Absorbing 11 HDFE groups                          F(  59,   1345) =   82786.13
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.7868
+                                                  Adj R-squared   =     0.7858
+                                                  Within R-sq.    =     0.0043
+Number of clusters (num_dept) =      1,346        Root MSE        =     1.0955
+
+                           (Std. Err. adjusted for 1,346 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+ n_bsearches |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.5822633    .474252    -1.23   0.220    -1.512617    .3480907
+         13  |  -.5021696    .662628    -0.76   0.449    -1.802066    .7977272
+         14  |  -1.094528   .5796928    -1.89   0.059    -2.231728    .0426726
+         15  |  -.0928362    .468973    -0.20   0.843    -1.012834    .8271618
+         16  |  -.2359909   .5243295    -0.45   0.653    -1.264584    .7926017
+         17  |   .0690393   .4062773     0.17   0.865    -.7279668    .8660454
+         18  |   .1361129   .3840666     0.35   0.723    -.6173218    .8895477
+         19  |  -.3268341   .3696023    -0.88   0.377    -1.051894    .3982255
+         20  |  -.3990951    .453401    -0.88   0.379    -1.288545     .490355
+         21  |  -.8738283   .5730849    -1.52   0.128    -1.998066    .2504091
+         22  |   -.686814   .4588117    -1.50   0.135    -1.586878    .2132504
+         23  |  -.2237201     .35627    -0.63   0.530    -.9226255    .4751853
+         24  |  -.9598428   .4480805    -2.14   0.032    -1.838855   -.0808302
+         25  |  -.9479426   .4566637    -2.08   0.038    -1.843793   -.0520921
+         26  |          0  (base)
+         27  |  -1.152528   .4859651    -2.37   0.018     -2.10586    -.199196
+         28  |  -.9073405     .45334    -2.00   0.046    -1.796671   -.0180102
+         29  |  -.8466486   .5618627    -1.51   0.132    -1.948871    .2555739
+         30  |  -.4248456   .3291719    -1.29   0.197    -1.070592    .2209006
+         31  |  -.9571042   .5968693    -1.60   0.109       -2.128    .2137919
+         32  |  -1.142112   .5332339    -2.14   0.032    -2.188173   -.0960514
+         33  |  -1.074682   .5000806    -2.15   0.032    -2.055705   -.0936594
+         34  |   -2.07057   .8516684    -2.43   0.015    -3.741313   -.3998275
+         35  |  -2.023846   .8822728    -2.29   0.022    -3.754626   -.2930658
+         36  |  -1.681859   .7151895    -2.35   0.019    -3.084867   -.2788506
+         37  |  -1.700274    .644346    -2.64   0.008    -2.964306   -.4362412
+         38  |  -2.832603   .8993347    -3.15   0.002    -4.596854   -1.068352
+         39  |  -2.024354   .7466717    -2.71   0.007    -3.489122   -.5595863
+         40  |  -1.880501   .9035584    -2.08   0.038    -3.653038   -.1079643
+         52  |  -1.918979   .7113322    -2.70   0.007    -3.314421   -.5235381
+             |
+         scr |
+          2  |  -1.744475   .5107522    -3.42   0.001    -2.746433   -.7425178
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |   .3528162   .4099315     0.86   0.390    -.4513585    1.156991
+       13 2  |   .3437092   .4632783     0.74   0.458    -.5651174    1.252536
+       14 2  |   1.121706   .5316406     2.11   0.035     .0787707    2.164641
+       15 2  |  -.0380485   .4076303    -0.09   0.926    -.8377087    .7616118
+       16 2  |   .6015144   .5786009     1.04   0.299     -.533544    1.736573
+       17 2  |   -.458198   .5335896    -0.86   0.391    -1.504956    .5885603
+       18 2  |  -.6696095   .6309941    -1.06   0.289    -1.907449    .5682301
+       19 2  |   .0074886   .5189394     0.01   0.988     -1.01053    1.025507
+       20 2  |   .2351951   .6449177     0.36   0.715    -1.029959    1.500349
+       21 2  |   .4389721    .760421     0.58   0.564    -1.052768    1.930712
+       22 2  |  -.0250911   .8497618    -0.03   0.976    -1.692094    1.641912
+       23 2  |   .2998388   .6092947     0.49   0.623    -.8954324     1.49511
+       24 2  |   .9071305   .5660055     1.60   0.109    -.2032191     2.01748
+       25 2  |   .6513386   .8445137     0.77   0.441    -1.005369    2.308046
+       27 2  |   1.934706   .7584556     2.55   0.011     .4468214    3.422591
+       28 2  |   .9899938   .6481263     1.53   0.127    -.2814546    2.261442
+       29 2  |   .2765188   .6356484     0.44   0.664    -.9704514    1.523489
+       30 2  |   .1802664   .4272606     0.42   0.673    -.6579032    1.018436
+       31 2  |   .1914344   .8410399     0.23   0.820    -1.458458    1.841327
+       32 2  |   .6484265   .8302914     0.78   0.435    -.9803805    2.277234
+       33 2  |   .6453244   .8553608     0.75   0.451    -1.032662    2.323311
+       34 2  |   1.910913     1.1757     1.63   0.104    -.3954929    4.217319
+       35 2  |   1.504817   1.042259     1.44   0.149     -.539813    3.549447
+       36 2  |  -.5157353   1.397534    -0.37   0.712    -3.257319    2.225848
+       37 2  |   -1.06231   1.593717    -0.67   0.505    -4.188751    2.064132
+       38 2  |   .7670134   1.296733     0.59   0.554    -1.776826    3.310853
+       39 2  |  -.8755481   1.495901    -0.59   0.558      -3.8101    2.059004
+       40 2  |  -.1283419   1.543261    -0.08   0.934    -3.155802    2.899118
+       52 2  |  -.1273818   1.282208    -0.10   0.921    -2.642728    2.387964
+             |
+       _cons |   .3926554   .0058493    67.13   0.000     .3811806    .4041301
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      6012        6012           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/n_bsearches/estudy_int_main_full_etwfe.ster saved
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=n_hits: Overall Hit Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_hits
+(dropped 2 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,248,626
+Absorbing 11 HDFE groups                          F(  59,   1098) =   21708.19
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.8855
+                                                  Adj R-squared   =     0.8850
+                                                  Within R-sq.    =     0.0036
+Number of clusters (num_dept) =      1,099        Root MSE        =     0.9718
+
+                           (Std. Err. adjusted for 1,099 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+      n_hits |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.3584461   .5321566    -0.67   0.501    -1.402605    .6857127
+         13  |   .1989802   .6176553     0.32   0.747    -1.012938    1.410898
+         14  |  -1.337354   1.136966    -1.18   0.240    -3.568226    .8935183
+         15  |  -.1585368   .8041749    -0.20   0.844     -1.73643    1.419356
+         16  |  -1.504665   1.324062    -1.14   0.256    -4.102643    1.093314
+         17  |  -.1128247   1.028011    -0.11   0.913    -2.129913    1.904263
+         18  |  -1.025948   1.001982    -1.02   0.306    -2.991964    .9400672
+         19  |  -.9118275   1.041901    -0.88   0.382    -2.956169    1.132514
+         20  |   -.391039   .3561824    -1.10   0.273    -1.089914     .307836
+         21  |  -.7210097   1.158062    -0.62   0.534    -2.993274    1.551254
+         22  |  -.8896173   .8497766    -1.05   0.295    -2.556987    .7777523
+         23  |  -.4113162   .8566096    -0.48   0.631    -2.092093    1.269461
+         24  |  -1.234492   .9916626    -1.24   0.213     -3.18026    .7112754
+         25  |  -.2817098   .3444587    -0.82   0.414    -.9575815     .394162
+         26  |          0  (base)
+         27  |  -1.039817   .6339133    -1.64   0.101    -2.283636    .2040008
+         28  |  -.4126828    .504351    -0.82   0.413    -1.402284    .5769179
+         29  |  -.7175006   .6824711    -1.05   0.293    -2.056595    .6215942
+         30  |  -.1147509   .4430199    -0.26   0.796     -.984012    .7545103
+         31  |  -1.082891   .8221488    -1.32   0.188    -2.696051    .5302693
+         32  |  -1.401503   .8565367    -1.64   0.102    -3.082136     .279131
+         33  |  -1.016898   .7155977    -1.42   0.156    -2.420991    .3871955
+         34  |  -1.473234   .8741655    -1.69   0.092    -3.188457    .2419901
+         35  |  -1.836473    .911124    -2.02   0.044    -3.624214   -.0487319
+         36  |  -1.962085   1.000363    -1.96   0.050    -3.924924    .0007543
+         37  |    -1.3701   .7825298    -1.75   0.080    -2.905523    .1653223
+         38  |  -2.794602   1.470349    -1.90   0.058    -5.679614     .090409
+         39  |   -1.78647   1.393191    -1.28   0.200    -4.520088    .9471473
+         40  |  -2.575068   1.628068    -1.58   0.114    -5.769543    .6194078
+         52  |   -2.05718   1.161486    -1.77   0.077    -4.336162    .2218023
+             |
+         scr |
+          2  |   -.978199   .6874179    -1.42   0.155       -2.327    .3706021
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |    .105467   .4921673     0.21   0.830    -.8602277    1.071162
+       13 2  |  -.5355985   .5739564    -0.93   0.351    -1.661774    .5905767
+       14 2  |   1.053492   1.150628     0.92   0.360    -1.204187     3.31117
+       15 2  |  -.0849259   .8154288    -0.10   0.917    -1.684901    1.515049
+       16 2  |   1.484156   1.284115     1.16   0.248    -1.035441    4.003753
+       17 2  |  -.1339666    1.03512    -0.13   0.897    -2.165003     1.89707
+       18 2  |   .8585974   1.018396     0.84   0.399    -1.139625     2.85682
+       19 2  |   .8639649   1.047373     0.82   0.410    -1.191113    2.919043
+       20 2  |   .4249348   .3729238     1.14   0.255     -.306789    1.156659
+       21 2  |    .722027   1.158814     0.62   0.533    -1.551713    2.995767
+       22 2  |    .952398   .8627527     1.10   0.270    -.7404322    2.645228
+       23 2  |   .5847446    .886749     0.66   0.510    -1.155169    2.324659
+       24 2  |   1.117719   1.018953     1.10   0.273    -.8815963    3.117035
+       25 2  |   .2785767   .3886295     0.72   0.474    -.4839637    1.041117
+       27 2  |   1.383891   .6666842     2.08   0.038     .0757718     2.69201
+       28 2  |   .3809831   .5300439     0.72   0.472    -.6590303    1.420996
+       29 2  |   .6511777   .7099723     0.92   0.359    -.7418779    2.044233
+       30 2  |   .0033288    .461714     0.01   0.994    -.9026126    .9092702
+       31 2  |   .8808285   .8166947     1.08   0.281      -.72163    2.483287
+       32 2  |   1.252134   .8920639     1.40   0.161    -.4982084    3.002477
+       33 2  |   .8602796   .7735243     1.11   0.266    -.6574733    2.378032
+       34 2  |   1.353212   .8991639     1.50   0.133    -.4110622    3.117485
+       35 2  |   1.463046   .9647902     1.52   0.130    -.4299948    3.356087
+       36 2  |   1.541208   1.025867     1.50   0.133    -.4716734    3.554089
+       37 2  |    .680012   .9042959     0.75   0.452    -1.094331    2.454355
+       38 2  |   2.486483   1.465579     1.70   0.090    -.3891691    5.362135
+       39 2  |   1.622976   1.379754     1.18   0.240    -1.084276    4.330228
+       40 2  |   2.345436   1.644105     1.43   0.154    -.8805068    5.571378
+       52 2  |    2.07388   1.189455     1.74   0.082    -.2599816    4.407742
+             |
+       _cons |    .304674   .0099319    30.68   0.000     .2851864    .3241616
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5380        5380           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/n_hits/estudy_int_main_full_etwfe.ster saved
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=n_bhits: Black Hit Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_bhits
+(dropped 2 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,248,626
+Absorbing 11 HDFE groups                          F(  59,   1098) =    5943.39
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.6382
+                                                  Adj R-squared   =     0.6366
+                                                  Within R-sq.    =     0.0020
+Number of clusters (num_dept) =      1,099        Root MSE        =     0.4226
+
+                           (Std. Err. adjusted for 1,099 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+     n_bhits |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.1746516   .2171715    -0.80   0.421    -.6007696    .2514665
+         13  |  -.1991953   .1944379    -1.02   0.306    -.5807071    .1823164
+         14  |  -.5344752   .3355718    -1.59   0.112     -1.19291    .1239592
+         15  |   .0712139   .3035542     0.23   0.815    -.5243979    .6668257
+         16  |  -.3268744   .3245141    -1.01   0.314    -.9636123    .3098635
+         17  |   .0432626   .2339787     0.18   0.853    -.4158332    .5023585
+         18  |  -.0005318   .1189621    -0.00   0.996    -.2339505    .2328869
+         19  |  -.2684694    .264008    -1.02   0.309    -.7864865    .2495477
+         20  |  -.2277213   .1700085    -1.34   0.181    -.5612996     .105857
+         21  |  -.2780851   .2922144    -0.95   0.341    -.8514469    .2952766
+         22  |  -.4634803   .3085218    -1.50   0.133    -1.068839    .1418786
+         23  |  -.2753439   .2423241    -1.14   0.256    -.7508144    .2001267
+         24  |    -.40724   .2444559    -1.67   0.096    -.8868935    .0724134
+         25  |  -.3694293   .2599794    -1.42   0.156     -.879542    .1406833
+         26  |          0  (base)
+         27  |  -.4747623   .2570582    -1.85   0.065    -.9791431    .0296185
+         28  |  -.2823841   .2433818    -1.16   0.246    -.7599302    .1951619
+         29  |  -.3305873   .2787368    -1.19   0.236    -.8775044    .2163297
+         30  |   -.106845   .1597054    -0.67   0.504    -.4202073    .2065173
+         31  |  -.4926327   .3484955    -1.41   0.158    -1.176425    .1911597
+         32  |   -.406469   .2929896    -1.39   0.166    -.9813518    .1684138
+         33  |  -.3943567   .2583276    -1.53   0.127    -.9012282    .1125147
+         34  |  -.4056734   .2222987    -1.82   0.068    -.8418515    .0305048
+         35  |  -.5090079   .2513309    -2.03   0.043    -1.002151   -.0158648
+         36  |  -.6524643   .3555861    -1.83   0.067    -1.350169    .0452407
+         37  |   -.287778   .2427984    -1.19   0.236    -.7641793    .1886233
+         38  |  -.9808661   .4294504    -2.28   0.023    -1.823502   -.1382299
+         39  |  -.3383003   .4279193    -0.79   0.429    -1.177932    .5013316
+         40  |   -.675923    .454267    -1.49   0.137    -1.567253    .2154065
+         52  |  -.6177815   .2838408    -2.18   0.030    -1.174713     -.06085
+             |
+         scr |
+          2  |  -.1624613   .2617063    -0.62   0.535    -.6759624    .3510397
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |   .0058544   .2222825     0.03   0.979    -.4302921    .4420009
+       13 2  |   -.073765   .2354338    -0.31   0.754    -.5357161     .388186
+       14 2  |   .3374965   .3632352     0.93   0.353    -.3752171     1.05021
+       15 2  |  -.2685899   .3484425    -0.77   0.441    -.9522784    .4150985
+       16 2  |   .2281593    .322786     0.71   0.480    -.4051878    .8615064
+       17 2  |  -.2284089   .2562236    -0.89   0.373    -.7311521    .2743344
+       18 2  |  -.2044709   .1580816    -1.29   0.196    -.5146469    .1057052
+       19 2  |   .1959614   .2889139     0.68   0.498    -.3709244    .7628472
+       20 2  |   .2142291   .2076685     1.03   0.302    -.1932429    .6217012
+       21 2  |   .2123988   .3068401     0.69   0.489    -.3896604     .814458
+       22 2  |   .3505781    .326401     1.07   0.283     -.289862    .9910183
+       23 2  |   .3491285    .298061     1.17   0.242    -.2357049    .9339619
+       24 2  |   .2697231   .2736388     0.99   0.325    -.2671909    .8066371
+       25 2  |   .1628165   .3236491     0.50   0.615    -.4722241    .7978572
+       27 2  |   .7203352   .2991422     2.41   0.016     .1333803     1.30729
+       28 2  |   .1587218   .2946801     0.54   0.590    -.4194778    .7369215
+       29 2  |   .1557067   .3298397     0.47   0.637    -.4914807    .8028941
+       30 2  |   .0039667   .2116415     0.02   0.985    -.4113008    .4192341
+       31 2  |   .1691085   .4183825     0.40   0.686    -.6518111    .9900281
+       32 2  |    .119278   .3608519     0.33   0.741    -.5887592    .8273152
+       33 2  |   .1055586   .3413102     0.31   0.757    -.5641353    .7752526
+       34 2  |   .2101307   .2490037     0.84   0.399    -.2784462    .6987076
+       35 2  |   .1464089   .3259213     0.45   0.653    -.4930899    .7859078
+       36 2  |   .3202822    .390191     0.82   0.412    -.4453221    1.085886
+       37 2  |  -.2059111   .3452337    -0.60   0.551    -.8833034    .4714812
+       38 2  |   .6748244   .4312459     1.56   0.118    -.1713347    1.520983
+       39 2  |   .0649259   .4528742     0.14   0.886    -.8236708    .9535226
+       40 2  |   .2595709   .5011343     0.52   0.605    -.7237182     1.24286
+       52 2  |     .36647   .3140847     1.17   0.244    -.2498041    .9827441
+             |
+       _cons |   .0977536   .0031072    31.46   0.000     .0916568    .1038503
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5380        5380           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/n_bhits/estudy_int_main_full_etwfe.ster saved
+(1,643,246 observations deleted)
+file 2000_data/500_working/14_days/eq4_esamples_full_etwfe.dta saved
+(3,996 real changes made)
+(4,050 real changes made)
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=bstop_share: Black Share of Stops
+*********************************************************************
+(7 observations deleted)
+(266 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bstop_share
+(dropped 5 singleton observations)
+(MWFE estimator converged in 8 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,645,724
+Absorbing 11 HDFE groups                          F(  59,   1848) =     791.15
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.7976
+                                                  Adj R-squared   =     0.7966
+                                                  Within R-sq.    =     0.0002
+Number of clusters (num_dept) =      1,849        Root MSE        =     0.0731
+
+                           (Std. Err. adjusted for 1,849 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+ bstop_share |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.0024702   .0022848    -1.08   0.280    -.0069512    .0020108
+         13  |  -.0024731    .003485    -0.71   0.478    -.0093081     .004362
+         14  |   -.002543   .0025254    -1.01   0.314     -.007496      .00241
+         15  |  -.0020281   .0025222    -0.80   0.421    -.0069748    .0029186
+         16  |  -.0019152   .0032843    -0.58   0.560    -.0083565    .0045261
+         17  |   -.003985   .0029433    -1.35   0.176    -.0097576    .0017876
+         18  |  -.0028432   .0031313    -0.91   0.364    -.0089845    .0032981
+         19  |  -.0030563   .0024754    -1.23   0.217    -.0079112    .0017986
+         20  |  -.0029939   .0024849    -1.20   0.228    -.0078674    .0018796
+         21  |  -.0016741    .001115    -1.50   0.133    -.0038609    .0005126
+         22  |  -.0035032   .0021915    -1.60   0.110    -.0078012    .0007948
+         23  |  -.0012931   .0019405    -0.67   0.505     -.005099    .0025128
+         24  |  -.0023041   .0014642    -1.57   0.116    -.0051757    .0005675
+         25  |  -.0013871   .0008675    -1.60   0.110    -.0030885    .0003142
+         26  |          0  (base)
+         27  |  -.0026935   .0015696    -1.72   0.086    -.0057718    .0003848
+         28  |  -.0040575   .0024316    -1.67   0.095    -.0088264    .0007114
+         29  |  -.0032682   .0013705    -2.38   0.017     -.005956   -.0005804
+         30  |  -.0019179   .0010137    -1.89   0.059     -.003906    .0000703
+         31  |  -.0025901   .0018606    -1.39   0.164    -.0062392    .0010589
+         32  |  -.0026476   .0023779    -1.11   0.266    -.0073114    .0020161
+         33  |  -.0031055    .002041    -1.52   0.128    -.0071085    .0008974
+         34  |  -.0061799   .0020544    -3.01   0.003    -.0102091   -.0021506
+         35  |  -.0043542   .0029603    -1.47   0.141    -.0101601    .0014516
+         36  |  -.0054573   .0031575    -1.73   0.084    -.0116499    .0007352
+         37  |  -.0027079   .0032672    -0.83   0.407    -.0091158    .0036999
+         38  |  -.0031618   .0026069    -1.21   0.225    -.0082747     .001951
+         39  |  -.0007284   .0028217    -0.26   0.796    -.0062625    .0048056
+         40  |  -.0049616   .0035117    -1.41   0.158    -.0118489    .0019258
+         52  |  -.0061758   .0020913    -2.95   0.003    -.0102774   -.0020743
+             |
+         scr |
+          2  |   .0054169   .0042317     1.28   0.201    -.0028826    .0137163
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |  -.0017654   .0030513    -0.58   0.563    -.0077497    .0042189
+       13 2  |   .0042068   .0057456     0.73   0.464    -.0070618    .0154754
+       14 2  |    .007641   .0032044     2.38   0.017     .0013563    .0139257
+       15 2  |     -.0036   .0036471    -0.99   0.324    -.0107529    .0035529
+       16 2  |  -.0017315   .0057528    -0.30   0.763    -.0130142    .0095512
+       17 2  |  -.0049248   .0052891    -0.93   0.352    -.0152981    .0054484
+       18 2  |  -.0018468   .0059253    -0.31   0.755    -.0134679    .0097742
+       19 2  |  -.0000732   .0048711    -0.02   0.988    -.0096267    .0094803
+       20 2  |  -.0044308   .0045189    -0.98   0.327    -.0132935     .004432
+       21 2  |  -.0064285   .0026523    -2.42   0.015    -.0116304   -.0012267
+       22 2  |  -.0001477   .0039695    -0.04   0.970    -.0079327    .0076374
+       23 2  |   -.007727   .0046529    -1.66   0.097    -.0168526    .0013985
+       24 2  |  -.0010354   .0026708    -0.39   0.698    -.0062736    .0042028
+       25 2  |   .0011568   .0025666     0.45   0.652     -.003877    .0061905
+       27 2  |  -.0020765   .0035352    -0.59   0.557    -.0090099     .004857
+       28 2  |    .001076    .002808     0.38   0.702    -.0044313    .0065832
+       29 2  |  -.0004369   .0035478    -0.12   0.902    -.0073952    .0065213
+       30 2  |   .0033856   .0018673     1.81   0.070    -.0002767    .0070479
+       31 2  |   .0006698   .0022629     0.30   0.767    -.0037684    .0051079
+       32 2  |  -.0077319   .0069869    -1.11   0.269    -.0214351    .0059712
+       33 2  |  -.0065754   .0059524    -1.10   0.269    -.0182497    .0050988
+       34 2  |  -.0081809   .0080685    -1.01   0.311    -.0240052    .0076435
+       35 2  |    -.00984   .0102497    -0.96   0.337    -.0299421    .0102621
+       36 2  |  -.0102214   .0082346    -1.24   0.215    -.0263716    .0059287
+       37 2  |  -.0108683   .0101442    -1.07   0.284    -.0307636     .009027
+       38 2  |  -.0074743   .0061881    -1.21   0.227    -.0196107    .0046621
+       39 2  |  -.0078353   .0061562    -1.27   0.203    -.0199092    .0042386
+       40 2  |   .0030193   .0095609     0.32   0.752     -.015732    .0217707
+       52 2  |  -.0021815   .0063839    -0.34   0.733    -.0147019     .010339
+             |
+       _cons |   .1733681   .0006691   259.11   0.000     .1720559    .1746804
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      8256        8256           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/bstop_share/estudy_int_main_wbal_etwfe.ster saved
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=bsearch_share: Black Share of Searches
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bsearch_share
+(dropped 473 singleton observations)
+(MWFE estimator converged in 9 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    293,454
+Absorbing 11 HDFE groups                          F(  59,   1227) =    4929.84
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.6033
+                                                  Adj R-squared   =     0.5966
+                                                  Within R-sq.    =     0.0006
+Number of clusters (num_dept) =      1,228        Root MSE        =     0.1627
+
+                           (Std. Err. adjusted for 1,228 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+bsearch_sh~e |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   .0112795    .010286     1.10   0.273    -.0089006    .0314595
+         13  |   .0177427   .0135438     1.31   0.190    -.0088289    .0443143
+         14  |   .0150083   .0133215     1.13   0.260    -.0111272    .0411437
+         15  |   .0139625   .0101389     1.38   0.169     -.005929    .0338539
+         16  |   .0204011   .0118289     1.72   0.085    -.0028059    .0436081
+         17  |   .0198875   .0118756     1.67   0.094    -.0034113    .0431862
+         18  |   .0018154   .0103662     0.18   0.861     -.018522    .0221528
+         19  |  -.0038248   .0052422    -0.73   0.466    -.0141095      .00646
+         20  |   .0069348   .0064098     1.08   0.280    -.0056406    .0195103
+         21  |   .0029813   .0047977     0.62   0.534    -.0064314    .0123939
+         22  |   .0066878    .008018     0.83   0.404    -.0090428    .0224184
+         23  |   .0050955   .0064062     0.80   0.427    -.0074728    .0176639
+         24  |  -.0032803   .0069589    -0.47   0.637     -.016933    .0103724
+         25  |   -.005162    .005359    -0.96   0.336    -.0156758    .0053519
+         26  |          0  (base)
+         27  |  -.0021718   .0053994    -0.40   0.688    -.0127647    .0084212
+         28  |   -.005207   .0072392    -0.72   0.472    -.0194095    .0089955
+         29  |   .0020391   .0050259     0.41   0.685    -.0078212    .0118994
+         30  |  -.0006141   .0043396    -0.14   0.887     -.009128    .0078998
+         31  |   .0014667   .0045831     0.32   0.749    -.0075249    .0104583
+         32  |  -7.68e-06   .0041511    -0.00   0.999    -.0081516    .0081363
+         33  |  -.0032375   .0065389    -0.50   0.621    -.0160662    .0095912
+         34  |  -.0059746   .0062221    -0.96   0.337    -.0181817    .0062324
+         35  |  -.0027431   .0066093    -0.42   0.678    -.0157099    .0102237
+         36  |  -.0158851   .0065617    -2.42   0.016    -.0287585   -.0030117
+         37  |  -.0038366   .0102488    -0.37   0.708    -.0239437    .0162705
+         38  |  -.0099611    .005942    -1.68   0.094    -.0216188    .0016965
+         39  |   .0002191   .0069971     0.03   0.975    -.0135086    .0139467
+         40  |   .0004275   .0070494     0.06   0.952    -.0134027    .0142578
+         52  |   .0003889   .0036204     0.11   0.914     -.006714    .0074918
+             |
+         scr |
+          2  |   .0095596   .0108382     0.88   0.378    -.0117039    .0308232
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |  -.0403824   .0219553    -1.84   0.066    -.0834565    .0026916
+       13 2  |  -.0268953   .0274632    -0.98   0.328    -.0807753    .0269848
+       14 2  |  -.0357965   .0301386    -1.19   0.235    -.0949254    .0233324
+       15 2  |  -.0631435   .0226588    -2.79   0.005    -.1075977   -.0186893
+       16 2  |  -.0501839   .0214761    -2.34   0.020    -.0923179     -.00805
+       17 2  |  -.1042234   .0155598    -6.70   0.000      -.13475   -.0736967
+       18 2  |  -.0429218   .0171873    -2.50   0.013    -.0766415   -.0092021
+       19 2  |   -.016902   .0200859    -0.84   0.400    -.0563085    .0225045
+       20 2  |  -.0194292   .0147653    -1.32   0.188    -.0483972    .0095388
+       21 2  |  -.0315236   .0103667    -3.04   0.002    -.0518621   -.0111851
+       22 2  |  -.0200901   .0091044    -2.21   0.028    -.0379519   -.0022283
+       23 2  |  -.0067398   .0192658    -0.35   0.727    -.0445373    .0310577
+       24 2  |  -.0109473   .0123631    -0.89   0.376    -.0352026    .0133079
+       25 2  |  -.0265412   .0486561    -0.55   0.586    -.1219996    .0689171
+       27 2  |   .0049096   .0126161     0.39   0.697     -.019842    .0296612
+       28 2  |  -.0193113   .0153898    -1.25   0.210    -.0495044    .0108818
+       29 2  |  -.0147574   .0134087    -1.10   0.271     -.041064    .0115491
+       30 2  |   .0092096    .009549     0.96   0.335    -.0095245    .0279437
+       31 2  |  -.0166774   .0166219    -1.00   0.316    -.0492879    .0159332
+       32 2  |    .006341   .0157007     0.40   0.686    -.0244622    .0371443
+       33 2  |   .0148711   .0127225     1.17   0.243    -.0100891    .0398313
+       34 2  |   .0114227   .0159713     0.72   0.475    -.0199114    .0427569
+       35 2  |   .0124138   .0104454     1.19   0.235    -.0080791    .0329066
+       36 2  |  -.0463429   .0222901    -2.08   0.038    -.0900739    -.002612
+       37 2  |  -.0344331    .042119    -0.82   0.414    -.1170662    .0482001
+       38 2  |  -.0044571   .0074207    -0.60   0.548    -.0190157    .0101016
+       39 2  |  -.0508833   .0098365    -5.17   0.000    -.0701815   -.0315851
+       40 2  |   .0001578   .0169336     0.01   0.993    -.0330642    .0333798
+       52 2  |  -.0239753    .009794    -2.45   0.015    -.0431902   -.0047605
+             |
+       _cons |   .2583224   .0017508   147.54   0.000     .2548874    .2617574
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      4719        4719           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/bsearch_share/estudy_int_main_wbal_etwfe.ster sav
+> ed
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=bhit_share: Black Share of Hits
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bhit_share
+(dropped 631 singleton observations)
+(MWFE estimator converged in 8 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    111,742
+Absorbing 11 HDFE groups                          F(  59,    940) =   53460.46
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.4496
+                                                  Adj R-squared   =     0.4297
+                                                  Within R-sq.    =     0.0020
+Number of clusters (num_dept) =        941        Root MSE        =     0.2262
+
+                             (Std. Err. adjusted for 941 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+  bhit_share |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   .0263133    .011534     2.28   0.023     .0036781    .0489486
+         13  |   .0026876   .0127541     0.21   0.833    -.0223423    .0277174
+         14  |   .0270042   .0184325     1.47   0.143    -.0091694    .0631778
+         15  |  -.0066899   .0136869    -0.49   0.625    -.0335502    .0201704
+         16  |   .0060548   .0170302     0.36   0.722    -.0273667    .0394764
+         17  |   .0440973   .0274375     1.61   0.108    -.0097485    .0979432
+         18  |    .020937   .0192546     1.09   0.277      -.01685    .0587239
+         19  |  -.0101826   .0096018    -1.06   0.289    -.0290261    .0086609
+         20  |   .0355279   .0295022     1.20   0.229    -.0223698    .0934256
+         21  |  -.0035411   .0076979    -0.46   0.646    -.0186482    .0115661
+         22  |   .0185576   .0187593     0.99   0.323    -.0182574    .0553726
+         23  |   .0210527   .0206866     1.02   0.309    -.0195445    .0616499
+         24  |   .0070516    .030604     0.23   0.818    -.0530085    .0671117
+         25  |   .0119729   .0147558     0.81   0.417    -.0169852    .0409309
+         26  |          0  (base)
+         27  |   .0107354   .0239144     0.45   0.654    -.0361964    .0576671
+         28  |   .0083835   .0177153     0.47   0.636    -.0263826    .0431497
+         29  |   .0080221   .0108322     0.74   0.459     -.013236    .0292802
+         30  |   .0231448   .0162036     1.43   0.154    -.0086545    .0549441
+         31  |  -.0054485   .0189026    -0.29   0.773    -.0425447    .0316477
+         32  |    .006391   .0118634     0.54   0.590    -.0168907    .0296728
+         33  |  -.0197636   .0143847    -1.37   0.170    -.0479935    .0084663
+         34  |   .0167404   .0139433     1.20   0.230    -.0106231     .044104
+         35  |    .025871   .0142615     1.81   0.070    -.0021171    .0538591
+         36  |  -.0154273   .0281844    -0.55   0.584    -.0707389    .0398844
+         37  |   .0038234   .0158004     0.24   0.809    -.0271847    .0348315
+         38  |  -.0393608   .0163584    -2.41   0.016     -.071464   -.0072577
+         39  |    .004856   .0114613     0.42   0.672    -.0176368    .0273488
+         40  |   .0094395   .0147963     0.64   0.524     -.019598    .0384771
+         52  |    .017537   .0148913     1.18   0.239    -.0116871    .0467611
+             |
+         scr |
+          2  |   .0363018   .0575268     0.63   0.528    -.0765939    .1491976
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |   .1168757   .0692269     1.69   0.092    -.0189814    .2527328
+       13 2  |   .0935123   .0520041     1.80   0.072    -.0085453    .1955698
+       14 2  |   .1505546   .0946718     1.59   0.112    -.0352379    .3363471
+       15 2  |   .2240912    .127209     1.76   0.078    -.0255552    .4737376
+       16 2  |   .0802767   .0275775     2.91   0.004     .0261561    .1343973
+       17 2  |   .0084845   .1102977     0.08   0.939    -.2079738    .2249428
+       18 2  |   .1197451    .028821     4.15   0.000     .0631842    .1763059
+       19 2  |   .1345053    .061245     2.20   0.028     .0143126     .254698
+       20 2  |   .1507449   .0563874     2.67   0.008     .0400852    .2614046
+       21 2  |   .1962456   .0866819     2.26   0.024     .0261331    .3663581
+       22 2  |    .138864   .0555179     2.50   0.013     .0299106    .2478174
+       23 2  |   .0843796   .0291482     2.89   0.004     .0271766    .1415827
+       24 2  |   .0303302   .0433572     0.70   0.484     -.054758    .1154184
+       25 2  |   .0724133   .1357622     0.53   0.594    -.1940188    .3388455
+       27 2  |   .1160531   .0993986     1.17   0.243    -.0790158    .3111221
+       28 2  |   .0418877   .0758894     0.55   0.581    -.1070445    .1908199
+       29 2  |   .0814112   .0168682     4.83   0.000     .0483075    .1145148
+       30 2  |   .1696246   .0655312     2.59   0.010     .0410201     .298229
+       31 2  |   .0024456   .0694866     0.04   0.972    -.1339212    .1388124
+       32 2  |   .0095042   .0643316     0.15   0.883     -.116746    .1357544
+       33 2  |   .0740658   .1475276     0.50   0.616    -.2154559    .3635874
+       34 2  |  -.0101655   .0460161    -0.22   0.825    -.1004715    .0801406
+       35 2  |   .0635087   .1067962     0.59   0.552    -.1460779    .2730953
+       36 2  |   .0501994   .0465795     1.08   0.281    -.0412125    .1416113
+       37 2  |   .0894368   .0436781     2.05   0.041      .003719    .1751546
+       38 2  |   .0623558   .0522201     1.19   0.233    -.0401256    .1648372
+       39 2  |   .0016686   .0695603     0.02   0.981    -.1348429    .1381801
+       40 2  |  -.0169455   .0281462    -0.60   0.547    -.0721821    .0382912
+       52 2  |  -.0075209   .0580869    -0.13   0.897     -.121516    .1064742
+             |
+       _cons |   .2867926   .0052846    54.27   0.000     .2764215    .2971636
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      3731        3731           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/bhit_share/estudy_int_main_wbal_etwfe.ster saved
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=bsearch_rate: Black Search Rate
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bsearch_rate
+(dropped 259 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    687,605
+Absorbing 11 HDFE groups                          F(  59,   1307) =   19242.46
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.3705
+                                                  Adj R-squared   =     0.3653
+                                                  Within R-sq.    =     0.0010
+Number of clusters (num_dept) =      1,308        Root MSE        =     0.0644
+
+                           (Std. Err. adjusted for 1,308 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+bsearch_rate |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   .0068612   .0062056     1.11   0.269    -.0053129    .0190352
+         13  |   .0068452   .0061413     1.11   0.265    -.0052027    .0188932
+         14  |   .0064372   .0056414     1.14   0.254    -.0046301    .0175045
+         15  |   .0064317   .0059871     1.07   0.283    -.0053136     .018177
+         16  |   .0064102   .0059241     1.08   0.279    -.0052116    .0180321
+         17  |    .005896   .0056621     1.04   0.298    -.0052119    .0170039
+         18  |    .001696   .0036826     0.46   0.645    -.0055284    .0089203
+         19  |   .0001278   .0031044     0.04   0.967    -.0059623    .0062179
+         20  |  -.0000129   .0030744    -0.00   0.997    -.0060442    .0060183
+         21  |   -.000614   .0028685    -0.21   0.831    -.0062413    .0050132
+         22  |    .002367    .002539     0.93   0.351    -.0026139    .0073479
+         23  |   .0006232   .0028028     0.22   0.824    -.0048753    .0061217
+         24  |  -.0010103   .0013956    -0.72   0.469    -.0037483    .0017276
+         25  |   -.002995   .0014253    -2.10   0.036    -.0057911   -.0001988
+         26  |          0  (base)
+         27  |    .000273   .0013831     0.20   0.844    -.0024404    .0029864
+         28  |   .0019097   .0013284     1.44   0.151    -.0006964    .0045157
+         29  |   .0010438   .0018835     0.55   0.580    -.0026513    .0047389
+         30  |   .0018093   .0012731     1.42   0.156    -.0006883    .0043069
+         31  |    .002301   .0019842     1.16   0.246    -.0015915    .0061936
+         32  |   .0004902   .0011975     0.41   0.682    -.0018591    .0028395
+         33  |   .0018687   .0016072     1.16   0.245    -.0012844    .0050217
+         34  |   .0009778   .0017147     0.57   0.569     -.002386    .0043417
+         35  |   .0022366   .0026195     0.85   0.393    -.0029023    .0073754
+         36  |   .0006885   .0026359     0.26   0.794    -.0044826    .0058596
+         37  |   .0017358   .0029211     0.59   0.552    -.0039948    .0074664
+         38  |  -.0006994   .0026476    -0.26   0.792    -.0058934    .0044945
+         39  |  -.0031094   .0042598    -0.73   0.466    -.0114662    .0052474
+         40  |  -.0027825   .0043212    -0.64   0.520    -.0112598    .0056948
+         52  |   .0014811    .002932     0.51   0.614    -.0042709     .007233
+             |
+         scr |
+          2  |  -.0137345   .0195488    -0.70   0.482     -.052085    .0246159
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |   .0045454   .0099153     0.46   0.647    -.0149063    .0239971
+       13 2  |   .0137685   .0174582     0.79   0.430    -.0204807    .0480177
+       14 2  |   .0185316   .0148662     1.25   0.213    -.0106327    .0476958
+       15 2  |  -.0028082   .0107978    -0.26   0.795    -.0239911    .0183747
+       16 2  |   .0204282   .0119909     1.70   0.089    -.0030953    .0439518
+       17 2  |   .0261153   .0127296     2.05   0.040     .0011427    .0510879
+       18 2  |   .0175307   .0145853     1.20   0.230    -.0110825    .0461439
+       19 2  |   .0163043   .0125594     1.30   0.194    -.0083345    .0409431
+       20 2  |   .0164061   .0119483     1.37   0.170    -.0070339    .0398461
+       21 2  |   .0097369   .0116989     0.83   0.405    -.0132137    .0326875
+       22 2  |   .0062212   .0093926     0.66   0.508     -.012205    .0246475
+       23 2  |   .0187513   .0100913     1.86   0.063    -.0010457    .0385482
+       24 2  |  -.0029794   .0054477    -0.55   0.585    -.0136666    .0077077
+       25 2  |   .0014257   .0077948     0.18   0.855     -.013866    .0167173
+       27 2  |    .007702   .0065036     1.18   0.237    -.0050567    .0204607
+       28 2  |     .00672   .0046286     1.45   0.147    -.0023603    .0158002
+       29 2  |   .0018793   .0087009     0.22   0.829    -.0151899    .0189486
+       30 2  |   .0155624   .0108802     1.43   0.153    -.0057822    .0369071
+       31 2  |   .0055891   .0074529     0.75   0.453    -.0090318      .02021
+       32 2  |   .0034041   .0052837     0.64   0.520    -.0069614    .0137696
+       33 2  |   .0195694   .0094214     2.08   0.038     .0010866    .0380521
+       34 2  |   .0488519   .0096218     5.08   0.000     .0299761    .0677278
+       35 2  |   .0301098   .0135068     2.23   0.026     .0036125    .0566071
+       36 2  |   .0175441   .0109886     1.60   0.111    -.0040131    .0391013
+       37 2  |   .0454978   .0212976     2.14   0.033     .0037166     .087279
+       38 2  |   .0351023   .0122713     2.86   0.004     .0110286     .059176
+       39 2  |    .071711   .0302621     2.37   0.018     .0123433    .1310786
+       40 2  |   .0500151   .0192204     2.60   0.009     .0123089    .0877214
+       52 2  |   .0517415   .0215468     2.40   0.016     .0094713    .0940117
+             |
+       _cons |   .0411521   .0008275    49.73   0.000     .0395287    .0427754
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5462        5462           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/bsearch_rate/estudy_int_main_wbal_etwfe.ster save
+> d
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=bhit_rate: Black Hit Rate
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bhit_rate
+(dropped 610 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    121,706
+Absorbing 11 HDFE groups                          F(  59,    820) =   20651.20
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.2900
+                                                  Adj R-squared   =     0.2698
+                                                  Within R-sq.    =     0.0018
+Number of clusters (num_dept) =        821        Root MSE        =     0.2174
+
+                             (Std. Err. adjusted for 821 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+   bhit_rate |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.0111505   .0163489    -0.68   0.495    -.0432411      .02094
+         13  |  -.0315177   .0173459    -1.82   0.070    -.0655654    .0025299
+         14  |  -.0356266   .0215816    -1.65   0.099    -.0779883     .006735
+         15  |   -.038422   .0263932    -1.46   0.146    -.0902282    .0133841
+         16  |  -.0448307   .0141495    -3.17   0.002    -.0726043   -.0170572
+         17  |  -.0006271   .0174558    -0.04   0.971    -.0348904    .0336362
+         18  |   .0014933   .0175031     0.09   0.932    -.0328629    .0358495
+         19  |  -.0182532   .0208758    -0.87   0.382    -.0592295    .0227232
+         20  |  -.0097714   .0148395    -0.66   0.510    -.0388993    .0193565
+         21  |  -.0010328   .0105072    -0.10   0.922     -.021657    .0195915
+         22  |   -.006146   .0134072    -0.46   0.647    -.0324624    .0201705
+         23  |  -.0148222   .0215393    -0.69   0.492    -.0571008    .0274565
+         24  |  -.0469724   .0202579    -2.32   0.021    -.0867358   -.0072089
+         25  |  -.0123606    .012683    -0.97   0.330    -.0372556    .0125344
+         26  |          0  (base)
+         27  |  -.0225528   .0272639    -0.83   0.408    -.0760679    .0309624
+         28  |  -.0147367   .0167392    -0.88   0.379    -.0475934      .01812
+         29  |  -.0127732   .0191371    -0.67   0.505    -.0503367    .0247903
+         30  |   .0018622   .0082644     0.23   0.822    -.0143597    .0180841
+         31  |  -.0473103   .0275149    -1.72   0.086    -.1013182    .0066977
+         32  |  -.0260762   .0181146    -1.44   0.150    -.0616327    .0094802
+         33  |   -.040767   .0137776    -2.96   0.003    -.0678104   -.0137236
+         34  |   .0036936   .0197022     0.19   0.851     -.034979    .0423662
+         35  |   .0130513   .0186316     0.70   0.484      -.02352    .0496225
+         36  |  -.0464861   .0313498    -1.48   0.139    -.1080214    .0150492
+         37  |    .003232   .0143339     0.23   0.822    -.0249036    .0313675
+         38  |  -.0464779   .0225259    -2.06   0.039    -.0906931   -.0022627
+         39  |   .0084505   .0190197     0.44   0.657    -.0288825    .0457836
+         40  |  -.0348472   .0132602    -2.63   0.009    -.0608751   -.0088192
+         52  |  -.0284288   .0174702    -1.63   0.104    -.0627204    .0058628
+             |
+         scr |
+          2  |   .0527713   .0186306     2.83   0.005     .0162021    .0893406
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |   .0003221   .0289554     0.01   0.991    -.0565134    .0571576
+       13 2  |   .0006651    .039174     0.02   0.986    -.0762281    .0775583
+       14 2  |    .011454   .0397847     0.29   0.773    -.0666379    .0895459
+       15 2  |   .0281729   .0491565     0.57   0.567    -.0683144    .1246603
+       16 2  |   .0276933   .0263097     1.05   0.293    -.0239491    .0793357
+       17 2  |   -.035293   .0204259    -1.73   0.084    -.0753861    .0048002
+       18 2  |  -.0183988   .0240861    -0.76   0.445    -.0656765    .0288788
+       19 2  |   .0567505   .0319885     1.77   0.076    -.0060385    .1195395
+       20 2  |   .0443213    .018747     2.36   0.018     .0075235    .0811191
+       21 2  |   .0433628   .0153991     2.82   0.005     .0131365    .0735891
+       22 2  |   .0265897   .0168773     1.58   0.116    -.0065381    .0597175
+       23 2  |   .0673928    .053504     1.26   0.208    -.0376281    .1724137
+       24 2  |   .0544405   .0245491     2.22   0.027      .006254     .102627
+       25 2  |  -.0035162   .0302682    -0.12   0.908    -.0629285     .055896
+       27 2  |   .0548812   .0266759     2.06   0.040     .0025201    .1072423
+       28 2  |   .0169793   .0254311     0.67   0.505    -.0329384     .066897
+       29 2  |    .003957   .0246783     0.16   0.873     -.044483    .0523969
+       30 2  |   .0089878   .0209684     0.43   0.668    -.0321703     .050146
+       31 2  |   .0246885   .0326783     0.76   0.450    -.0394545    .0888314
+       32 2  |   .0107958    .020525     0.53   0.599    -.0294919    .0510835
+       33 2  |   .0131777   .0293553     0.45   0.654    -.0444426     .070798
+       34 2  |  -.0349942   .0234076    -1.49   0.135      -.08094    .0109516
+       35 2  |  -.0395489   .0244182    -1.62   0.106    -.0874784    .0083806
+       36 2  |   .0569344   .0337647     1.69   0.092     -.009341    .1232098
+       37 2  |  -.0380142   .0177176    -2.15   0.032    -.0727915    -.003237
+       38 2  |   .0493376    .031203     1.58   0.114    -.0119097    .1105848
+       39 2  |   .0003563   .0251786     0.01   0.989    -.0490659    .0497784
+       40 2  |   .0237864   .0145173     1.64   0.102    -.0047091    .0522818
+       52 2  |   .0321535   .0187845     1.71   0.087    -.0047178    .0690248
+             |
+       _cons |   .2304305   .0041447    55.60   0.000     .2222951     .238566
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      3202        3202           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/bhit_rate/estudy_int_main_wbal_etwfe.ster saved
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=bhit_bstop_ratio: Black Hits-to-Stops Ratio
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bhit_bstop_ratio
+(dropped 189 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    654,573
+Absorbing 11 HDFE groups                          F(  59,   1075) =     804.87
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.0724
+                                                  Adj R-squared   =     0.0650
+                                                  Within R-sq.    =     0.0004
+Number of clusters (num_dept) =      1,076        Root MSE        =     0.0349
+
+                           (Std. Err. adjusted for 1,076 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+bhit_bstop~o |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   .0020038   .0012734     1.57   0.116    -.0004948    .0045024
+         13  |   .0007779   .0008446     0.92   0.357    -.0008793    .0024352
+         14  |   .0009061   .0014437     0.63   0.530    -.0019267    .0037389
+         15  |   .0010509   .0018916     0.56   0.579    -.0026607    .0047626
+         16  |   .0004114   .0009391     0.44   0.661    -.0014312     .002254
+         17  |   .0015436   .0008923     1.73   0.084    -.0002072    .0032944
+         18  |   .0009114   .0009467     0.96   0.336    -.0009463    .0027691
+         19  |   .0002785   .0012831     0.22   0.828    -.0022392    .0027962
+         20  |  -.0001174   .0010935    -0.11   0.914     -.002263    .0020281
+         21  |   .0005871   .0008945     0.66   0.512    -.0011681    .0023423
+         22  |   .0007692   .0006893     1.12   0.265    -.0005834    .0021217
+         23  |  -.0000402   .0008641    -0.05   0.963    -.0017357    .0016553
+         24  |  -.0011978   .0008053    -1.49   0.137     -.002778    .0003824
+         25  |  -.0009542   .0007988    -1.19   0.233    -.0025217    .0006133
+         26  |          0  (base)
+         27  |  -.0005576   .0011395    -0.49   0.625    -.0027936    .0016784
+         28  |     .00044   .0005476     0.80   0.422    -.0006344    .0015145
+         29  |   .0002395   .0009546     0.25   0.802    -.0016336    .0021126
+         30  |    .001127   .0005577     2.02   0.044     .0000326    .0022214
+         31  |  -.0008795   .0010457    -0.84   0.400    -.0029313    .0011723
+         32  |   .0001407   .0007897     0.18   0.859    -.0014088    .0016902
+         33  |  -.0006149   .0005492    -1.12   0.263    -.0016926    .0004627
+         34  |   .0008031    .000888     0.90   0.366    -.0009393    .0025455
+         35  |   .0004771   .0006157     0.77   0.439     -.000731    .0016852
+         36  |  -.0004255   .0013572    -0.31   0.754    -.0030884    .0022375
+         37  |   .0007372   .0009019     0.82   0.414    -.0010325    .0025069
+         38  |  -.0013904     .00083    -1.68   0.094    -.0030191    .0002383
+         39  |   .0000878     .00054     0.16   0.871    -.0009717    .0011474
+         40  |  -.0004914   .0007955    -0.62   0.537    -.0020523    .0010695
+         52  |  -.0000551   .0007022    -0.08   0.938    -.0014328    .0013227
+             |
+         scr |
+          2  |   .0171618   .0024027     7.14   0.000     .0124473    .0218763
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |   .0109467   .0044874     2.44   0.015     .0021416    .0197519
+       13 2  |   .0067758   .0070801     0.96   0.339    -.0071167    .0206682
+       14 2  |   .0093335   .0046926     1.99   0.047     .0001257    .0185412
+       15 2  |   .0103398   .0070474     1.47   0.143    -.0034885     .024168
+       16 2  |   .0120914   .0048369     2.50   0.013     .0026005    .0215823
+       17 2  |   .0091759   .0035422     2.59   0.010     .0022255    .0161262
+       18 2  |   .0101944   .0036322     2.81   0.005     .0030674    .0173214
+       19 2  |   .0180784   .0068854     2.63   0.009     .0045682    .0315887
+       20 2  |   .0171285   .0053573     3.20   0.001     .0066166    .0276404
+       21 2  |   .0142064   .0053322     2.66   0.008     .0037438    .0246691
+       22 2  |    .009029   .0020632     4.38   0.000     .0049808    .0130773
+       23 2  |   .0139355   .0039888     3.49   0.000     .0061087    .0217623
+       24 2  |   .0020883   .0015266     1.37   0.172    -.0009073    .0050838
+       25 2  |  -.0011503   .0058734    -0.20   0.845     -.012675    .0103743
+       27 2  |   .0066099   .0031964     2.07   0.039     .0003381    .0128818
+       28 2  |   .0006001   .0043426     0.14   0.890    -.0079209     .009121
+       29 2  |   .0002962   .0035354     0.08   0.933    -.0066409    .0072332
+       30 2  |   .0027229   .0028725     0.95   0.343    -.0029134    .0083592
+       31 2  |  -.0045964   .0018439    -2.49   0.013    -.0082144   -.0009784
+       32 2  |   -.003128   .0017981    -1.74   0.082    -.0066562    .0004003
+       33 2  |  -.0002503   .0036297    -0.07   0.945    -.0073723    .0068717
+       34 2  |  -.0000984   .0011851    -0.08   0.934    -.0024238     .002227
+       35 2  |  -.0034579   .0037847    -0.91   0.361    -.0108842    .0039684
+       36 2  |   .0033445   .0033581     1.00   0.320    -.0032447    .0099337
+       37 2  |  -.0008893   .0016916    -0.53   0.599    -.0042084    .0024299
+       38 2  |   .0072223   .0037838     1.91   0.057    -.0002021    .0146468
+       39 2  |   .0162538   .0039846     4.08   0.000     .0084353    .0240723
+       40 2  |   .0037797    .001657     2.28   0.023     .0005284    .0070311
+       52 2  |   .0084463   .0023917     3.53   0.000     .0037533    .0131392
+             |
+       _cons |   .0099663    .000187    53.30   0.000     .0095994    .0103332
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5011        5011           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/bhit_bstop_ratio/estudy_int_main_wbal_etwfe.ster 
+> saved
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=n_stops: Overall Stop Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_stops
+(dropped 5 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,645,724
+Absorbing 11 HDFE groups                          F(  59,   1848) =  112464.72
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.9325
+                                                  Adj R-squared   =     0.9321
+                                                  Within R-sq.    =     0.0124
+Number of clusters (num_dept) =      1,849        Root MSE        =    93.3652
+
+                           (Std. Err. adjusted for 1,849 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+     n_stops |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   43.14339   90.39222     0.48   0.633    -134.1382     220.425
+         13  |  -90.80896   86.03225    -1.06   0.291    -259.5396    77.92167
+         14  |  -93.21052   68.23914    -1.37   0.172    -227.0444    40.62339
+         15  |  -60.06732   49.69728    -1.21   0.227     -157.536    37.40139
+         16  |  -186.9074   139.0292    -1.34   0.179    -459.5783    85.76343
+         17  |   118.4169   77.34093     1.53   0.126    -33.26792    270.1017
+         18  |   68.07847   91.37079     0.75   0.456    -111.1224    247.2793
+         19  |   14.31687   96.26005     0.15   0.882     -174.473    203.1067
+         20  |   -65.0774   61.77084    -1.05   0.292    -186.2254    56.07058
+         21  |  -13.46343   48.54759    -0.28   0.782    -108.6773    81.75045
+         22  |  -41.33505   60.50181    -0.68   0.495    -159.9941    77.32404
+         23  |   7.454829   51.70965     0.14   0.885    -93.96063    108.8703
+         24  |  -54.61415    48.6777    -1.12   0.262    -150.0832    40.85492
+         25  |  -73.72144   44.10373    -1.67   0.095    -160.2198    12.77693
+         26  |          0  (base)
+         27  |    -25.443   51.99525    -0.49   0.625    -127.4186    76.53261
+         28  |  -158.6955   64.80614    -2.45   0.014    -285.7964   -31.59454
+         29  |  -51.22956   34.03393    -1.51   0.132    -117.9786    15.51944
+         30  |  -52.21512   68.48183    -0.76   0.446     -186.525    82.09476
+         31  |  -38.90907    95.9249    -0.41   0.685    -227.0416    149.2235
+         32  |  -131.8602   67.60353    -1.95   0.051    -264.4475    .7271574
+         33  |  -122.3115   61.25627    -2.00   0.046    -242.4502   -2.172708
+         34  |  -129.1229   64.45951    -2.00   0.045    -255.5441   -2.701817
+         35  |    -169.32   75.51003    -2.24   0.025     -317.414   -21.22609
+         36  |  -270.5388   100.0782    -2.70   0.007     -466.817   -74.26063
+         37  |  -237.7791   108.9739    -2.18   0.029     -451.504   -24.05429
+         38  |  -448.1912   162.1014    -2.76   0.006    -766.1123     -130.27
+         39  |  -470.1485   196.4119    -2.39   0.017     -855.361   -84.93599
+         40  |  -570.8293   223.1931    -2.56   0.011    -1008.566   -133.0922
+         52  |  -437.0425   179.7169    -2.43   0.015    -789.5119   -84.57301
+             |
+         scr |
+          2  |  -179.0339   144.4821    -1.24   0.215    -462.3993    104.3315
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |   26.37377   123.8412     0.21   0.831    -216.5096    269.2572
+       13 2  |   140.4687   119.7526     1.17   0.241    -94.39598    375.3333
+       14 2  |   156.3481    98.1462     1.59   0.111    -36.14099    348.8372
+       15 2  |   115.4531   80.28471     1.44   0.151    -42.00521    272.9113
+       16 2  |   239.6407    151.836     1.58   0.115    -58.14749    537.4289
+       17 2  |  -19.58633   128.1444    -0.15   0.879    -270.9094    231.7367
+       18 2  |   -27.4226   102.5413    -0.27   0.789    -228.5316    173.6864
+       19 2  |   37.83969   115.8186     0.33   0.744    -189.3093    264.9887
+       20 2  |   136.9687    93.0389     1.47   0.141    -45.50368    319.4411
+       21 2  |   23.37104   60.73171     0.38   0.700    -95.73894     142.481
+       22 2  |   52.46967   67.06862     0.78   0.434    -79.06855    184.0079
+       23 2  |  -12.28388    52.6275    -0.23   0.815    -115.4995    90.93173
+       24 2  |   43.89855   51.93873     0.85   0.398    -57.96622    145.7633
+       25 2  |   67.00802   45.97503     1.46   0.145    -23.16045    157.1765
+       27 2  |   18.21438   52.99367     0.34   0.731    -85.71937    122.1481
+       28 2  |    143.183   67.18615     2.13   0.033     11.41424    274.9517
+       29 2  |  -16.52754   48.77611    -0.34   0.735    -112.1896    79.13454
+       30 2  |    31.9665   72.31992     0.44   0.659    -109.8708    173.8038
+       31 2  |   16.91649    102.181     0.17   0.869    -183.4859    217.3189
+       32 2  |   70.65868   92.68904     0.76   0.446    -111.1276    252.4449
+       33 2  |   105.0342   75.11876     1.40   0.162    -42.29236    252.3608
+       34 2  |   121.4526    69.2446     1.75   0.080    -14.35329    257.2584
+       35 2  |   114.0514   85.58005     1.33   0.183    -53.79231    281.8952
+       36 2  |   224.3016   102.9142     2.18   0.029     22.46134    426.1419
+       37 2  |   220.8201   110.1466     2.00   0.045     4.795198    436.8449
+       38 2  |   411.2719   163.5685     2.51   0.012     90.47347    732.0704
+       39 2  |   435.9099   198.7506     2.19   0.028     46.11063    825.7092
+       40 2  |    537.639   224.5228     2.39   0.017     97.29398    977.9841
+       52 2  |   397.4687   184.0831     2.16   0.031     36.43588    758.5014
+             |
+       _cons |   46.77942   .8624612    54.24   0.000     45.08792    48.47092
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      8256        8256           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/n_stops/estudy_int_main_wbal_etwfe.ster saved
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=n_bstops: Black Stop Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_bstops
+(dropped 5 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,645,724
+Absorbing 11 HDFE groups                          F(  59,   1848) =   58354.15
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.9006
+                                                  Adj R-squared   =     0.9001
+                                                  Within R-sq.    =     0.0122
+Number of clusters (num_dept) =      1,849        Root MSE        =    15.0545
+
+                           (Std. Err. adjusted for 1,849 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+    n_bstops |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   -15.9562   16.69509    -0.96   0.339    -48.69942    16.78702
+         13  |   -30.8899   17.69951    -1.75   0.081    -65.60304     3.82324
+         14  |  -31.82493   18.49255    -1.72   0.085    -68.09342     4.44355
+         15  |  -19.65905   12.95771    -1.52   0.129    -45.07235     5.75425
+         16  |   -32.9785   20.46517    -1.61   0.107    -73.11578    7.158785
+         17  |   2.163024       11.7     0.18   0.853    -20.78358    25.10962
+         18  |  -10.37467   12.34465    -0.84   0.401    -34.58559    13.83626
+         19  |  -19.38626   16.17367    -1.20   0.231    -51.10684    12.33433
+         20  |   -24.9747   12.63285    -1.98   0.048    -49.75086   -.1985342
+         21  |  -8.042646    9.73643    -0.83   0.409    -27.13821    11.05291
+         22  |  -22.01727   12.12895    -1.82   0.070    -45.80517    1.770619
+         23  |  -8.207165   8.929488    -0.92   0.358    -25.72011     9.30578
+         24  |  -23.95838   16.77968    -1.43   0.154     -56.8675    8.950742
+         25  |  -21.43448   13.31713    -1.61   0.108    -47.55269    4.683722
+         26  |          0  (base)
+         27  |  -13.75449   17.40406    -0.79   0.429    -47.88819     20.3792
+         28  |  -38.16031   18.56214    -2.06   0.040    -74.56528   -1.755348
+         29  |  -19.41453   12.57333    -1.54   0.123    -44.07395    5.244894
+         30  |  -20.00699   13.29833    -1.50   0.133    -46.08832     6.07434
+         31  |   -28.7136   21.87462    -1.31   0.189    -71.61516    14.18797
+         32  |  -40.26158   18.11183    -2.22   0.026    -75.78339    -4.73977
+         33  |  -34.48747   17.50095    -1.97   0.049    -68.81118   -.1637547
+         34  |  -45.92743    19.7941    -2.32   0.020    -84.74858   -7.106276
+         35  |  -50.33757   23.94994    -2.10   0.036    -97.30936    -3.36578
+         36  |  -56.66508    21.8521    -2.59   0.010    -99.52248   -13.80768
+         37  |  -59.60746   28.82433    -2.07   0.039    -116.1391   -3.075787
+         38  |  -86.49573   35.83025    -2.41   0.016    -156.7678    -16.2237
+         39  |  -85.06638   38.63408    -2.20   0.028    -160.8374   -9.295354
+         40  |  -103.4237   42.97824    -2.41   0.016    -187.7147   -19.13275
+         52  |  -81.87666   32.57597    -2.51   0.012    -145.7662    -17.9871
+             |
+         scr |
+          2  |  -45.56514   23.66145    -1.93   0.054    -91.97112    .8408345
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |   20.70626   17.22032     1.20   0.229    -13.06707    54.47959
+       13 2  |   33.28641   18.78316     1.77   0.077    -3.552031    70.12485
+       14 2  |   38.97352   19.68169     1.98   0.048     .3728297    77.57421
+       15 2  |   22.69697   13.67797     1.66   0.097    -4.128932    49.52288
+       16 2  |    36.7791   21.03489     1.75   0.081    -4.475546    78.03374
+       17 2  |   3.366379   13.77419     0.24   0.807    -23.64824      30.381
+       18 2  |   12.03301   12.74782     0.94   0.345    -12.96864    37.03466
+       19 2  |   21.01885    17.5481     1.20   0.231    -13.39733    55.43504
+       20 2  |   30.34559   14.79025     2.05   0.040     1.338231    59.35295
+       21 2  |   .3436594   10.87836     0.03   0.975    -20.99151    21.67883
+       22 2  |   17.83793   12.90882     1.38   0.167    -7.479484    43.15534
+       23 2  |   .9350674   9.320496     0.10   0.920    -17.34474    19.21488
+       24 2  |   25.34702   17.17124     1.48   0.140    -8.330036    59.02409
+       25 2  |   17.56137   14.43294     1.22   0.224     -10.7452    45.86795
+       27 2  |   13.71469   17.61122     0.78   0.436    -20.82529    48.25466
+       28 2  |   38.14189    18.7006     2.04   0.042      1.46537    74.81841
+       29 2  |   5.681436    13.7254     0.41   0.679    -21.23748    32.60035
+       30 2  |   19.21755   14.41355     1.33   0.183    -9.050997    47.48609
+       31 2  |   27.28676   23.05872     1.18   0.237    -17.93712    72.51064
+       32 2  |   33.75314   19.79771     1.70   0.088    -5.075081    72.58136
+       33 2  |   31.64703   20.62635     1.53   0.125     -8.80637    72.10044
+       34 2  |   38.55733   20.79593     1.85   0.064    -2.228657    79.34333
+       35 2  |   34.73356   25.26036     1.38   0.169    -14.80827     84.2754
+       36 2  |   35.80099   24.11141     1.48   0.138    -11.48747    83.08946
+       37 2  |   43.58511   29.77674     1.46   0.143    -14.81448    101.9847
+       38 2  |   69.35542   36.76334     1.89   0.059     -2.74663    141.4575
+       39 2  |   65.11569   40.40873     1.61   0.107    -14.13587    144.3673
+       40 2  |   87.30981   44.86927     1.95   0.052    -.6899733    175.3096
+       52 2  |   62.11221   34.79813     1.78   0.074    -6.135573      130.36
+             |
+       _cons |   8.243093   .1978562    41.66   0.000     7.855048    8.631138
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      8256        8256           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/n_bstops/estudy_int_main_wbal_etwfe.ster saved
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=n_searches: Overall Search Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_searches
+(dropped 2 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,306,994
+Absorbing 11 HDFE groups                          F(  59,   1334) =  164084.06
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.8847
+                                                  Adj R-squared   =     0.8842
+                                                  Within R-sq.    =     0.0054
+Number of clusters (num_dept) =      1,335        Root MSE        =     3.8487
+
+                           (Std. Err. adjusted for 1,335 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+  n_searches |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   1.593621   3.620367     0.44   0.660    -5.508612    8.695853
+         13  |  -3.781928   2.479462    -1.53   0.127    -8.645997    1.082141
+         14  |  -4.790306    3.52504    -1.36   0.174    -11.70553     2.12492
+         15  |  -3.228999   3.425806    -0.94   0.346    -9.949554    3.491555
+         16  |  -5.575113   3.776829    -1.48   0.140    -12.98428    1.834058
+         17  |  -.4112858   1.891574    -0.22   0.828    -4.122069    3.299497
+         18  |   1.945416   2.041851     0.95   0.341    -2.060173    5.951004
+         19  |   .1447242   1.533528     0.09   0.925    -2.863665    3.153113
+         20  |  -.5451086   1.378094    -0.40   0.692    -3.248577     2.15836
+         21  |  -2.057742   3.606052    -0.57   0.568    -9.131892    5.016408
+         22  |   .1500234   .8067613     0.19   0.853    -1.432636    1.732683
+         23  |  -1.123225   3.103322    -0.36   0.717    -7.211147    4.964698
+         24  |  -2.155528   1.753126    -1.23   0.219    -5.594712    1.283656
+         25  |  -3.735886   2.145301    -1.74   0.082    -7.944417    .4726448
+         26  |          0  (base)
+         27  |  -1.909916   2.176325    -0.88   0.380    -6.179308    2.359475
+         28  |  -3.272379   2.571225    -1.27   0.203    -8.316464    1.771706
+         29  |  -1.644839   1.572119    -1.05   0.296    -4.728935    1.439256
+         30  |   2.853032   1.737667     1.64   0.101     -.555826     6.26189
+         31  |  -1.565424   2.020903    -0.77   0.439    -5.529919     2.39907
+         32  |   -3.85177   2.048595    -1.88   0.060     -7.87059    .1670492
+         33  |  -1.424226   1.502097    -0.95   0.343    -4.370956    1.522504
+         34  |  -3.620197   1.991799    -1.82   0.069    -7.527597    .2872027
+         35  |  -7.448968   3.262638    -2.28   0.023    -13.84943   -1.048507
+         36  |  -6.577695   3.081952    -2.13   0.033    -12.62369   -.5316953
+         37  |  -7.878592   3.938122    -2.00   0.046    -15.60418   -.1530048
+         38  |  -13.76748    5.25067    -2.62   0.009    -24.06795   -3.467014
+         39  |   -13.7636   6.080184    -2.26   0.024    -25.69137   -1.835838
+         40  |  -14.28978   6.126247    -2.33   0.020    -26.30791   -2.271652
+         52  |  -13.15631   7.384763    -1.78   0.075    -27.64332    1.330706
+             |
+         scr |
+          2  |   2.525299    3.61711     0.70   0.485    -4.570545    9.621143
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |  -2.230357   3.610453    -0.62   0.537    -9.313142    4.852427
+       13 2  |   3.034343   2.333193     1.30   0.194    -1.542784     7.61147
+       14 2  |   4.797705   3.504601     1.37   0.171    -2.077425    11.67283
+       15 2  |   3.491735   3.402424     1.03   0.305    -3.182949    10.16642
+       16 2  |   6.285606   3.783133     1.66   0.097    -1.135932    13.70714
+       17 2  |   .2364116   2.165651     0.11   0.913    -4.012041    4.484864
+       18 2  |  -3.206967   2.139164    -1.50   0.134    -7.403458     .989524
+       19 2  |  -1.981967   2.087039    -0.95   0.342    -6.076202    2.112269
+       20 2  |   .0021307   1.697167     0.00   0.999    -3.327277    3.331539
+       21 2  |   1.064573   3.761104     0.28   0.777     -6.31375    8.442895
+       22 2  |  -2.091537   1.922986    -1.09   0.277    -5.863943    1.680868
+       23 2  |   .4777184    3.25192     0.15   0.883    -5.901716    6.857152
+       24 2  |   3.233513   2.221947     1.46   0.146    -1.125378    7.592403
+       25 2  |   3.654389   2.690424     1.36   0.175    -1.623533    8.932311
+       27 2  |   3.727389    2.53408     1.47   0.142    -1.243827    8.698605
+       28 2  |   4.444108   2.655777     1.67   0.094    -.7658456    9.654062
+       29 2  |   .6908783   1.723283     0.40   0.689    -2.689762    4.071518
+       30 2  |   -4.52012   2.138876    -2.11   0.035    -8.716046   -.3241944
+       31 2  |  -.4694236   2.337477    -0.20   0.841    -5.054956    4.116109
+       32 2  |   3.413285   2.279971     1.50   0.135    -1.059433    7.886003
+       33 2  |    1.89825   1.936255     0.98   0.327    -1.900187    5.696687
+       34 2  |   4.885905   2.428012     2.01   0.044     .1227679    9.649042
+       35 2  |    7.44662   3.362319     2.21   0.027       .85061    14.04263
+       36 2  |   .4904273   5.211069     0.09   0.925    -9.732356    10.71321
+       37 2  |   .9567384   5.878102     0.16   0.871    -10.57459    12.48807
+       38 2  |   8.219508   6.429457     1.28   0.201    -4.393441    20.83246
+       39 2  |   7.513905   6.716356     1.12   0.263    -5.661865    20.68968
+       40 2  |   11.02542   6.574059     1.68   0.094    -1.871198    23.92204
+       52 2  |   9.947646   7.596353     1.31   0.191    -4.954452    24.84975
+             |
+       _cons |   1.237149   .0157212    78.69   0.000     1.206308     1.26799
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5972        5972           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/n_searches/estudy_int_main_wbal_etwfe.ster saved
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=n_bsearches: Black Search Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_bsearches
+(dropped 2 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,306,994
+Absorbing 11 HDFE groups                          F(  59,   1334) =  115716.69
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.7739
+                                                  Adj R-squared   =     0.7729
+                                                  Within R-sq.    =     0.0055
+Number of clusters (num_dept) =      1,335        Root MSE        =     1.0272
+
+                           (Std. Err. adjusted for 1,335 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+ n_bsearches |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.8862043   .8540226    -1.04   0.300    -2.561578    .7891694
+         13  |  -.9376417    1.07963    -0.87   0.385    -3.055598    1.180315
+         14  |  -1.155738   .8196886    -1.41   0.159    -2.763757    .4522814
+         15  |  -.6528156   .7389286    -0.88   0.377    -2.102404     .796773
+         16  |  -.6587853   .6892877    -0.96   0.339    -2.010991    .6934207
+         17  |   .4113911   .5093248     0.81   0.419    -.5877737    1.410556
+         18  |    .249415    .658146     0.38   0.705    -1.041699    1.540529
+         19  |  -.6350009   .5414003    -1.17   0.241     -1.69709    .4270879
+         20  |  -.1250798   .4641142    -0.27   0.788    -1.035553    .7853933
+         21  |  -.4715445   .6600436    -0.71   0.475    -1.766381    .8232921
+         22  |   .1130542   .5658081     0.20   0.842    -.9969164    1.223025
+         23  |  -.1181997   .6034467    -0.20   0.845    -1.302008    1.065608
+         24  |  -1.012115   .8401722    -1.20   0.229    -2.660318    .6360873
+         25  |  -1.691101   .8999675    -1.88   0.060    -3.456607    .0744046
+         26  |          0  (base)
+         27  |  -1.042942   1.092615    -0.95   0.340    -3.186373    1.100489
+         28  |  -1.081651   .7493551    -1.44   0.149    -2.551694    .3883915
+         29  |  -.7238601     1.0266    -0.71   0.481    -2.737786    1.290066
+         30  |   .0981216    .482108     0.20   0.839    -.8476508    1.043894
+         31  |  -.8014554   .9898799    -0.81   0.418    -2.743346    1.140435
+         32  |  -1.516959   .8076844    -1.88   0.061    -3.101429    .0675111
+         33  |  -.8040987   .6478946    -1.24   0.215    -2.075102    .4669045
+         34  |  -1.952253   .9224166    -2.12   0.034    -3.761798   -.1427076
+         35  |  -1.913715   1.162529    -1.65   0.100    -4.194299     .366868
+         36  |  -1.862494   .8838731    -2.11   0.035    -3.596426    -.128561
+         37  |  -2.256432    1.00385    -2.25   0.025    -4.225729   -.2871354
+         38  |  -3.760432   1.197149    -3.14   0.002    -6.108932   -1.411933
+         39  |  -3.106279   1.019591    -3.05   0.002    -5.106456   -1.106103
+         40  |  -3.396099   1.137486    -2.99   0.003    -5.627556   -1.164643
+         52  |  -2.845033   1.071058    -2.66   0.008    -4.946173   -.7438923
+             |
+         scr |
+          2  |   -.913866   1.216874    -0.75   0.453    -3.301061    1.473329
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |   .2622898   .8103791     0.32   0.746    -1.327466    1.852046
+       13 2  |   .3018765   .8089579     0.37   0.709    -1.285092    1.888845
+       14 2  |   .9323356   .7212667     1.29   0.196    -.4826048    2.347276
+       15 2  |   .3183456   .6562271     0.49   0.628     -.969004    1.605695
+       16 2  |   .8294731    .700724     1.18   0.237    -.5451679    2.204114
+       17 2  |  -1.303141   .7914529    -1.65   0.100    -2.855769    .2494869
+       18 2  |  -1.409953   1.050928    -1.34   0.180    -3.471605    .6516995
+       19 2  |  -.3808105   .8945265    -0.43   0.670    -2.135642    1.374021
+       20 2  |  -.2667087   .8684815    -0.31   0.759    -1.970447     1.43703
+       21 2  |  -.5581478   1.157937    -0.48   0.630    -2.829724    1.713429
+       22 2  |  -1.470421    1.33461    -1.10   0.271    -4.088585    1.147743
+       23 2  |  -.4171761   1.190515    -0.35   0.726    -2.752662     1.91831
+       24 2  |   1.034223   .9204207     1.12   0.261     -.771407    2.839852
+       25 2  |    .648372   1.724529     0.38   0.707    -2.734711    4.031455
+       27 2  |   2.335545   1.401274     1.67   0.096    -.4133956    5.084486
+       28 2  |   1.496414   .8303985     1.80   0.072    -.1326151    3.125443
+       29 2  |   -.160624   1.190202    -0.13   0.893    -2.495495    2.174247
+       30 2  |   -.748199    .665387    -1.12   0.261    -2.053518    .5571198
+       31 2  |  -.7533849   1.511631    -0.50   0.618    -3.718818    2.212048
+       32 2  |   1.099608    1.10916     0.99   0.322    -1.076279    3.275496
+       33 2  |   .8008228   1.060719     0.75   0.450    -1.280036    2.881682
+       34 2  |   2.570705   1.288632     1.99   0.046     .0427395    5.098671
+       35 2  |   1.841408   1.235213     1.49   0.136    -.5817629    4.264579
+       36 2  |  -1.423457   2.057683    -0.69   0.489    -5.460105     2.61319
+       37 2  |  -1.219596   2.195943    -0.56   0.579    -5.527474    3.088282
+       38 2  |   1.053854   1.880909     0.56   0.575    -2.636008    4.743716
+       39 2  |   -.579864   2.098002    -0.28   0.782    -4.695606    3.535878
+       40 2  |   1.113527   2.067949     0.54   0.590    -2.943261    5.170314
+       52 2  |   .4569394   1.880981     0.24   0.808    -3.233063    4.146942
+             |
+       _cons |   .3416623   .0050799    67.26   0.000     .3316969    .3516277
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5972        5972           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/n_bsearches/estudy_int_main_wbal_etwfe.ster saved
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=n_hits: Overall Hit Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_hits
+(dropped 2 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,240,392
+Absorbing 11 HDFE groups                          F(  59,   1088) =  120132.86
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.7531
+                                                  Adj R-squared   =     0.7520
+                                                  Within R-sq.    =     0.0081
+Number of clusters (num_dept) =      1,089        Root MSE        =     0.8288
+
+                           (Std. Err. adjusted for 1,089 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+      n_hits |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.4024149   1.001269    -0.40   0.688    -2.367051    1.562221
+         13  |  -.7136608   .6580505    -1.08   0.278    -2.004852    .5775308
+         14  |  -.6467107   1.018448    -0.63   0.526    -2.645055    1.351634
+         15  |   .1627144   1.108316     0.15   0.883    -2.011965    2.337393
+         16  |  -1.031638   1.396824    -0.74   0.460    -3.772412    1.709136
+         17  |   1.208256    .978498     1.23   0.217    -.7117004    3.128213
+         18  |  -.1019777   .5711565    -0.18   0.858    -1.222671    1.018715
+         19  |   .1921743   .9479912     0.20   0.839    -1.667923    2.052272
+         20  |  -.5459599   .7640461    -0.71   0.475     -2.04513    .9532107
+         21  |   1.011422   .7980225     1.27   0.205    -.5544153    2.577259
+         22  |   .0368715   .6053114     0.06   0.951    -1.150838    1.224581
+         23  |   .5913965   1.369634     0.43   0.666    -2.096027     3.27882
+         24  |  -.6580113   .8292026    -0.79   0.428    -2.285029    .9690059
+         25  |  -.8361665   .7551142    -1.11   0.268    -2.317812    .6454784
+         26  |          0  (base)
+         27  |  -1.055164   .9740858    -1.08   0.279    -2.966463    .8561355
+         28  |  -.4879603    .774384    -0.63   0.529    -2.007415    1.031495
+         29  |  -.5786249   .8459504    -0.68   0.494    -2.238504    1.081254
+         30  |   1.022818   .7195171     1.42   0.155    -.3889797    2.434616
+         31  |  -1.267414   1.130881    -1.12   0.263    -3.486367    .9515397
+         32  |  -1.901082   .9753358    -1.95   0.052    -3.814834    .0126703
+         33  |  -1.074384   .7386633    -1.45   0.146     -2.52375    .3749823
+         34  |  -1.759661   .9037717    -1.95   0.052    -3.532993    .0136723
+         35  |  -2.371693   1.319811    -1.80   0.073    -4.961357    .2179709
+         36  |  -2.726167    1.15953    -2.35   0.019    -5.001336   -.4509988
+         37  |  -1.900844   .9727736    -1.95   0.051    -3.809568    .0078809
+         38  |  -3.894142   1.744402    -2.23   0.026    -7.316915   -.4713688
+         39  |  -2.983318    1.59515    -1.87   0.062    -6.113236    .1466004
+         40  |  -4.271368   2.187405    -1.95   0.051    -8.563377    .0206411
+         52  |  -3.093053   1.410672    -2.19   0.029    -5.860999   -.3251069
+             |
+         scr |
+          2  |    .502172   1.041959     0.48   0.630    -1.542305    2.546649
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |   .1817726   1.019312     0.18   0.858    -1.818267    2.181813
+       13 2  |   .2547013   .7570683     0.34   0.737    -1.230778     1.74018
+       14 2  |   .2835211   1.057014     0.27   0.789    -1.790495    2.357537
+       15 2  |  -.4518161   1.140092    -0.40   0.692    -2.688845    1.785213
+       16 2  |   1.136216   1.410297     0.81   0.421    -1.630993    3.903425
+       17 2  |  -1.416406   .9799414    -1.45   0.149    -3.339195    .5063829
+       18 2  |   -.126618   .5974791    -0.21   0.832     -1.29896    1.045724
+       19 2  |  -.0822638   .9512316    -0.09   0.931     -1.94872    1.784192
+       20 2  |   .6611259   .7632099     0.87   0.387    -.8364039    2.158656
+       21 2  |  -1.158711   .8026312    -1.44   0.149    -2.733591    .4161688
+       22 2  |  -.1201409   .6218321    -0.19   0.847    -1.340267    1.099985
+       23 2  |    -.50106   1.412556    -0.35   0.723    -3.272702    2.270582
+       24 2  |   .4910994   .8398595     0.58   0.559    -1.156828    2.139027
+       25 2  |   .4527524   .9435468     0.48   0.631    -1.398625     2.30413
+       27 2  |   1.638786   1.047482     1.56   0.118    -.4165273    3.694099
+       28 2  |   .5575446   .7726042     0.72   0.471    -.9584181    2.073507
+       29 2  |   .2416105   .9025609     0.27   0.789    -1.529346    2.012567
+       30 2  |   -1.33007   .7281088    -1.83   0.068    -2.758726    .0985862
+       31 2  |   .5742769   1.223939     0.47   0.639    -1.827272    2.975825
+       32 2  |    1.51449   1.076077     1.41   0.160    -.5969311    3.625911
+       33 2  |    .731646   .8645099     0.85   0.398    -.9646494    2.427941
+       34 2  |   1.482536   .9054614     1.64   0.102    -.2941121    3.259184
+       35 2  |   1.786543   1.358879     1.31   0.189    -.8797777    4.452863
+       36 2  |   1.968094    1.23177     1.60   0.110    -.4488202    4.385008
+       37 2  |   .9649633   1.154919     0.84   0.404    -1.301157    3.231083
+       38 2  |   3.245388   1.781574     1.82   0.069    -.2503211    6.741097
+       39 2  |   2.373978   1.637176     1.45   0.147    -.8384012    5.586357
+       40 2  |   3.717859   2.262901     1.64   0.101    -.7222842    8.158003
+       52 2  |   2.820742   1.448231     1.95   0.052    -.0209001    5.662383
+             |
+       _cons |    .245897    .007766    31.66   0.000     .2306591    .2611349
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5347        5347           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/n_hits/estudy_int_main_wbal_etwfe.ster saved
+
+
+*********************************************************************
+Eq4: Estudy Int, outcome=n_bhits: Black Hit Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_bhits
+(dropped 2 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,240,392
+Absorbing 11 HDFE groups                          F(  59,   1088) =  119359.21
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.5786
+                                                  Adj R-squared   =     0.5767
+                                                  Within R-sq.    =     0.0032
+Number of clusters (num_dept) =      1,089        Root MSE        =     0.3865
+
+                           (Std. Err. adjusted for 1,089 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+     n_bhits |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.3707892   .3928356    -0.94   0.345     -1.14159     .400012
+         13  |  -.4910374   .3233356    -1.52   0.129    -1.125469    .1433945
+         14  |  -.5288198   .4674387    -1.13   0.258    -1.446003    .3883635
+         15  |  -.3962461    .477562    -0.83   0.407    -1.333293    .5408007
+         16  |  -.5845034   .3754106    -1.56   0.120    -1.321114    .1521073
+         17  |   .1341854   .1909334     0.70   0.482    -.2404539    .5088247
+         18  |  -.0673287   .1966895    -0.34   0.732    -.4532624     .318605
+         19  |  -.4195847   .4454419    -0.94   0.346    -1.293607    .4544376
+         20  |  -.3621224   .3126489    -1.16   0.247    -.9755854    .2513406
+         21  |  -.1102639   .3458954    -0.32   0.750    -.7889614    .5684336
+         22  |  -.3071434   .2323087    -1.32   0.186    -.7629671    .1486803
+         23  |  -.2809802   .4326034    -0.65   0.516    -1.129812    .5678512
+         24  |  -.7726456   .4536358    -1.70   0.089    -1.662746    .1174544
+         25  |   -.647063   .3903332    -1.66   0.098    -1.412954    .1188281
+         26  |          0  (base)
+         27  |  -.6169076   .5949858    -1.04   0.300    -1.784357    .5505419
+         28  |   -.458635   .4275932    -1.07   0.284    -1.297636    .3803655
+         29  |  -.4519596   .5412676    -0.84   0.404    -1.514006    .6100868
+         30  |  -.0747915   .2839521    -0.26   0.792    -.6319472    .4823642
+         31  |   -.855266   .6530262    -1.31   0.191    -2.136599    .4260672
+         32  |  -.7218724   .4525364    -1.60   0.111    -1.609815    .1660703
+         33  |  -.7356633   .3805444    -1.93   0.053    -1.482347    .0110208
+         34  |  -.5509134   .3614544    -1.52   0.128     -1.26014    .1583132
+         35  |  -.7637842   .4348529    -1.76   0.079    -1.617029     .089461
+         36  |  -1.032702   .5753205    -1.80   0.073    -2.161565     .096161
+         37  |  -.6087977   .3385184    -1.80   0.072    -1.273021    .0554252
+         38  |   -1.40886   .5873867    -2.40   0.017    -2.561398   -.2563206
+         39  |  -.9176179    .473601    -1.94   0.053    -1.846893    .0116566
+         40  |  -1.346563   .6148511    -2.19   0.029    -2.552991   -.1401347
+         52  |  -1.027566   .4093171    -2.51   0.012    -1.830706   -.2244254
+             |
+         scr |
+          2  |   .4159323   .4536044     0.92   0.359     -.474106    1.305971
+             |
+   b0_14#scr |
+        0 2  |          0  (empty)
+        1 2  |   .3011941    .404385     0.74   0.457    -.4922686    1.094657
+       13 2  |   .1223189   .4244381     0.29   0.773     -.710491    .9551287
+       14 2  |   .3477848   .5104984     0.68   0.496     -.653888    1.349458
+       15 2  |   .2868705    .574591     0.50   0.618    -.8405613    1.414302
+       16 2  |   .5225592   .3817524     1.37   0.171     -.226495    1.271613
+       17 2  |  -.3352945   .2281324    -1.47   0.142    -.7829237    .1123347
+       18 2  |  -.0996073   .2537211    -0.39   0.695    -.5974453    .3982307
+       19 2  |   .5411389   .4485203     1.21   0.228    -.3389238    1.421202
+       20 2  |    .542067   .3170182     1.71   0.088    -.0799693    1.164103
+       21 2  |   .1301645   .3777767     0.34   0.730    -.6110889    .8714179
+       22 2  |   .2441018   .2631168     0.93   0.354    -.2721721    .7603756
+       23 2  |   .5402809   .4898626     1.10   0.270    -.4209013    1.501463
+       24 2  |   .6278948   .4673283     1.34   0.179    -.2890718    1.544862
+       25 2  |    .251742   .6167559     0.41   0.683    -.9584236    1.461908
+       27 2  |   1.112017   .6316356     1.76   0.079    -.1273448    2.351379
+       28 2  |   .4198515   .4678245     0.90   0.370    -.4980888    1.337792
+       29 2  |   .2335413   .6105162     0.38   0.702    -.9643812    1.431464
+       30 2  |   .0205139   .3182471     0.06   0.949    -.6039336    .6449615
+       31 2  |   .2883434   .8131073     0.35   0.723    -1.307093    1.883779
+       32 2  |   .3655864   .5469347     0.67   0.504    -.7075798    1.438753
+       33 2  |   .3975447   .5508013     0.72   0.471    -.6832082    1.478298
+       34 2  |   .3525928   .3708053     0.95   0.342    -.3749815    1.080167
+       35 2  |   .2984311    .558465     0.53   0.593    -.7973593    1.394221
+       36 2  |   .5148013   .6478945     0.79   0.427    -.7564628    1.786065
+       37 2  |  -.0165298   .5183671    -0.03   0.975    -1.033642    1.000583
+       38 2  |   .9457995   .6346309     1.49   0.136    -.2994395    2.191038
+       39 2  |   .4329369    .587113     0.74   0.461     -.719065    1.584939
+       40 2  |    .796451   .7341114     1.08   0.278    -.6439834    2.236885
+       52 2  |   .6687642   .4802624     1.39   0.164    -.2735811    1.611109
+             |
+       _cons |   .0837785   .0031436    26.65   0.000     .0776104    .0899467
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5347        5347           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq4/n_bhits/estudy_int_main_wbal_etwfe.ster saved
+(1,635,920 observations deleted)
+file 2000_data/500_working/14_days/eq4_esamples_wbal_etwfe.dta saved
+
+. 
+. *}
+
+. 
+. 
+. 
+. log close
+      name:  <unnamed>
+       log:  /bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/3000_code
+> /05_regs/05_SMCL_logs/05d_estudy_int.smcl
+  log type:  smcl
+ closed on:   6 Sep 2025, 17:55:14
+-------------------------------------------------------------------------------
+
+. 
+. 

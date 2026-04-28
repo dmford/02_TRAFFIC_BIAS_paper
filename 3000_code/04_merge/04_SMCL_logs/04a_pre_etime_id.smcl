@@ -1,0 +1,354 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/3000_code/04_merge/04_SMCL_logs/04a_pre_etime_id.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}11 Apr 2025, 12:37:25
+
+{com}. 
+. 
+. 
+. use "2000_data/300_cleaning/10_FE/FE_clean.dta", replace
+
+. 
+. 
+. 
+. display "string variables:"
+{res}string variables:
+
+{com}. 
+. ds, has(type string) var(32)
+{txt}{col 1}fe_subject_name{col 30}fe_county_name
+{col 1}state{col 30}fe_lat
+{col 1}fe_city{col 30}fe_alleged_weapon
+{col 1}department_name{col 30}fe_aggressive_movement
+{col 1}fe_subject_race_imputations{col 30}fe_fleeing
+{col 1}fe_imputation_prob{col 30}st_dept
+
+{com}. 
+. display ""
+{res}
+
+{com}. 
+. display "non-string variables:"
+{res}non-string variables:
+
+{com}. 
+. ds, not(type string) var(32)
+{txt}{col 1}STN{col 23}fe_subject_sex{col 45}fe_highest_force
+{col 1}STN_stories{col 23}fe_long{col 45}fe_armed
+{col 1}zip{col 23}shooting_date{col 45}fe_subject_age_18_25
+{col 1}fe_id{col 23}fe_subject_race{col 45}fe_subject_sex_flag
+{col 1}fe_subject_age{col 23}fe_subject_race_flag{col 45}STN_merge
+
+{com}. 
+. 
+. 
+. * (NOTE: Now keeping STN + STN_stories, for alternate sig_event definition)
+
+. 
+. keep fe_id st_dept shooting_date fe_subject_race fe_highest_force fe_armed STN STN_stories
+
+. 
+. 
+. 
+. * on multi-death dates, how many deaths are observed:
+
+. 
+. duplicates tag st_dept shooting_date, gen(temp_num_deaths_any)
+
+{p 0 4}{txt}Duplicates in terms of {res} st_dept shooting_date{p_end}
+
+{com}. 
+. bysort st_dept shooting_date: egen num_deaths_any = count(temp_num_deaths_any)
+
+. 
+. drop temp_*
+
+. 
+. 
+. 
+. keep if inlist(fe_highest_force, 1, 5, 7)
+{txt}(9,336 observations deleted)
+
+{com}. 
+. keep if (shooting_date>=18628) & (shooting_date<=22280)
+{txt}(11,332 observations deleted)
+
+{com}. 
+. keep if fe_subject_race==2
+{txt}(10,735 observations deleted)
+
+{com}. 
+. keep if fe_armed==0
+{txt}(2,576 observations deleted)
+
+{com}. 
+. drop fe_highest_force fe_subject_race fe_armed
+
+. 
+. 
+. 
+. *on multi-focal-death dates, how many deaths are observed: 
+
+. 
+. duplicates tag st_dept shooting_date, gen(temp_num_deaths_focal)
+
+{p 0 4}{txt}Duplicates in terms of {res} st_dept shooting_date{p_end}
+
+{com}. 
+. bysort st_dept shooting_date: egen num_deaths_focal = count(temp_num_deaths_focal)
+
+. 
+. drop temp_*
+
+. 
+. 
+. 
+. * renaming so that it matches with gtrend data: 
+
+. 
+. gen edate = shooting_date
+
+. 
+. format edate %td
+
+. 
+. 
+. 
+. * Dropping Unusable Events
+
+. 
+. *drop if inlist(fe_id, 10634, 10881, 26126, 26621, 14028, 24794, 28135, 27252)
+
+. 
+. * may not have been armed, but the other robbers were
+
+. 
+. drop if fe_id == 10634
+{txt}(1 observation deleted)
+
+{com}. 
+. * murder-suicide hostage situation
+
+. 
+. drop if fe_id == 10881 
+{txt}(1 observation deleted)
+
+{com}. 
+. * hostage execution
+
+. 
+. drop if fe_id == 26126
+{txt}(1 observation deleted)
+
+{com}. 
+. * shot-and-killed by bf, prompting officer to kill the bf 
+
+. 
+. drop if fe_id == 26621
+{txt}(1 observation deleted)
+
+{com}. 
+. * evidently a gun WAS found on the scene
+
+. 
+. drop if fe_id == 14028
+{txt}(1 observation deleted)
+
+{com}. 
+. * shot by someone else (not LEO)
+
+. 
+. drop if fe_id == 24794
+{txt}(1 observation deleted)
+
+{com}. 
+. * shot by own son, not police
+
+. 
+. drop if fe_id == 28135
+{txt}(1 observation deleted)
+
+{com}. 
+. * hostage execution 
+
+. 
+. drop if fe_id == 27252
+{txt}(1 observation deleted)
+
+{com}. 
+. 
+. 
+. * I was having an issue with treated observations being limited to +/-135 days from an event
+
+. 
+. * here, I expand each unique fe_id obs (into 2*14*30, twice my largest bin size) 
+
+. 
+. * I think use tag to identify the first obs for each one, and "pin" the rest to that date
+
+. 
+. * (this should increase my "event sample" by 840x)
+
+. 
+. expand (2*14*30)
+{txt}(505,078 observations created)
+
+{com}. 
+. egen temp_tag = tag(fe_id)
+
+. 
+. gen date = (edate-(14*30)) if (temp_tag==1)
+{txt}(505,078 missing values generated)
+
+{com}. 
+. gsort fe_id -temp_tag
+
+. 
+. by fe_id: replace date = date[_n-1]+1 if (date==.)
+{txt}(505,078 real changes made)
+
+{com}. 
+. format date %td
+
+. 
+. drop temp*
+
+. 
+. 
+. 
+. * Merging FE data with Google Trends data: 
+
+. 
+. merge 1:m fe_id date using "2000_data/400_base/30_gtrend/google_trends", nogen
+{res}
+{txt}{col 5}Result{col 38}# of obs.
+{col 5}{hline 41}
+{col 5}not matched{col 30}{res}         466,800
+{txt}{col 9}from master{col 30}{res}         466,800{txt}  
+{col 9}from using{col 30}{res}               0{txt}  
+
+{col 5}matched{col 30}{res}          38,880{txt}  
+{col 5}{hline 41}
+
+{com}. 
+. * (merged all from Google Trends, only un-merged are ones I know will not match to SOPP)
+
+. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. bysort fe_id: egen temp1 = max(STN)
+
+. 
+. bysort fe_id: egen temp2 = max(STN_stories)
+
+. 
+. replace STN = temp1
+{txt}(0 real changes made)
+
+{com}. 
+. replace STN_stories = temp2
+{txt}(0 real changes made)
+
+{com}. 
+. drop temp*
+
+. 
+. 
+. 
+. drop local_name_blank local_dept_blank
+
+. 
+. 
+. 
+. * 8/23/24: FE + SOPP fe_id matches
+
+. 
+. gen match_tag = 1 if inlist(fe_id, 9779, 9788, 9820, 9929, 10092, 10191, 10229, 10634, 10787, 10797, 10827, 10881, 11121, 11164, 11223, 11237, 11264, 11432, 11455, 11604, 11680, 11688, 12008, 12109, 12208, 12577, 12605, 12737, 12752, 12853, 13044, 13115, 13130, 13160, 13232, 13248, 13311, 13340, 13379, 13406, 13480, 13489, 13539, 13556, 13715, 13951, 14028, 14200, 14203, 14224, 14243, 14353, 14384, 14442, 14446, 14449, 14481, 14483, 14563, 14584, 14615, 14622, 14754, 14827, 14895, 14918, 14934, 15045, 15090, 15177, 15296, 15524, 15767, 15779, 15792, 15805, 15806, 15829, 15934, 16009, 16069, 16332, 16398, 16467, 16486, 17046, 17065, 17221, 17241, 17270, 17396, 17544, 17676, 17698, 17767, 17798, 17904, 17988, 18137, 18210, 18248, 18496, 18500, 19288, 21825, 21826, 21828, 21831, 21834, 21884, 22047, 22072, 22771, 23267, 23273, 23315, 23411, 23468, 23535, 23538, 23687, 23689, 23697, 23882, 24278, 24794, 24951, 24990, 25030, 25084, 25379, 25411, 25618, 25705, 25818, 25891, 26080, 26126, 26289, 26489, 26621, 27015, 27250, 27252, 27456, 27472, 27945, 28135, 28184, 28992, 29348, 29387)
+{txt}(384,720 missing values generated)
+
+{com}. 
+. 
+. 
+. * using above match-data to expand this GTrend scrutiny data (which is fe_id invariant) to the full series of event-obs 
+
+. 
+. foreach scr in scr_nl_postm scr_nl_postp scr_nu_postm scr_nu_postp scr_dl_postm scr_dl_postp scr_du_postm scr_du_postp {c -(}
+{txt}  2{com}. 
+. bysort fe_id: egen temp_max = max(`scr') if match_tag==1
+{txt}  3{com}. 
+. replace `scr' = temp_max if `scr'==.
+{txt}  4{com}. 
+. drop temp_*
+{txt}  5{com}. 
+. {c )-}
+{txt}(384,720 missing values generated)
+(82,080 real changes made)
+(384,720 missing values generated)
+(82,080 real changes made)
+(384,720 missing values generated)
+(82,080 real changes made)
+(384,720 missing values generated)
+(82,080 real changes made)
+(384,720 missing values generated)
+(82,080 real changes made)
+(384,720 missing values generated)
+(82,080 real changes made)
+(384,720 missing values generated)
+(82,080 real changes made)
+(384,720 missing values generated)
+(82,080 real changes made)
+
+{com}. 
+. 
+. 
+. display "string variables:"
+{res}string variables:
+
+{com}. 
+. ds, has(type string) var(32)
+{txt}{col 1}st_dept
+
+{com}. 
+. display ""
+{res}
+
+{com}. 
+. display "non-string variables:"
+{res}non-string variables:
+
+{com}. 
+. ds, not(type string) var(32)
+{txt}{col 1}STN{col 20}pre_gt_name_upper{col 39}du_postm{col 58}scr_du_postp
+{col 1}STN_stories{col 20}pre_gt_dept_lower{col 39}du_postp{col 58}n_scr
+{col 1}fe_id{col 20}pre_gt_dept_upper{col 39}scr_nl_postm{col 58}d_scr
+{col 1}shooting_date{col 20}nl_postm{col 39}scr_nl_postp{col 58}or_scr
+{col 1}num_deaths_any{col 20}nl_postp{col 39}scr_nu_postm{col 58}and_scr
+{col 1}num_deaths_focal{col 20}nu_postm{col 39}scr_nu_postp{col 58}match_tag
+{col 1}edate{col 20}nu_postp{col 39}scr_dl_postm
+{col 1}date{col 20}dl_postm{col 39}scr_dl_postp
+{col 1}pre_gt_name_lower{col 20}dl_postp{col 39}scr_du_postm
+
+{com}. 
+. 
+. 
+. save "2000_data/300_cleaning/10_FE/FEgtrend_pre_id.dta", replace
+{txt}file 2000_data/300_cleaning/10_FE/FEgtrend_pre_id.dta saved
+
+{com}. 
+. 
+. 
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/3000_code/04_merge/04_SMCL_logs/04a_pre_etime_id.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}11 Apr 2025, 12:37:34
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

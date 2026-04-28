@@ -1,0 +1,6978 @@
+
+  ___  ____  ____  ____  ____ (R)
+ /__    /   ____/   /   ____/
+___/   /   /___/   /   /___/   16.1   Copyright 1985-2019 StataCorp LLC
+  Statistics/Data analysis            StataCorp
+                                      4905 Lakeway Drive
+                                      College Station, Texas 77845 USA
+                                      800-STATA-PC        https://www.stata.com
+                                      979-696-4600        stata@stata.com
+                                      979-696-4601 (fax)
+
+Stata license: 4-user network perpetual
+Serial number: 501606358866
+  Licensed to: Michael Bates
+               University of California, Riverside
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. New update available; type -update all-
+
+. *  04b_id_merge_sig_etime.do
+
+. 
+. 
+. 
+. clear all
+
+. 
+. 
+. 
+. * (1) HPCC cluster, and (2) personal machine: 
+
+. 
+. cd "/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper"
+/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper
+
+. 
+. *cd "~\coding\02_TRAFFIC_BIAS_paper\"
+
+. 
+. 
+. 
+. *****************************************************************************
+> ***
+
+. 
+. 
+. 
+. log using "3000_code/04_merge/04_SMCL_logs/04b_id_merge_sig_etime", smcl repl
+> ace
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/3000_code
+> /04_merge/04_SMCL_logs/04b_id_merge_sig_etime.smcl
+  log type:  smcl
+ opened on:  24 Jan 2025, 10:38:09
+
+. 
+. 
+. 
+. use "2000_data/300_cleaning/10_FE/FEgtrend_pre_id.dta", replace
+
+. 
+. 
+. 
+. display "string variables:"
+string variables:
+
+. 
+. ds, has(type string) var(32)
+st_dept
+
+. 
+. display ""
+
+
+. 
+. display "non-string variables:"
+non-string variables:
+
+. 
+. ds, not(type string) var(32)
+STN               num_deaths_focal  scr_nu_postm      scr_du_postp
+STN_stories       edate             scr_nu_postp      match_tag
+fe_id             date              scr_dl_postm
+shooting_date     scr_nl_postm      scr_dl_postp
+num_deaths_any    scr_nl_postp      scr_du_postm
+
+. 
+. 
+. 
+. * making a decision: using (post-mean)-(pre-mean) instead of (post_peak)-(pre
+> -mean)
+
+. 
+. drop scr_*_postp
+
+. 
+. rename scr_nl_postm scr_nl
+
+. 
+. rename scr_nu_postm scr_nu
+
+. 
+. rename scr_dl_postm scr_dl
+
+. 
+. rename scr_du_postm scr_du
+
+. 
+. 
+. 
+. **********   identifying nearest any-events   *******************************
+> ***
+
+. 
+. 
+. 
+. * At this stage I have (602 events * 840 days) = 505,680 observations
+
+. 
+. 
+. 
+. * making a list of all departments: 
+
+. 
+. qui levelsof st_dept, local(reg_depts)
+
+. 
+. 
+. 
+. * making some placeholders, note: e_1 is closest "by default" in this approac
+> h
+
+. 
+. *note: this is only using TREATED st_depts
+
+. 
+. * 0 if any event, 1 if (scr_nl>0), 2 if (scr_nu>0), 3 if (scr_dl>0), 4 if (sc
+> r_du>0)
+
+. 
+. gen reg_etime0 = .
+(505,680 missing values generated)
+
+. 
+. gen reg_etime1 = .
+(505,680 missing values generated)
+
+. 
+. gen reg_etime2 = .
+(505,680 missing values generated)
+
+. 
+. gen reg_etime3 = .
+(505,680 missing values generated)
+
+. 
+. gen reg_etime4 = .
+(505,680 missing values generated)
+
+. 
+. 
+. 
+. gen reg_edate0 = .
+(505,680 missing values generated)
+
+. 
+. gen reg_edate1 = .
+(505,680 missing values generated)
+
+. 
+. gen reg_edate2 = .
+(505,680 missing values generated)
+
+. 
+. gen reg_edate3 = .
+(505,680 missing values generated)
+
+. 
+. gen reg_edate4 = .
+(505,680 missing values generated)
+
+. 
+. 
+. 
+. gen nearest_etime0 = "e0_1"
+
+. 
+. gen nearest_etime1 = "e1_1"
+
+. 
+. gen nearest_etime2 = "e2_1"
+
+. 
+. gen nearest_etime3 = "e3_1"
+
+. 
+. gen nearest_etime4 = "e4_1"
+
+. 
+. 
+. 
+. gen nearest_edate0 = .
+(505,680 missing values generated)
+
+. 
+. gen nearest_edate1 = .
+(505,680 missing values generated)
+
+. 
+. gen nearest_edate2 = .
+(505,680 missing values generated)
+
+. 
+. gen nearest_edate3 = .
+(505,680 missing values generated)
+
+. 
+. gen nearest_edate4 = .
+(505,680 missing values generated)
+
+. 
+. 
+. 
+. * figures out how many events does each dept have (max=19)
+
+. 
+. *make e_`i' variables for this many potential-events
+
+. 
+. egen reg_event_tag0 = tag(st_dept edate) 
+
+. 
+. egen reg_event_tag1 = tag(st_dept edate) if (scr_nl != .)
+
+. 
+. egen reg_event_tag2 = tag(st_dept edate) if (scr_nu != .)
+
+. 
+. egen reg_event_tag3 = tag(st_dept edate) if (scr_dl != .)
+
+. 
+. egen reg_event_tag4 = tag(st_dept edate) if (scr_du != .)
+
+. 
+. 
+. 
+. bysort st_dept: egen reg_event_count0 = sum(reg_event_tag0)
+
+. 
+. bysort st_dept: egen reg_event_count1 = sum(reg_event_tag1)
+
+. 
+. bysort st_dept: egen reg_event_count2 = sum(reg_event_tag2)
+
+. 
+. bysort st_dept: egen reg_event_count3 = sum(reg_event_tag3)
+
+. 
+. bysort st_dept: egen reg_event_count4 = sum(reg_event_tag4)
+
+. 
+. 
+. 
+. * identifying max #events: 
+
+. 
+. summ reg_event_count0 
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+reg_event~t0 |    505,680    3.888704    4.425006          1         19
+
+. 
+. local reg_event_max0 = r(max)
+
+. 
+. drop reg_event_tag0 reg_event_count0
+
+. 
+. 
+. 
+. summ reg_event_count1 
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+reg_event~t1 |    505,680    1.167774    2.693065          0         13
+
+. 
+. local reg_event_max1 = r(max)
+
+. 
+. drop reg_event_tag1 reg_event_count1
+
+. 
+. 
+. 
+. summ reg_event_count2 
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+reg_event~t2 |    505,680    1.167774    2.693065          0         13
+
+. 
+. local reg_event_max2 = r(max)
+
+. 
+. drop reg_event_tag2 reg_event_count2
+
+. 
+. 
+. 
+. summ reg_event_count3 
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+reg_event~t3 |    505,680    1.167774    2.693065          0         13
+
+. 
+. local reg_event_max3 = r(max)
+
+. 
+. drop reg_event_tag3 reg_event_count3
+
+. 
+. 
+. 
+. summ reg_event_count4 
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+reg_event~t4 |    505,680    1.167774    2.693065          0         13
+
+. 
+. local reg_event_max4 = r(max)
+
+. 
+. drop reg_event_tag4 reg_event_count4
+
+. 
+. 
+. 
+. * making placeholder series of e_* based on max #events: 
+
+. 
+. display `reg_event_max0'
+19
+
+. 
+. forvalues i=1(1)`reg_event_max0' {
+  2. 
+. gen e0_`i' = .
+  3. 
+. }
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+
+. 
+. 
+. 
+. display `reg_event_max1'
+13
+
+. 
+. forvalues i=1(1)`reg_event_max1' {
+  2. 
+. gen e1_`i' = .
+  3. 
+. }
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+
+. 
+. 
+. 
+. display `reg_event_max2'
+13
+
+. 
+. forvalues i=1(1)`reg_event_max2' {
+  2. 
+. gen e2_`i' = .
+  3. 
+. }
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+
+. 
+. 
+. 
+. display `reg_event_max3'
+13
+
+. 
+. forvalues i=1(1)`reg_event_max3' {
+  2. 
+. gen e3_`i' = .
+  3. 
+. }
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+
+. 
+. 
+. 
+. display `reg_event_max4'
+13
+
+. 
+. forvalues i=1(1)`reg_event_max4' {
+  2. 
+. gen e4_`i' = .
+  3. 
+. }
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+(505,680 missing values generated)
+
+. 
+. 
+. 
+. * for all treated depts, pull list of edates
+
+. 
+. * determine etime, iteratively determine lowest-etime, i.e. nearest-event
+
+. 
+. * look at all depts d, make list of edates, replace e_1 with etime relative t
+> o dept's 1st edate
+
+. 
+. * continue, replacing e_2 with etime relative to dept's 2nd edate, up to (max
+>  #events)
+
+. 
+. * replacing "nearest etime=e_1" variable with #days relative to nearest event
+>  for each dept*event
+
+. 
+. foreach d of local reg_depts {
+  2. 
+. display ""
+  3. 
+. display "Department: `d'"
+  4. 
+. qui levelsof edate if (st_dept=="`d'"), local(edates)
+  5. 
+. local j = 1
+  6. 
+. foreach e of local edates {
+  7. 
+. display "Event-Date: " %td `e'
+  8. 
+. replace e0_`j' = date - `e' if (st_dept=="`d'")
+  9. 
+. local ++j
+ 10. 
+. }
+ 11. 
+. qui replace nearest_etime0 = "e0_2" if (abs(e0_2) < abs(e0_1)) & (st_dept=="`
+> d'")
+ 12. 
+. qui replace nearest_etime0 = "e0_3" if (abs(e0_3) < abs(e0_2)) & (st_dept=="`
+> d'")
+ 13. 
+. qui replace nearest_etime0 = "e0_4" if (abs(e0_4) < abs(e0_3)) & (st_dept=="`
+> d'")
+ 14. 
+. qui replace nearest_etime0 = "e0_5" if (abs(e0_5) < abs(e0_4)) & (st_dept=="`
+> d'")
+ 15. 
+. qui replace nearest_etime0 = "e0_6" if (abs(e0_6) < abs(e0_5)) & (st_dept=="`
+> d'")
+ 16. 
+. qui replace nearest_etime0 = "e0_7" if (abs(e0_7) < abs(e0_6)) & (st_dept=="`
+> d'")
+ 17. 
+. qui replace nearest_etime0 = "e0_8" if (abs(e0_8) < abs(e0_7)) & (st_dept=="`
+> d'")
+ 18. 
+. qui replace nearest_etime0 = "e0_9" if (abs(e0_9) < abs(e0_8)) & (st_dept=="`
+> d'")
+ 19. 
+. qui replace nearest_etime0 = "e0_10" if (abs(e0_10) < abs(e0_9)) & (st_dept==
+> "`d'")
+ 20. 
+. qui replace nearest_etime0 = "e0_11" if (abs(e0_11) < abs(e0_10)) & (st_dept=
+> ="`d'")
+ 21. 
+. qui replace nearest_etime0 = "e0_12" if (abs(e0_12) < abs(e0_11)) & (st_dept=
+> ="`d'")
+ 22. 
+. qui replace nearest_etime0 = "e0_13" if (abs(e0_13) < abs(e0_12)) & (st_dept=
+> ="`d'")
+ 23. 
+. qui replace nearest_etime0 = "e0_14" if (abs(e0_14) < abs(e0_13)) & (st_dept=
+> ="`d'")
+ 24. 
+. qui replace nearest_etime0 = "e0_15" if (abs(e0_15) < abs(e0_14)) & (st_dept=
+> ="`d'")
+ 25. 
+. qui replace nearest_etime0 = "e0_16" if (abs(e0_16) < abs(e0_15)) & (st_dept=
+> ="`d'")
+ 26. 
+. qui replace nearest_etime0 = "e0_17" if (abs(e0_17) < abs(e0_16)) & (st_dept=
+> ="`d'")
+ 27. 
+. qui replace nearest_etime0 = "e0_18" if (abs(e0_18) < abs(e0_17)) & (st_dept=
+> ="`d'")
+ 28. 
+. qui replace nearest_etime0 = "e0_19" if (abs(e0_19) < abs(e0_18)) & (st_dept=
+> ="`d'")
+ 29. 
+. }
+
+Department: AL_alexander city police department
+Event-Date: 08mar2014
+(840 real changes made)
+
+Department: AL_barbour county sheriff's office
+Event-Date: 15oct2013
+(840 real changes made)
+
+Department: AL_birmingham police department
+Event-Date: 07sep2011
+(1,680 real changes made)
+Event-Date: 10apr2020
+(1,680 real changes made)
+
+Department: AL_childersburg police department
+Event-Date: 03dec2012
+(840 real changes made)
+
+Department: AL_dothan police department
+Event-Date: 28jun2012
+(840 real changes made)
+
+Department: AL_henry county sheriff's office
+Event-Date: 02jun2017
+(840 real changes made)
+
+Department: AL_jefferson county sheriff's office
+Event-Date: 09may2014
+(840 real changes made)
+
+Department: AL_limestone county sheriff's office
+Event-Date: 31jan2013
+(840 real changes made)
+
+Department: AL_madison county sheriff's office
+Event-Date: 27nov2013
+(840 real changes made)
+
+Department: AL_phenix city police department
+Event-Date: 07may2017
+(840 real changes made)
+
+Department: AL_prichard police department
+Event-Date: 18nov2017
+(840 real changes made)
+
+Department: AL_selma police department
+Event-Date: 02jun2013
+(1,680 real changes made)
+
+Department: AL_warrior police department
+Event-Date: 17oct2014
+(840 real changes made)
+
+Department: AR_alexander police department
+Event-Date: 08sep2012
+(840 real changes made)
+
+Department: AR_arkansas state police
+Event-Date: 25aug2011
+(840 real changes made)
+
+Department: AR_blytheville police department
+Event-Date: 07apr2019
+(840 real changes made)
+
+Department: AR_fayetteville police department
+Event-Date: 23apr2016
+(840 real changes made)
+
+Department: AR_jacksonville police department
+Event-Date: 13jun2019
+(840 real changes made)
+
+Department: AR_little rock police department
+Event-Date: 08jul2012
+(4,200 real changes made)
+Event-Date: 12aug2012
+(4,200 real changes made)
+Event-Date: 11jan2013
+(4,200 real changes made)
+Event-Date: 07oct2017
+(4,200 real changes made)
+Event-Date: 01may2020
+(4,200 real changes made)
+
+Department: AR_north little rock police department
+Event-Date: 08may2011
+(840 real changes made)
+
+Department: AR_union county sheriff's office
+Event-Date: 08jan2015
+(840 real changes made)
+
+Department: AR_west memphis police department
+Event-Date: 21may2018
+(1,680 real changes made)
+Event-Date: 16jan2019
+(1,680 real changes made)
+
+Department: AZ_arizona department of public safety
+Event-Date: 07apr2013
+(2,520 real changes made)
+Event-Date: 07dec2017
+(2,520 real changes made)
+Event-Date: 25may2020
+(2,520 real changes made)
+
+Department: AZ_casa grande police department
+Event-Date: 15mar2018
+(840 real changes made)
+
+Department: AZ_phoenix police department
+Event-Date: 23mar2014
+(2,520 real changes made)
+Event-Date: 02dec2014
+(2,520 real changes made)
+Event-Date: 04jan2017
+(2,520 real changes made)
+
+Department: AZ_scottsdale police department
+Event-Date: 15jan2015
+(840 real changes made)
+
+Department: AZ_tempe police department
+Event-Date: 27jul2016
+(840 real changes made)
+
+Department: CA_alameda county sheriff's office
+Event-Date: 30mar2013
+(3,360 real changes made)
+Event-Date: 17jul2014
+(3,360 real changes made)
+Event-Date: 03aug2014
+(3,360 real changes made)
+Event-Date: 13mar2019
+(3,360 real changes made)
+
+Department: CA_anaheim police department
+Event-Date: 02mar2018
+(840 real changes made)
+
+Department: CA_antioch police department
+Event-Date: 05feb2016
+(840 real changes made)
+
+Department: CA_bakersfield police department
+Event-Date: 04nov2017
+(840 real changes made)
+
+Department: CA_barstow police department
+Event-Date: 05apr2018
+(840 real changes made)
+
+Department: CA_berkeley police department
+Event-Date: 12feb2013
+(840 real changes made)
+
+Department: CA_california department of corrections and rehabilitation
+Event-Date: 10may2011
+(1,680 real changes made)
+
+Department: CA_california highway patrol
+Event-Date: 11may2014
+(840 real changes made)
+
+Department: CA_california state university police department san bernardino
+Event-Date: 08dec2012
+(840 real changes made)
+
+Department: CA_chula vista police department
+Event-Date: 13mar2020
+(840 real changes made)
+
+Department: CA_contra costa sheriff's office
+Event-Date: 03nov2018
+(840 real changes made)
+
+Department: CA_fremont police department
+Event-Date: 05feb2017
+(840 real changes made)
+
+Department: CA_gilroy police department
+Event-Date: 28jul2019
+(840 real changes made)
+
+Department: CA_hayward police department
+Event-Date: 05oct2012
+(2,520 real changes made)
+Event-Date: 06jul2014
+(2,520 real changes made)
+Event-Date: 19dec2015
+(2,520 real changes made)
+
+Department: CA_inglewood police department
+Event-Date: 27jun2014
+(1,680 real changes made)
+Event-Date: 21feb2016
+(1,680 real changes made)
+
+Department: CA_long beach police department
+Event-Date: 19nov2013
+(840 real changes made)
+
+Department: CA_los angeles county sheriff's department
+Event-Date: 24aug2012
+(8,400 real changes made)
+Event-Date: 26apr2013
+(8,400 real changes made)
+Event-Date: 27oct2013
+(8,400 real changes made)
+Event-Date: 19oct2015
+(8,400 real changes made)
+Event-Date: 20dec2015
+(8,400 real changes made)
+Event-Date: 28jul2016
+(8,400 real changes made)
+Event-Date: 06jun2019
+(8,400 real changes made)
+Event-Date: 03jul2019
+(8,400 real changes made)
+Event-Date: 11jun2020
+(8,400 real changes made)
+Event-Date: 31aug2020
+(8,400 real changes made)
+
+Department: CA_los angeles police department
+Event-Date: 14jan2011
+(7,560 real changes made)
+Event-Date: 24jan2011
+(7,560 real changes made)
+Event-Date: 03mar2011
+(7,560 real changes made)
+Event-Date: 22jul2012
+(7,560 real changes made)
+Event-Date: 11aug2014
+(7,560 real changes made)
+Event-Date: 01mar2015
+(7,560 real changes made)
+Event-Date: 06may2015
+(7,560 real changes made)
+Event-Date: 29oct2018
+(7,560 real changes made)
+Event-Date: 19dec2018
+(7,560 real changes made)
+
+Department: CA_oakland police department
+Event-Date: 18may2011
+(1,680 real changes made)
+Event-Date: 19jul2015
+(1,680 real changes made)
+
+Department: CA_orange county sheriff's department
+Event-Date: 10feb2012
+(840 real changes made)
+
+Department: CA_pasadena police department
+Event-Date: 24mar2012
+(840 real changes made)
+
+Department: CA_riverside county sheriff's department
+Event-Date: 11oct2013
+(840 real changes made)
+
+Department: CA_sacramento county sheriff's office
+Event-Date: 06feb2012
+(1,680 real changes made)
+Event-Date: 27oct2019
+(1,680 real changes made)
+
+Department: CA_san bernardino county sheriff's office
+Event-Date: 19nov2015
+(1,680 real changes made)
+Event-Date: 02oct2018
+(1,680 real changes made)
+
+Department: CA_san bernardino police department
+Event-Date: 03oct2014
+(840 real changes made)
+
+Department: CA_san diego harbor police department
+Event-Date: 27oct2015
+(840 real changes made)
+
+Department: CA_san francisco police department
+Event-Date: 19may2016
+(1,680 real changes made)
+Event-Date: 01dec2017
+(1,680 real changes made)
+
+Department: CA_south lake tahoe police department
+Event-Date: 15jun2015
+(840 real changes made)
+
+Department: CA_stockton police department
+Event-Date: 11apr2012
+(2,520 real changes made)
+Event-Date: 13apr2016
+(2,520 real changes made)
+Event-Date: 15jul2020
+(2,520 real changes made)
+
+Department: CA_torrance police department
+Event-Date: 31oct2016
+(840 real changes made)
+
+Department: CA_tulare police department
+Event-Date: 12mar2018
+(840 real changes made)
+
+Department: CA_u.s. immigration and customs enforcement
+Event-Date: 17oct2015
+(840 real changes made)
+
+Department: CA_vacaville police department
+Event-Date: 29jun2013
+(840 real changes made)
+
+Department: CO_aurora police department
+Event-Date: 06mar2015
+(4,200 real changes made)
+Event-Date: 22dec2015
+(4,200 real changes made)
+Event-Date: 31aug2018
+(4,200 real changes made)
+Event-Date: 17dec2018
+(4,200 real changes made)
+Event-Date: 24aug2019
+(4,200 real changes made)
+
+Department: CO_colorado springs police department
+Event-Date: 27feb2020
+(840 real changes made)
+
+Department: CO_denver police department
+Event-Date: 28dec2020
+(840 real changes made)
+
+Department: CO_westminster police department
+Event-Date: 26apr2019
+(840 real changes made)
+
+Department: CT_bridgeport police department
+Event-Date: 01apr2013
+(840 real changes made)
+
+Department: CT_connecticut state police
+Event-Date: 20feb2019
+(840 real changes made)
+
+Department: CT_new britain police department
+Event-Date: 14dec2017
+(840 real changes made)
+
+Department: DC_u.s. secret service
+Event-Date: 03oct2013
+(840 real changes made)
+
+Department: DC_washington metropolitan police department
+Event-Date: 21aug2011
+(4,200 real changes made)
+Event-Date: 29sep2015
+(4,200 real changes made)
+Event-Date: 11sep2016
+(4,200 real changes made)
+Event-Date: 16sep2019
+(4,200 real changes made)
+Event-Date: 02sep2020
+(4,200 real changes made)
+
+Department: DE_new castle county police department
+Event-Date: 10may2012
+(840 real changes made)
+
+Department: FL_brevard county sheriff's office
+Event-Date: 19jun2016
+(1,680 real changes made)
+Event-Date: 09dec2018
+(1,680 real changes made)
+
+Department: FL_broward county sheriff's office
+Event-Date: 06dec2017
+(1,680 real changes made)
+Event-Date: 07dec2017
+(1,680 real changes made)
+
+Department: FL_citrus county sheriff's office
+Event-Date: 26sep2012
+(840 real changes made)
+
+Department: FL_fernandina beach police department
+Event-Date: 29may2020
+(840 real changes made)
+
+Department: FL_florida highway patrol
+Event-Date: 25may2016
+(1,680 real changes made)
+Event-Date: 12mar2019
+(1,680 real changes made)
+
+Department: FL_fort lauderdale police department
+Event-Date: 08mar2020
+(840 real changes made)
+
+Department: FL_gretna police department
+Event-Date: 28oct2014
+(840 real changes made)
+
+Department: FL_hallandale beach police department
+Event-Date: 22may2016
+(840 real changes made)
+
+Department: FL_hillsborough county sheriff's office
+Event-Date: 30aug2016
+(840 real changes made)
+
+Department: FL_hollywood police department
+Event-Date: 05sep2018
+(840 real changes made)
+
+Department: FL_indian river county sheriff's office
+Event-Date: 19mar2017
+(840 real changes made)
+
+Department: FL_jacksonville sheriff's office
+Event-Date: 09may2012
+(6,720 real changes made)
+Event-Date: 31may2012
+(6,720 real changes made)
+Event-Date: 28jan2013
+(6,720 real changes made)
+Event-Date: 12may2015
+(6,720 real changes made)
+Event-Date: 22may2016
+(6,720 real changes made)
+Event-Date: 23dec2016
+(6,720 real changes made)
+Event-Date: 01nov2018
+(6,720 real changes made)
+Event-Date: 05jan2020
+(6,720 real changes made)
+
+Department: FL_largo police department
+Event-Date: 23mar2018
+(840 real changes made)
+
+Department: FL_lauderhill police department
+Event-Date: 23jan2015
+(840 real changes made)
+
+Department: FL_lee county sheriff's office
+Event-Date: 28jun2012
+(1,680 real changes made)
+Event-Date: 14nov2016
+(1,680 real changes made)
+
+Department: FL_manatee county sheriff's office
+Event-Date: 23jan2018
+(1,680 real changes made)
+Event-Date: 26feb2020
+(1,680 real changes made)
+
+Department: FL_martin county sheriff's office
+Event-Date: 07jun2013
+(840 real changes made)
+
+Department: FL_miami beach police department
+Event-Date: 08oct2017
+(840 real changes made)
+
+Department: FL_miami-dade police department
+Event-Date: 11apr2011
+(6,720 real changes made)
+Event-Date: 26may2012
+(6,720 real changes made)
+Event-Date: 25nov2012
+(6,720 real changes made)
+Event-Date: 04jan2013
+(6,720 real changes made)
+Event-Date: 08jul2014
+(6,720 real changes made)
+Event-Date: 28sep2015
+(6,720 real changes made)
+Event-Date: 28aug2017
+(6,720 real changes made)
+
+Department: FL_miramar police department
+Event-Date: 01feb2011
+(1,680 real changes made)
+
+Department: FL_nassau county sheriff's office
+Event-Date: 10feb2014
+(840 real changes made)
+
+Department: FL_orlando police department
+Event-Date: 16jan2013
+(2,520 real changes made)
+Event-Date: 04may2013
+(2,520 real changes made)
+Event-Date: 17jul2015
+(2,520 real changes made)
+
+Department: FL_palm beach county sheriff's office
+Event-Date: 20apr2013
+(1,680 real changes made)
+Event-Date: 04feb2014
+(1,680 real changes made)
+
+Department: FL_pasco county sheriff's office
+Event-Date: 01jul2014
+(840 real changes made)
+
+Department: FL_polk county sheriff's office
+Event-Date: 07jun2011
+(840 real changes made)
+
+Department: FL_putnam county sheriff's office
+Event-Date: 19jul2012
+(1,680 real changes made)
+Event-Date: 06mar2015
+(1,680 real changes made)
+
+Department: FL_tallahassee police department
+Event-Date: 29may2014
+(2,520 real changes made)
+Event-Date: 04feb2015
+(2,520 real changes made)
+Event-Date: 20mar2020
+(2,520 real changes made)
+
+Department: FL_winter park police department
+Event-Date: 21jul2011
+(840 real changes made)
+
+Department: GA_adairsville police department
+Event-Date: 22jul2014
+(840 real changes made)
+
+Department: GA_athens-clarke county police department
+Event-Date: 16oct2017
+(840 real changes made)
+
+Department: GA_atlanta police department
+Event-Date: 27jun2012
+(4,200 real changes made)
+Event-Date: 23jun2016
+(4,200 real changes made)
+Event-Date: 09feb2018
+(4,200 real changes made)
+Event-Date: 15jan2019
+(4,200 real changes made)
+Event-Date: 22jan2019
+(4,200 real changes made)
+
+Department: GA_avondale estates police department
+Event-Date: 18jan2013
+(840 real changes made)
+
+Department: GA_chatham county sheriff's office
+Event-Date: 02jan2015
+(840 real changes made)
+
+Department: GA_clayton county sheriff's office
+Event-Date: 25dec2019
+(840 real changes made)
+
+Department: GA_cobb county police department
+Event-Date: 17apr2018
+(840 real changes made)
+
+Department: GA_cobb county sheriff's office
+Event-Date: 17dec2020
+(840 real changes made)
+
+Department: GA_college park police department
+Event-Date: 06may2018
+(840 real changes made)
+
+Department: GA_columbus police department
+Event-Date: 06sep2011
+(840 real changes made)
+
+Department: GA_dekalb county police department
+Event-Date: 09mar2015
+(840 real changes made)
+
+Department: GA_dekalb county sheriff's office
+Event-Date: 30sep2020
+(840 real changes made)
+
+Department: GA_east point police department
+Event-Date: 17nov2011
+(1,680 real changes made)
+Event-Date: 10nov2016
+(1,680 real changes made)
+
+Department: GA_georgia state patrol
+Event-Date: 29dec2017
+(2,520 real changes made)
+Event-Date: 23jan2020
+(2,520 real changes made)
+Event-Date: 07aug2020
+(2,520 real changes made)
+
+Department: GA_greene county sheriff's office
+Event-Date: 25aug2017
+(840 real changes made)
+
+Department: GA_leesburg police department
+Event-Date: 21oct2013
+(840 real changes made)
+
+Department: GA_lowndes county sheriff's office
+Event-Date: 08apr2015
+(840 real changes made)
+
+Department: GA_macon police department
+Event-Date: 21dec2012
+(840 real changes made)
+
+Department: GA_port wentworth police department
+Event-Date: 26jun2012
+(840 real changes made)
+
+Department: GA_savannah police department
+Event-Date: 27jul2018
+(840 real changes made)
+
+Department: GA_smyrna police department
+Event-Date: 24mar2015
+(840 real changes made)
+
+Department: GA_thomas county sheriff's office
+Event-Date: 15aug2017
+(840 real changes made)
+
+Department: GA_union city police department
+Event-Date: 14dec2011
+(840 real changes made)
+
+Department: IA_waterloo police department
+Event-Date: 18nov2012
+(840 real changes made)
+
+Department: ID_idaho state police
+Event-Date: 02nov2018
+(840 real changes made)
+
+Department: IL_amtrak police department
+Event-Date: 07feb2017
+(840 real changes made)
+
+Department: IL_calumet city police department
+Event-Date: 21apr2012
+(840 real changes made)
+
+Department: IL_champaign police department
+Event-Date: 04aug2015
+(840 real changes made)
+
+Department: IL_chicago police department
+Event-Date: 01jan2011
+(15,960 real changes made)
+Event-Date: 31may2011
+(15,960 real changes made)
+Event-Date: 03aug2011
+(15,960 real changes made)
+Event-Date: 06nov2011
+(15,960 real changes made)
+Event-Date: 24nov2011
+(15,960 real changes made)
+Event-Date: 21mar2012
+(15,960 real changes made)
+Event-Date: 11aug2012
+(15,960 real changes made)
+Event-Date: 08nov2012
+(15,960 real changes made)
+Event-Date: 15dec2012
+(15,960 real changes made)
+Event-Date: 07jan2013
+(15,960 real changes made)
+Event-Date: 04jul2013
+(15,960 real changes made)
+Event-Date: 01sep2013
+(15,960 real changes made)
+Event-Date: 07sep2013
+(15,960 real changes made)
+Event-Date: 11may2014
+(15,960 real changes made)
+Event-Date: 26dec2015
+(15,960 real changes made)
+Event-Date: 28jul2016
+(15,960 real changes made)
+Event-Date: 06jun2018
+(15,960 real changes made)
+Event-Date: 29jan2020
+(15,960 real changes made)
+Event-Date: 18dec2020
+(15,960 real changes made)
+
+Department: IL_harvey police department
+Event-Date: 13apr2014
+(840 real changes made)
+
+Department: IL_rock falls police department
+Event-Date: 26jan2018
+(840 real changes made)
+
+Department: IL_rockford police department
+Event-Date: 05nov2017
+(840 real changes made)
+
+Department: IL_washington park police department
+Event-Date: 28nov2016
+(840 real changes made)
+
+Department: IL_waukegan police department
+Event-Date: 20oct2020
+(840 real changes made)
+
+Department: IN_cook county (il) department of corrections
+Event-Date: 08aug2013
+(840 real changes made)
+
+Department: IN_east chicago police department
+Event-Date: 07jul2019
+(840 real changes made)
+
+Department: IN_gary police department
+Event-Date: 01jan2011
+(840 real changes made)
+
+Department: IN_goshen police department
+Event-Date: 25sep2011
+(840 real changes made)
+
+Department: IN_greencastle police department
+Event-Date: 01jul2012
+(840 real changes made)
+
+Department: IN_indiana state police
+Event-Date: 18may2012
+(840 real changes made)
+
+Department: IN_indianapolis metropolitan police department
+Event-Date: 10dec2012
+(5,040 real changes made)
+Event-Date: 26sep2015
+(5,040 real changes made)
+Event-Date: 05apr2016
+(5,040 real changes made)
+Event-Date: 29jun2017
+(5,040 real changes made)
+Event-Date: 01sep2018
+(5,040 real changes made)
+Event-Date: 06feb2019
+(5,040 real changes made)
+
+Department: IN_portage police department
+Event-Date: 22apr2017
+(840 real changes made)
+
+Department: KS_cowley county sheriff's office
+Event-Date: 31may2014
+(840 real changes made)
+
+Department: KS_leavenworth police department
+Event-Date: 11jul2017
+(840 real changes made)
+
+Department: KS_mcpherson county sheriff's office
+Event-Date: 28aug2017
+(840 real changes made)
+
+Department: KS_wichita police department
+Event-Date: 13apr2012
+(840 real changes made)
+
+Department: KY_kentucky state police
+Event-Date: 11feb2019
+(840 real changes made)
+
+Department: KY_louisville metro police department
+Event-Date: 21apr2011
+(2,520 real changes made)
+Event-Date: 15may2019
+(2,520 real changes made)
+Event-Date: 13mar2020
+(2,520 real changes made)
+
+Department: KY_shelbyville police department
+Event-Date: 19nov2011
+(840 real changes made)
+
+Department: LA_avoyelles parish sheriff's office
+Event-Date: 20oct2017
+(840 real changes made)
+
+Department: LA_baton rouge police department
+Event-Date: 06mar2011
+(3,360 real changes made)
+Event-Date: 02may2013
+(3,360 real changes made)
+Event-Date: 28jul2013
+(3,360 real changes made)
+Event-Date: 13nov2017
+(3,360 real changes made)
+
+Department: LA_breaux bridge police department
+Event-Date: 02dec2012
+(840 real changes made)
+
+Department: LA_converse police department
+Event-Date: 21may2017
+(840 real changes made)
+
+Department: LA_east baton rouge parish sheriff's office
+Event-Date: 14mar2018
+(840 real changes made)
+
+Department: LA_east feliciana parish sheriff's office
+Event-Date: 14oct2019
+(840 real changes made)
+
+Department: LA_evangeline parish sheriff's office
+Event-Date: 06jul2017
+(840 real changes made)
+
+Department: LA_jefferson parish sheriff's office
+Event-Date: 17jan2012
+(5,040 real changes made)
+Event-Date: 10may2018
+(5,040 real changes made)
+Event-Date: 27mar2019
+(5,040 real changes made)
+Event-Date: 17jul2019
+(5,040 real changes made)
+Event-Date: 28sep2020
+(5,040 real changes made)
+
+Department: LA_kenner police department
+Event-Date: 21jan2014
+(840 real changes made)
+
+Department: LA_louisiana state police
+Event-Date: 10may2019
+(840 real changes made)
+
+Department: LA_new orleans police department
+Event-Date: 07mar2012
+(1,680 real changes made)
+Event-Date: 14sep2014
+(1,680 real changes made)
+
+Department: LA_shreveport city marshal
+Event-Date: 02aug2018
+(840 real changes made)
+
+Department: LA_shreveport police department
+Event-Date: 18aug2012
+(3,360 real changes made)
+Event-Date: 24oct2012
+(3,360 real changes made)
+Event-Date: 12apr2018
+(3,360 real changes made)
+Event-Date: 19apr2020
+(3,360 real changes made)
+
+Department: LA_st. john the baptist parish sheriff's office
+Event-Date: 05jul2014
+(840 real changes made)
+
+Department: LA_st. martin parish sheriff's office
+Event-Date: 28sep2012
+(1,680 real changes made)
+Event-Date: 21dec2015
+(1,680 real changes made)
+
+Department: LA_st. martinville police department
+Event-Date: 14jun2015
+(840 real changes made)
+
+Department: LA_tangipahoa parish sheriff's office
+Event-Date: 11aug2012
+(1,680 real changes made)
+Event-Date: 17nov2016
+(1,680 real changes made)
+
+Department: LA_u.s. department of veterans affairs
+Event-Date: 29oct2011
+(840 real changes made)
+
+Department: LA_u.s. federal bureau of investigation
+Event-Date: 30jul2013
+(840 real changes made)
+
+Department: MA_boston police department
+Event-Date: 07sep2011
+(840 real changes made)
+
+Department: MA_framingham police department
+Event-Date: 05jan2011
+(840 real changes made)
+
+Department: MA_massachusetts state police
+Event-Date: 11aug2013
+(840 real changes made)
+
+Department: MA_springfield police department
+Event-Date: 06nov2011
+(840 real changes made)
+
+Department: MD_baltimore county police department
+Event-Date: 13jun2012
+(7,560 real changes made)
+Event-Date: 13aug2013
+(7,560 real changes made)
+Event-Date: 22jul2014
+(7,560 real changes made)
+Event-Date: 25jun2015
+(7,560 real changes made)
+Event-Date: 23sep2015
+(7,560 real changes made)
+Event-Date: 18sep2016
+(7,560 real changes made)
+Event-Date: 23sep2016
+(7,560 real changes made)
+Event-Date: 01aug2017
+(7,560 real changes made)
+Event-Date: 29oct2018
+(7,560 real changes made)
+
+Department: MD_baltimore police department
+Event-Date: 09jan2011
+(5,880 real changes made)
+Event-Date: 19may2012
+(5,880 real changes made)
+Event-Date: 01jul2012
+(5,880 real changes made)
+Event-Date: 21sep2012
+(5,880 real changes made)
+Event-Date: 07may2013
+(5,880 real changes made)
+Event-Date: 18jul2013
+(5,880 real changes made)
+Event-Date: 16oct2013
+(5,880 real changes made)
+
+Department: MD_cecil county sheriff's office
+Event-Date: 11mar2015
+(840 real changes made)
+
+Department: MD_greensboro police department
+Event-Date: 15sep2018
+(840 real changes made)
+
+Department: MD_howard county police department
+Event-Date: 09aug2012
+(840 real changes made)
+
+Department: MD_maryland state police
+Event-Date: 20dec2012
+(2,520 real changes made)
+Event-Date: 18mar2014
+(2,520 real changes made)
+Event-Date: 21mar2014
+(2,520 real changes made)
+
+Department: MD_maryland transportation authority police
+Event-Date: 07jun2014
+(840 real changes made)
+
+Department: MD_national security administration police department
+Event-Date: 30mar2015
+(840 real changes made)
+
+Department: MD_prince george's county police department
+Event-Date: 02oct2013
+(2,520 real changes made)
+Event-Date: 14aug2015
+(2,520 real changes made)
+Event-Date: 27jan2020
+(2,520 real changes made)
+
+Department: MD_prince george's county sheriff's office
+Event-Date: 23oct2014
+(840 real changes made)
+
+Department: MD_u.s. federal bureau of investigation
+Event-Date: 11apr2014
+(840 real changes made)
+
+Department: MD_u.s. national park service
+Event-Date: 05apr2018
+(840 real changes made)
+
+Department: MI_dearborn police department
+Event-Date: 23dec2015
+(1,680 real changes made)
+Event-Date: 27jan2016
+(1,680 real changes made)
+
+Department: MI_detroit police department
+Event-Date: 08jul2012
+(2,520 real changes made)
+Event-Date: 30mar2015
+(2,520 real changes made)
+Event-Date: 13feb2017
+(2,520 real changes made)
+
+Department: MI_detroit transit police agency
+Event-Date: 01may2013
+(840 real changes made)
+
+Department: MI_flint township police department
+Event-Date: 16jul2014
+(840 real changes made)
+
+Department: MI_lathrup village police department
+Event-Date: 07sep2015
+(840 real changes made)
+
+Department: MI_wayne county sheriff's office
+Event-Date: 30jan2012
+(2,520 real changes made)
+Event-Date: 23nov2018
+(2,520 real changes made)
+Event-Date: 23nov2019
+(2,520 real changes made)
+
+Department: MN_brooklyn center police department
+Event-Date: 23aug2013
+(840 real changes made)
+
+Department: MN_lino lakes public safety department
+Event-Date: 08may2015
+(840 real changes made)
+
+Department: MN_minneapolis police department
+Event-Date: 15nov2015
+(1,680 real changes made)
+Event-Date: 25may2020
+(1,680 real changes made)
+
+Department: MN_st. paul police department
+Event-Date: 23oct2012
+(840 real changes made)
+
+Department: MN_woodbury police department
+Event-Date: 31aug2012
+(840 real changes made)
+
+Department: MO_beverly hills police department
+Event-Date: 06dec2011
+(840 real changes made)
+
+Department: MO_chesterfield police department
+Event-Date: 31dec2019
+(840 real changes made)
+
+Department: MO_ferguson police department
+Event-Date: 09aug2014
+(840 real changes made)
+
+Department: MO_kansas city police department
+Event-Date: 28jul2013
+(3,360 real changes made)
+Event-Date: 26may2019
+(3,360 real changes made)
+Event-Date: 29feb2020
+(3,360 real changes made)
+Event-Date: 12mar2020
+(3,360 real changes made)
+
+Department: MO_pagedale police department
+Event-Date: 26may2013
+(840 real changes made)
+
+Department: MO_pine lawn police department
+Event-Date: 05jul2014
+(840 real changes made)
+
+Department: MO_sikeston department of public safety
+Event-Date: 29apr2020
+(840 real changes made)
+
+Department: MO_st. louis county police department
+Event-Date: 09jul2016
+(840 real changes made)
+
+Department: MO_st. louis county sheriff's department
+Event-Date: 06jul2020
+(840 real changes made)
+
+Department: MO_st. louis metropolitan police department
+Event-Date: 19dec2014
+(2,520 real changes made)
+Event-Date: 18jun2017
+(2,520 real changes made)
+Event-Date: 12dec2018
+(2,520 real changes made)
+
+Department: MO_u.s. bureau of alcohol tobacco firearms and explosives
+Event-Date: 29aug2012
+(840 real changes made)
+
+Department: MO_wellston police department
+Event-Date: 28feb2015
+(840 real changes made)
+
+Department: MS_bolivar county sheriff's office
+Event-Date: 13mar2013
+(840 real changes made)
+
+Department: MS_canton police department
+Event-Date: 02jul2016
+(840 real changes made)
+
+Department: MS_durant police department
+Event-Date: 01may2011
+(840 real changes made)
+
+Department: MS_edwards police department
+Event-Date: 10nov2017
+(840 real changes made)
+
+Department: MS_gulfport police department
+Event-Date: 01feb2020
+(840 real changes made)
+
+Department: MS_hinds county sheriff's office
+Event-Date: 05may2014
+(840 real changes made)
+
+Department: MS_jackson police department
+Event-Date: 20nov2011
+(4,200 real changes made)
+Event-Date: 27jan2018
+(4,200 real changes made)
+Event-Date: 09may2018
+(4,200 real changes made)
+Event-Date: 13jan2019
+(4,200 real changes made)
+Event-Date: 14feb2019
+(4,200 real changes made)
+
+Department: MS_moss point police department
+Event-Date: 08jun2014
+(840 real changes made)
+
+Department: MS_oxford police department
+Event-Date: 19may2019
+(840 real changes made)
+
+Department: MS_philadelphia police department
+Event-Date: 02nov2014
+(840 real changes made)
+
+Department: MS_southaven police department
+Event-Date: 28may2014
+(840 real changes made)
+
+Department: MS_stonewall police department
+Event-Date: 08jul2015
+(840 real changes made)
+
+Department: MS_tupelo police department
+Event-Date: 18jun2016
+(840 real changes made)
+
+Department: NC_anson county probation department
+Event-Date: 27oct2016
+(840 real changes made)
+
+Department: NC_asheville police department
+Event-Date: 29sep2013
+(840 real changes made)
+
+Department: NC_catawba county sheriff's office
+Event-Date: 28nov2016
+(840 real changes made)
+
+Department: NC_charlotte-mecklenburg police department
+Event-Date: 14sep2013
+(840 real changes made)
+
+Department: NC_dallas police department
+Event-Date: 15dec2015
+(840 real changes made)
+
+Department: NC_durham police department
+Event-Date: 30mar2019
+(840 real changes made)
+
+Department: NC_graham police department
+Event-Date: 28jan2020
+(840 real changes made)
+
+Department: NC_greensboro police department
+Event-Date: 08sep2018
+(840 real changes made)
+
+Department: NC_greenville police department
+Event-Date: 09jul2019
+(840 real changes made)
+
+Department: NC_hoke county sheriff's office
+Event-Date: 31may2014
+(840 real changes made)
+
+Department: NC_new hanover county sheriff's office
+Event-Date: 13oct2013
+(840 real changes made)
+
+Department: NC_north carolina department of motor vehicles
+Event-Date: 13nov2019
+(840 real changes made)
+
+Department: NC_north carolina state highway patrol
+Event-Date: 01jan2019
+(840 real changes made)
+
+Department: NC_u.s. immigration and customs enforcement
+Event-Date: 25aug2018
+(840 real changes made)
+
+Department: NJ_bloomingdale police department
+Event-Date: 23jan2020
+(840 real changes made)
+
+Department: NJ_bridgeton police department
+Event-Date: 30dec2014
+(840 real changes made)
+
+Department: NJ_cape may county prosecutor's office
+Event-Date: 18oct2018
+(840 real changes made)
+
+Department: NJ_deptford township police department
+Event-Date: 09jun2018
+(840 real changes made)
+
+Department: NJ_essex county sheriff's office
+Event-Date: 26sep2018
+(840 real changes made)
+
+Department: NJ_haddon township police department
+Event-Date: 29sep2012
+(840 real changes made)
+
+Department: NJ_jersey city police department
+Event-Date: 24jun2014
+(840 real changes made)
+
+Department: NJ_lyndhurst police department
+Event-Date: 16sep2014
+(840 real changes made)
+
+Department: NJ_mercer county sheriff's office
+Event-Date: 10may2017
+(840 real changes made)
+
+Department: NJ_new jersey department of corrections
+Event-Date: 04feb2011
+(1,680 real changes made)
+Event-Date: 13aug2016
+(1,680 real changes made)
+
+Department: NJ_new jersey state police
+Event-Date: 21apr2015
+(1,680 real changes made)
+Event-Date: 23may2020
+(1,680 real changes made)
+
+Department: NJ_paterson police department
+Event-Date: 27apr2011
+(840 real changes made)
+
+Department: NJ_trenton police department
+Event-Date: 25apr2011
+(2,520 real changes made)
+Event-Date: 15jun2015
+(2,520 real changes made)
+Event-Date: 27aug2016
+(2,520 real changes made)
+
+Department: NM_new mexico state police
+Event-Date: 19nov2020
+(840 real changes made)
+
+Department: NM_valencia county sheriff's office
+Event-Date: 06jan2018
+(840 real changes made)
+
+Department: NV_las vegas metropolitan police department
+Event-Date: 12dec2011
+(5,040 real changes made)
+Event-Date: 14may2017
+(5,040 real changes made)
+Event-Date: 14jun2018
+(5,040 real changes made)
+Event-Date: 03mar2019
+(5,040 real changes made)
+Event-Date: 05sep2019
+(5,040 real changes made)
+Event-Date: 19oct2020
+(5,040 real changes made)
+
+Department: NV_nevada department of corrections
+Event-Date: 14jul2018
+(840 real changes made)
+
+Department: NV_north las vegas police department
+Event-Date: 02jan2020
+(840 real changes made)
+
+Department: NV_u.s. bureau of land management
+Event-Date: 14feb2014
+(840 real changes made)
+
+Department: NV_washoe county sheriff's office
+Event-Date: 05nov2014
+(840 real changes made)
+
+Department: NY_buffalo police department
+Event-Date: 07feb2017
+(840 real changes made)
+
+Department: NY_city of new york police department
+Event-Date: 05sep2011
+(15,120 real changes made)
+Event-Date: 02feb2012
+(15,120 real changes made)
+Event-Date: 15mar2012
+(15,120 real changes made)
+Event-Date: 14jun2012
+(15,120 real changes made)
+Event-Date: 07sep2012
+(15,120 real changes made)
+Event-Date: 15apr2013
+(15,120 real changes made)
+Event-Date: 05may2013
+(15,120 real changes made)
+Event-Date: 05jun2013
+(15,120 real changes made)
+Event-Date: 17jul2014
+(15,120 real changes made)
+Event-Date: 20nov2014
+(15,120 real changes made)
+Event-Date: 25apr2015
+(15,120 real changes made)
+Event-Date: 28aug2015
+(15,120 real changes made)
+Event-Date: 08dec2015
+(15,120 real changes made)
+Event-Date: 04jul2016
+(15,120 real changes made)
+Event-Date: 09aug2016
+(15,120 real changes made)
+Event-Date: 28jan2018
+(15,120 real changes made)
+Event-Date: 17oct2019
+(15,120 real changes made)
+
+Department: NY_nassau county police department
+Event-Date: 25feb2020
+(840 real changes made)
+
+Department: NY_new york state police
+Event-Date: 04oct2012
+(840 real changes made)
+
+Department: NY_onondaga county sheriff's office
+Event-Date: 16jul2020
+(840 real changes made)
+
+Department: NY_rochester police department
+Event-Date: 23mar2020
+(840 real changes made)
+
+Department: NY_saratoga springs police department
+Event-Date: 31aug2013
+(840 real changes made)
+
+Department: NY_suffolk county police department
+Event-Date: 22mar2015
+(840 real changes made)
+
+Department: NY_troy police department
+Event-Date: 17apr2016
+(840 real changes made)
+
+Department: OH_cleveland police department
+Event-Date: 29nov2012
+(4,200 real changes made)
+Event-Date: 13nov2014
+(4,200 real changes made)
+Event-Date: 19mar2015
+(4,200 real changes made)
+Event-Date: 13jan2018
+(4,200 real changes made)
+
+Department: OH_columbus division of police
+Event-Date: 22dec2020
+(840 real changes made)
+
+Department: OH_euclid police department
+Event-Date: 13mar2017
+(840 real changes made)
+
+Department: OH_niles police department
+Event-Date: 02jan2019
+(840 real changes made)
+
+Department: OH_u.s. federal bureau of investigation
+Event-Date: 04apr2013
+(840 real changes made)
+
+Department: OH_university of cincinnati police department
+Event-Date: 19jul2015
+(840 real changes made)
+
+Department: OK_del city police department
+Event-Date: 14mar2012
+(840 real changes made)
+
+Department: OK_edmond police department
+Event-Date: 29apr2019
+(840 real changes made)
+
+Department: OK_oklahoma city police department
+Event-Date: 19jun2012
+(5,040 real changes made)
+Event-Date: 01may2013
+(5,040 real changes made)
+Event-Date: 25feb2015
+(5,040 real changes made)
+Event-Date: 09jun2016
+(5,040 real changes made)
+Event-Date: 12nov2018
+(5,040 real changes made)
+Event-Date: 14may2020
+(5,040 real changes made)
+
+Department: OK_oklahoma highway patrol
+Event-Date: 25jun2020
+(840 real changes made)
+
+Department: OK_tulsa police department
+Event-Date: 25mar2014
+(3,360 real changes made)
+Event-Date: 05aug2014
+(3,360 real changes made)
+Event-Date: 02apr2015
+(3,360 real changes made)
+Event-Date: 16sep2016
+(3,360 real changes made)
+
+Department: PA_east pittsburgh police department
+Event-Date: 19jun2018
+(840 real changes made)
+
+Department: PA_harrisburg police bureau
+Event-Date: 29dec2013
+(1,680 real changes made)
+Event-Date: 01feb2018
+(1,680 real changes made)
+
+Department: PA_johnstown police department
+Event-Date: 25jun2012
+(840 real changes made)
+
+Department: PA_pennsylvania state constable
+Event-Date: 28jun2019
+(840 real changes made)
+
+Department: PA_philadelphia police department
+Event-Date: 08feb2011
+(7,560 real changes made)
+Event-Date: 09may2011
+(7,560 real changes made)
+Event-Date: 22apr2012
+(7,560 real changes made)
+Event-Date: 09aug2012
+(7,560 real changes made)
+Event-Date: 28sep2016
+(7,560 real changes made)
+Event-Date: 11aug2017
+(7,560 real changes made)
+Event-Date: 27dec2017
+(7,560 real changes made)
+Event-Date: 29jan2018
+(7,560 real changes made)
+Event-Date: 20aug2018
+(7,560 real changes made)
+
+Department: PA_southwest regional police department
+Event-Date: 24nov2011
+(840 real changes made)
+
+Department: PA_temple university campus police department
+Event-Date: 29jul2016
+(840 real changes made)
+
+Department: PA_upper darby township police department
+Event-Date: 18apr2011
+(840 real changes made)
+
+Department: SC_anderson police department
+Event-Date: 20dec2013
+(840 real changes made)
+
+Department: SC_chesterfield county sheriff's office
+Event-Date: 21jun2011
+(840 real changes made)
+
+Department: SC_columbia police department
+Event-Date: 02nov2012
+(840 real changes made)
+
+Department: SC_denmark police department
+Event-Date: 04aug2011
+(840 real changes made)
+
+Department: SC_eutawville police department
+Event-Date: 02may2011
+(840 real changes made)
+
+Department: SC_kershaw county sheriff's office
+Event-Date: 28feb2012
+(840 real changes made)
+
+Department: SC_myrtle beach police department
+Event-Date: 03sep2017
+(840 real changes made)
+
+Department: SC_north augusta department of public safety
+Event-Date: 10feb2014
+(840 real changes made)
+
+Department: SC_north charleston police department
+Event-Date: 04apr2015
+(840 real changes made)
+
+Department: SC_richland county sheriff's office
+Event-Date: 18oct2013
+(840 real changes made)
+
+Department: SC_south carolina highway patrol
+Event-Date: 14jul2012
+(840 real changes made)
+
+Department: SC_spartanburg methodist college campus safety department
+Event-Date: 09nov2015
+(840 real changes made)
+
+Department: TN_crockett county sheriff's office
+Event-Date: 16mar2017
+(840 real changes made)
+
+Department: TN_henderson county sheriff's office
+Event-Date: 10jan2017
+(840 real changes made)
+
+Department: TN_henderson police department
+Event-Date: 12oct2020
+(840 real changes made)
+
+Department: TN_memphis police department
+Event-Date: 10feb2012
+(6,720 real changes made)
+Event-Date: 10mar2012
+(6,720 real changes made)
+Event-Date: 08may2012
+(6,720 real changes made)
+Event-Date: 27jun2012
+(6,720 real changes made)
+Event-Date: 03jul2012
+(6,720 real changes made)
+Event-Date: 27mar2013
+(6,720 real changes made)
+Event-Date: 23apr2013
+(6,720 real changes made)
+Event-Date: 17jul2015
+(6,720 real changes made)
+
+Department: TN_obion county sheriff's office
+Event-Date: 25mar2019
+(840 real changes made)
+
+Department: TN_shelby county sheriff's office
+Event-Date: 17oct2018
+(840 real changes made)
+
+Department: TX_allen police department
+Event-Date: 01jan2017
+(840 real changes made)
+
+Department: TX_arlington police department
+Event-Date: 22jun2014
+(2,520 real changes made)
+Event-Date: 07aug2015
+(2,520 real changes made)
+Event-Date: 01sep2018
+(2,520 real changes made)
+
+Department: TX_austin police department
+Event-Date: 30may2011
+(2,520 real changes made)
+Event-Date: 26jul2013
+(2,520 real changes made)
+Event-Date: 08feb2016
+(2,520 real changes made)
+
+Department: TX_balch springs police department
+Event-Date: 29apr2017
+(840 real changes made)
+
+Department: TX_bastrop county sheriff's office
+Event-Date: 16feb2014
+(840 real changes made)
+
+Department: TX_corpus christi police department
+Event-Date: 20oct2017
+(840 real changes made)
+
+Department: TX_dallas police department
+Event-Date: 24jul2012
+(4,200 real changes made)
+Event-Date: 10mar2013
+(4,200 real changes made)
+Event-Date: 01mar2014
+(4,200 real changes made)
+Event-Date: 06sep2018
+(4,200 real changes made)
+Event-Date: 25may2020
+(4,200 real changes made)
+
+Department: TX_ennis police department
+Event-Date: 05sep2016
+(840 real changes made)
+
+Department: TX_fort worth police department
+Event-Date: 28feb2011
+(1,680 real changes made)
+Event-Date: 11may2015
+(1,680 real changes made)
+
+Department: TX_georgetown police department
+Event-Date: 31oct2011
+(840 real changes made)
+
+Department: TX_harris county constable's office precinct 4
+Event-Date: 09jul2014
+(840 real changes made)
+
+Department: TX_harris county constable's office precinct 7
+Event-Date: 01nov2012
+(840 real changes made)
+
+Department: TX_harris county sheriff's office
+Event-Date: 06dec2012
+(5,880 real changes made)
+Event-Date: 15apr2015
+(5,880 real changes made)
+Event-Date: 12mar2016
+(5,880 real changes made)
+Event-Date: 28apr2016
+(5,880 real changes made)
+Event-Date: 22mar2018
+(5,880 real changes made)
+Event-Date: 29aug2018
+(5,880 real changes made)
+Event-Date: 28jul2019
+(5,880 real changes made)
+
+Department: TX_harrison county sheriff's office
+Event-Date: 05dec2019
+(840 real changes made)
+
+Department: TX_hearne police department
+Event-Date: 30dec2012
+(840 real changes made)
+
+Department: TX_houston police department
+Event-Date: 09jun2011
+(5,880 real changes made)
+Event-Date: 11oct2012
+(5,880 real changes made)
+Event-Date: 16jan2014
+(5,880 real changes made)
+Event-Date: 17mar2014
+(5,880 real changes made)
+Event-Date: 06may2014
+(5,880 real changes made)
+Event-Date: 03sep2014
+(5,880 real changes made)
+Event-Date: 12mar2016
+(5,880 real changes made)
+
+Department: TX_kirbyville police department
+Event-Date: 14may2013
+(840 real changes made)
+
+Department: TX_lancaster police department
+Event-Date: 18mar2018
+(840 real changes made)
+
+Department: TX_lubbock police department
+Event-Date: 24aug2013
+(1,680 real changes made)
+Event-Date: 21sep2015
+(1,680 real changes made)
+
+Department: TX_port arthur police department
+Event-Date: 01apr2014
+(840 real changes made)
+
+Department: TX_san antonio police department
+Event-Date: 16jul2013
+(5,040 real changes made)
+Event-Date: 20apr2014
+(5,040 real changes made)
+Event-Date: 04feb2016
+(5,040 real changes made)
+Event-Date: 17oct2018
+(5,040 real changes made)
+Event-Date: 28may2019
+(5,040 real changes made)
+
+Department: TX_stratford police department
+Event-Date: 21feb2018
+(840 real changes made)
+
+Department: TX_temple police department
+Event-Date: 23dec2011
+(1,680 real changes made)
+Event-Date: 02dec2019
+(1,680 real changes made)
+
+Department: TX_texas department of public safety
+Event-Date: 04may2014
+(2,520 real changes made)
+Event-Date: 13feb2016
+(2,520 real changes made)
+Event-Date: 11apr2019
+(2,520 real changes made)
+
+Department: TX_u.s. marshals service
+Event-Date: 18mar2013
+(840 real changes made)
+
+Department: TX_university of texas at houston police department
+Event-Date: 10feb2014
+(840 real changes made)
+
+Department: TX_waco police department
+Event-Date: 01aug2017
+(1,680 real changes made)
+Event-Date: 03nov2020
+(1,680 real changes made)
+
+Department: TX_wichita falls police department
+Event-Date: 03feb2012
+(840 real changes made)
+
+Department: TX_williamson county sheriff's office
+Event-Date: 28mar2019
+(840 real changes made)
+
+Department: TX_wolfe city police department
+Event-Date: 03oct2020
+(840 real changes made)
+
+Department: VA_buckingham county sheriff's office
+Event-Date: 13feb2016
+(840 real changes made)
+
+Department: VA_chesterfield county police department
+Event-Date: 13jan2013
+(840 real changes made)
+
+Department: VA_danville police department
+Event-Date: 08apr2018
+(840 real changes made)
+
+Department: VA_hampton police department
+Event-Date: 25jul2019
+(840 real changes made)
+
+Department: VA_henrico county division of police
+Event-Date: 10mar2017
+(840 real changes made)
+
+Department: VA_immigration and customs enforcement
+Event-Date: 23feb2018
+(840 real changes made)
+
+Department: VA_james city county police department
+Event-Date: 20may2013
+(840 real changes made)
+
+Department: VA_norfolk police department
+Event-Date: 20aug2011
+(3,360 real changes made)
+Event-Date: 06sep2011
+(3,360 real changes made)
+Event-Date: 20may2013
+(3,360 real changes made)
+Event-Date: 19jan2020
+(3,360 real changes made)
+
+Department: VA_portsmouth police department
+Event-Date: 22apr2015
+(840 real changes made)
+
+Department: VA_richmond police department
+Event-Date: 20apr2013
+(3,360 real changes made)
+Event-Date: 17oct2015
+(3,360 real changes made)
+Event-Date: 02oct2016
+(3,360 real changes made)
+Event-Date: 14may2018
+(3,360 real changes made)
+
+Department: VA_roanoke police department
+Event-Date: 08mar2017
+(840 real changes made)
+
+Department: VA_virginia beach police department
+Event-Date: 05sep2015
+(840 real changes made)
+
+Department: WA_bellevue police department
+Event-Date: 22mar2013
+(840 real changes made)
+
+Department: WA_franklin county sheriff's office
+Event-Date: 18nov2019
+(840 real changes made)
+
+Department: WA_kent police department
+Event-Date: 24jun2017
+(1,680 real changes made)
+Event-Date: 09aug2017
+(1,680 real changes made)
+
+Department: WA_lakewood police department
+Event-Date: 24may2013
+(840 real changes made)
+
+Department: WA_tacoma police department
+Event-Date: 03mar2020
+(840 real changes made)
+
+Department: WA_yakima police department
+Event-Date: 02jun2020
+(840 real changes made)
+
+Department: WI_appleton police department
+Event-Date: 21may2017
+(840 real changes made)
+
+Department: WI_beloit police department
+Event-Date: 11jun2013
+(840 real changes made)
+
+Department: WI_madison police department
+Event-Date: 06mar2015
+(840 real changes made)
+
+Department: WI_milwaukee county sheriff's office
+Event-Date: 11jun2017
+(840 real changes made)
+
+Department: WI_milwaukee police department
+Event-Date: 11mar2017
+(1,680 real changes made)
+Event-Date: 19apr2020
+(1,680 real changes made)
+
+Department: WI_oshkosh police department
+Event-Date: 31jul2017
+(840 real changes made)
+
+Department: WI_walworth county sheriff's office
+Event-Date: 24feb2016
+(840 real changes made)
+
+Department: WV_kanawha county sheriff's office
+Event-Date: 04feb2011
+(840 real changes made)
+
+Department: WV_mineral county sheriff's office
+Event-Date: 30dec2020
+(840 real changes made)
+
+. 
+. 
+. 
+. * determining nearest_edate for each (treated) dept*date
+
+. 
+. qui replace nearest_edate0 = date - e0_1 if (nearest_etime0 == "e0_1")
+
+. 
+. qui replace nearest_edate0 = date - e0_2 if (nearest_etime0 == "e0_2")
+
+. 
+. qui replace nearest_edate0 = date - e0_3 if (nearest_etime0 == "e0_3")
+
+. 
+. qui replace nearest_edate0 = date - e0_4 if (nearest_etime0 == "e0_4")
+
+. 
+. qui replace nearest_edate0 = date - e0_5 if (nearest_etime0 == "e0_5")
+
+. 
+. qui replace nearest_edate0 = date - e0_6 if (nearest_etime0 == "e0_6")
+
+. 
+. qui replace nearest_edate0 = date - e0_7 if (nearest_etime0 == "e0_7")
+
+. 
+. qui replace nearest_edate0 = date - e0_8 if (nearest_etime0 == "e0_8")
+
+. 
+. qui replace nearest_edate0 = date - e0_9 if (nearest_etime0 == "e0_9")
+
+. 
+. qui replace nearest_edate0 = date - e0_10 if (nearest_etime0 == "e0_10")
+
+. 
+. qui replace nearest_edate0 = date - e0_11 if (nearest_etime0 == "e0_11")
+
+. 
+. qui replace nearest_edate0 = date - e0_12 if (nearest_etime0 == "e0_12")
+
+. 
+. qui replace nearest_edate0 = date - e0_13 if (nearest_etime0 == "e0_13")
+
+. 
+. qui replace nearest_edate0 = date - e0_14 if (nearest_etime0 == "e0_14")
+
+. 
+. qui replace nearest_edate0 = date - e0_15 if (nearest_etime0 == "e0_15")
+
+. 
+. qui replace nearest_edate0 = date - e0_16 if (nearest_etime0 == "e0_16")
+
+. 
+. qui replace nearest_edate0 = date - e0_17 if (nearest_etime0 == "e0_17")
+
+. 
+. qui replace nearest_edate0 = date - e0_18 if (nearest_etime0 == "e0_18")
+
+. 
+. qui replace nearest_edate0 = date - e0_19 if (nearest_etime0 == "e0_19")
+
+. 
+. 
+. 
+. replace reg_etime0 = date - nearest_edate0
+(505,680 real changes made)
+
+. 
+. replace reg_edate0 = nearest_edate0
+(505,680 real changes made)
+
+. 
+. drop nearest_etime0 nearest_edate0 e0_*
+
+. 
+. format reg_edate0 %td
+
+. 
+. 
+. 
+. * temp adjustment to allow below loop to work: 
+
+. 
+. rename scr_nl scr_1
+
+. 
+. rename scr_nu scr_2
+
+. 
+. rename scr_dl scr_3
+
+. 
+. rename scr_du scr_4
+
+. 
+. 
+. 
+. * above but for popular treatment definition (based on high scrutiny)
+
+. 
+. forvalues i=1(1)4 {
+  2. 
+. foreach d of local reg_depts {
+  3. 
+. display ""
+  4. 
+. display "Department: `d'"
+  5. 
+. qui levelsof edate if (st_dept=="`d'") & (scr_`i' != .), local(edates)
+  6. 
+. local j = 1
+  7. 
+. foreach e of local edates {
+  8. 
+. display "Event-Date: " %td `e'
+  9. 
+. replace e`i'_`j' = date - `e' if (st_dept=="`d'")
+ 10. 
+. local ++j
+ 11. 
+. }
+ 12. 
+. qui replace nearest_etime`i' = "e`i'_2" if (abs(e`i'_2) < abs(e`i'_1)) & (st_
+> dept=="`d'")
+ 13. 
+. qui replace nearest_etime`i' = "e`i'_3" if (abs(e`i'_3) < abs(e`i'_2)) & (st_
+> dept=="`d'")
+ 14. 
+. qui replace nearest_etime`i' = "e`i'_4" if (abs(e`i'_4) < abs(e`i'_3)) & (st_
+> dept=="`d'")
+ 15. 
+. qui replace nearest_etime`i' = "e`i'_5" if (abs(e`i'_5) < abs(e`i'_4)) & (st_
+> dept=="`d'")
+ 16. 
+. qui replace nearest_etime`i' = "e`i'_6" if (abs(e`i'_6) < abs(e`i'_5)) & (st_
+> dept=="`d'")
+ 17. 
+. qui replace nearest_etime`i' = "e`i'_7" if (abs(e`i'_7) < abs(e`i'_6)) & (st_
+> dept=="`d'")
+ 18. 
+. qui replace nearest_etime`i' = "e`i'_8" if (abs(e`i'_8) < abs(e`i'_7)) & (st_
+> dept=="`d'")
+ 19. 
+. qui replace nearest_etime`i' = "e`i'_9" if (abs(e`i'_9) < abs(e`i'_8)) & (st_
+> dept=="`d'")
+ 20. 
+. qui replace nearest_etime`i' = "e`i'_10" if (abs(e`i'_10) < abs(e`i'_9)) & (s
+> t_dept=="`d'")
+ 21. 
+. qui replace nearest_etime`i' = "e`i'_11" if (abs(e`i'_11) < abs(e`i'_10)) & (
+> st_dept=="`d'")
+ 22. 
+. qui replace nearest_etime`i' = "e`i'_12" if (abs(e`i'_12) < abs(e`i'_11)) & (
+> st_dept=="`d'")
+ 23. 
+. qui replace nearest_etime`i' = "e`i'_13" if (abs(e`i'_13) < abs(e`i'_12)) & (
+> st_dept=="`d'")
+ 24. 
+. }
+ 25. 
+. 
+. 
+. * determining nearest_edate for each (treated) dept*date
+. 
+. qui replace nearest_edate`i' = date - e`i'_1 if (nearest_etime`i' == "e`i'_1"
+> )
+ 26. 
+. qui replace nearest_edate`i' = date - e`i'_2 if (nearest_etime`i' == "e`i'_2"
+> )
+ 27. 
+. qui replace nearest_edate`i' = date - e`i'_3 if (nearest_etime`i' == "e`i'_3"
+> )
+ 28. 
+. qui replace nearest_edate`i' = date - e`i'_4 if (nearest_etime`i' == "e`i'_4"
+> )
+ 29. 
+. qui replace nearest_edate`i' = date - e`i'_5 if (nearest_etime`i' == "e`i'_5"
+> )
+ 30. 
+. qui replace nearest_edate`i' = date - e`i'_6 if (nearest_etime`i' == "e`i'_6"
+> )
+ 31. 
+. qui replace nearest_edate`i' = date - e`i'_7 if (nearest_etime`i' == "e`i'_7"
+> )
+ 32. 
+. qui replace nearest_edate`i' = date - e`i'_8 if (nearest_etime`i' == "e`i'_8"
+> )
+ 33. 
+. qui replace nearest_edate`i' = date - e`i'_9 if (nearest_etime`i' == "e`i'_9"
+> )
+ 34. 
+. qui replace nearest_edate`i' = date - e`i'_10 if (nearest_etime`i' == "e`i'_1
+> 0")
+ 35. 
+. qui replace nearest_edate`i' = date - e`i'_11 if (nearest_etime`i' == "e`i'_1
+> 1")
+ 36. 
+. qui replace nearest_edate`i' = date - e`i'_12 if (nearest_etime`i' == "e`i'_1
+> 2")
+ 37. 
+. qui replace nearest_edate`i' = date - e`i'_13 if (nearest_etime`i' == "e`i'_1
+> 3")
+ 38. 
+. 
+. 
+. replace reg_etime`i' = date - nearest_edate`i'
+ 39. 
+. replace reg_edate`i' = nearest_edate`i'
+ 40. 
+. drop nearest_etime`i' nearest_edate`i' e`i'_*
+ 41. 
+. format reg_edate`i' %td
+ 42. 
+. }
+
+Department: AL_alexander city police department
+
+Department: AL_barbour county sheriff's office
+
+Department: AL_birmingham police department
+
+Department: AL_childersburg police department
+
+Department: AL_dothan police department
+
+Department: AL_henry county sheriff's office
+
+Department: AL_jefferson county sheriff's office
+
+Department: AL_limestone county sheriff's office
+
+Department: AL_madison county sheriff's office
+
+Department: AL_phenix city police department
+
+Department: AL_prichard police department
+
+Department: AL_selma police department
+
+Department: AL_warrior police department
+
+Department: AR_alexander police department
+
+Department: AR_arkansas state police
+
+Department: AR_blytheville police department
+
+Department: AR_fayetteville police department
+
+Department: AR_jacksonville police department
+
+Department: AR_little rock police department
+Event-Date: 07oct2017
+(4,200 real changes made)
+
+Department: AR_north little rock police department
+
+Department: AR_union county sheriff's office
+
+Department: AR_west memphis police department
+
+Department: AZ_arizona department of public safety
+Event-Date: 07apr2013
+(2,520 real changes made)
+Event-Date: 07dec2017
+(2,520 real changes made)
+
+Department: AZ_casa grande police department
+
+Department: AZ_phoenix police department
+
+Department: AZ_scottsdale police department
+
+Department: AZ_tempe police department
+
+Department: CA_alameda county sheriff's office
+
+Department: CA_anaheim police department
+Event-Date: 02mar2018
+(840 real changes made)
+
+Department: CA_antioch police department
+
+Department: CA_bakersfield police department
+Event-Date: 04nov2017
+(840 real changes made)
+
+Department: CA_barstow police department
+
+Department: CA_berkeley police department
+
+Department: CA_california department of corrections and rehabilitation
+
+Department: CA_california highway patrol
+Event-Date: 11may2014
+(840 real changes made)
+
+Department: CA_california state university police department san bernardino
+
+Department: CA_chula vista police department
+
+Department: CA_contra costa sheriff's office
+
+Department: CA_fremont police department
+
+Department: CA_gilroy police department
+
+Department: CA_hayward police department
+
+Department: CA_inglewood police department
+
+Department: CA_long beach police department
+Event-Date: 19nov2013
+(840 real changes made)
+
+Department: CA_los angeles county sheriff's department
+
+Department: CA_los angeles police department
+Event-Date: 14jan2011
+(7,560 real changes made)
+Event-Date: 24jan2011
+(7,560 real changes made)
+Event-Date: 03mar2011
+(7,560 real changes made)
+Event-Date: 22jul2012
+(7,560 real changes made)
+Event-Date: 11aug2014
+(7,560 real changes made)
+Event-Date: 01mar2015
+(7,560 real changes made)
+Event-Date: 06may2015
+(7,560 real changes made)
+Event-Date: 29oct2018
+(7,560 real changes made)
+
+Department: CA_oakland police department
+Event-Date: 18may2011
+(1,680 real changes made)
+Event-Date: 19jul2015
+(1,680 real changes made)
+
+Department: CA_orange county sheriff's department
+
+Department: CA_pasadena police department
+
+Department: CA_riverside county sheriff's department
+
+Department: CA_sacramento county sheriff's office
+
+Department: CA_san bernardino county sheriff's office
+
+Department: CA_san bernardino police department
+Event-Date: 03oct2014
+(840 real changes made)
+
+Department: CA_san diego harbor police department
+
+Department: CA_san francisco police department
+Event-Date: 19may2016
+(1,680 real changes made)
+
+Department: CA_south lake tahoe police department
+
+Department: CA_stockton police department
+Event-Date: 11apr2012
+(2,520 real changes made)
+Event-Date: 13apr2016
+(2,520 real changes made)
+
+Department: CA_torrance police department
+
+Department: CA_tulare police department
+
+Department: CA_u.s. immigration and customs enforcement
+
+Department: CA_vacaville police department
+
+Department: CO_aurora police department
+Event-Date: 06mar2015
+(4,200 real changes made)
+Event-Date: 22dec2015
+(4,200 real changes made)
+
+Department: CO_colorado springs police department
+
+Department: CO_denver police department
+Event-Date: 28dec2020
+(840 real changes made)
+
+Department: CO_westminster police department
+
+Department: CT_bridgeport police department
+Event-Date: 01apr2013
+(840 real changes made)
+
+Department: CT_connecticut state police
+Event-Date: 20feb2019
+(840 real changes made)
+
+Department: CT_new britain police department
+Event-Date: 14dec2017
+(840 real changes made)
+
+Department: DC_u.s. secret service
+
+Department: DC_washington metropolitan police department
+
+Department: DE_new castle county police department
+
+Department: FL_brevard county sheriff's office
+
+Department: FL_broward county sheriff's office
+
+Department: FL_citrus county sheriff's office
+
+Department: FL_fernandina beach police department
+
+Department: FL_florida highway patrol
+Event-Date: 25may2016
+(1,680 real changes made)
+Event-Date: 12mar2019
+(1,680 real changes made)
+
+Department: FL_fort lauderdale police department
+
+Department: FL_gretna police department
+
+Department: FL_hallandale beach police department
+
+Department: FL_hillsborough county sheriff's office
+Event-Date: 30aug2016
+(840 real changes made)
+
+Department: FL_hollywood police department
+
+Department: FL_indian river county sheriff's office
+
+Department: FL_jacksonville sheriff's office
+
+Department: FL_largo police department
+
+Department: FL_lauderhill police department
+
+Department: FL_lee county sheriff's office
+
+Department: FL_manatee county sheriff's office
+
+Department: FL_martin county sheriff's office
+
+Department: FL_miami beach police department
+
+Department: FL_miami-dade police department
+
+Department: FL_miramar police department
+
+Department: FL_nassau county sheriff's office
+
+Department: FL_orlando police department
+
+Department: FL_palm beach county sheriff's office
+
+Department: FL_pasco county sheriff's office
+
+Department: FL_polk county sheriff's office
+
+Department: FL_putnam county sheriff's office
+
+Department: FL_tallahassee police department
+
+Department: FL_winter park police department
+
+Department: GA_adairsville police department
+
+Department: GA_athens-clarke county police department
+
+Department: GA_atlanta police department
+
+Department: GA_avondale estates police department
+
+Department: GA_chatham county sheriff's office
+
+Department: GA_clayton county sheriff's office
+
+Department: GA_cobb county police department
+
+Department: GA_cobb county sheriff's office
+
+Department: GA_college park police department
+
+Department: GA_columbus police department
+
+Department: GA_dekalb county police department
+
+Department: GA_dekalb county sheriff's office
+
+Department: GA_east point police department
+
+Department: GA_georgia state patrol
+Event-Date: 29dec2017
+(2,520 real changes made)
+
+Department: GA_greene county sheriff's office
+
+Department: GA_leesburg police department
+
+Department: GA_lowndes county sheriff's office
+
+Department: GA_macon police department
+
+Department: GA_port wentworth police department
+
+Department: GA_savannah police department
+
+Department: GA_smyrna police department
+
+Department: GA_thomas county sheriff's office
+
+Department: GA_union city police department
+
+Department: IA_waterloo police department
+
+Department: ID_idaho state police
+
+Department: IL_amtrak police department
+
+Department: IL_calumet city police department
+Event-Date: 21apr2012
+(840 real changes made)
+
+Department: IL_champaign police department
+Event-Date: 04aug2015
+(840 real changes made)
+
+Department: IL_chicago police department
+Event-Date: 24nov2011
+(15,960 real changes made)
+Event-Date: 21mar2012
+(15,960 real changes made)
+Event-Date: 11aug2012
+(15,960 real changes made)
+Event-Date: 08nov2012
+(15,960 real changes made)
+Event-Date: 15dec2012
+(15,960 real changes made)
+Event-Date: 07jan2013
+(15,960 real changes made)
+Event-Date: 04jul2013
+(15,960 real changes made)
+Event-Date: 01sep2013
+(15,960 real changes made)
+Event-Date: 07sep2013
+(15,960 real changes made)
+Event-Date: 11may2014
+(15,960 real changes made)
+Event-Date: 26dec2015
+(15,960 real changes made)
+Event-Date: 28jul2016
+(15,960 real changes made)
+Event-Date: 06jun2018
+(15,960 real changes made)
+
+Department: IL_harvey police department
+Event-Date: 13apr2014
+(840 real changes made)
+
+Department: IL_rock falls police department
+Event-Date: 26jan2018
+(840 real changes made)
+
+Department: IL_rockford police department
+Event-Date: 05nov2017
+(840 real changes made)
+
+Department: IL_washington park police department
+Event-Date: 28nov2016
+(840 real changes made)
+
+Department: IL_waukegan police department
+Event-Date: 20oct2020
+(840 real changes made)
+
+Department: IN_cook county (il) department of corrections
+
+Department: IN_east chicago police department
+
+Department: IN_gary police department
+
+Department: IN_goshen police department
+
+Department: IN_greencastle police department
+
+Department: IN_indiana state police
+
+Department: IN_indianapolis metropolitan police department
+
+Department: IN_portage police department
+
+Department: KS_cowley county sheriff's office
+
+Department: KS_leavenworth police department
+
+Department: KS_mcpherson county sheriff's office
+
+Department: KS_wichita police department
+Event-Date: 13apr2012
+(840 real changes made)
+
+Department: KY_kentucky state police
+
+Department: KY_louisville metro police department
+Event-Date: 21apr2011
+(2,520 real changes made)
+Event-Date: 15may2019
+(2,520 real changes made)
+
+Department: KY_shelbyville police department
+
+Department: LA_avoyelles parish sheriff's office
+
+Department: LA_baton rouge police department
+
+Department: LA_breaux bridge police department
+
+Department: LA_converse police department
+
+Department: LA_east baton rouge parish sheriff's office
+
+Department: LA_east feliciana parish sheriff's office
+
+Department: LA_evangeline parish sheriff's office
+
+Department: LA_jefferson parish sheriff's office
+
+Department: LA_kenner police department
+
+Department: LA_louisiana state police
+
+Department: LA_new orleans police department
+Event-Date: 07mar2012
+(1,680 real changes made)
+Event-Date: 14sep2014
+(1,680 real changes made)
+
+Department: LA_shreveport city marshal
+
+Department: LA_shreveport police department
+
+Department: LA_st. john the baptist parish sheriff's office
+
+Department: LA_st. martin parish sheriff's office
+
+Department: LA_st. martinville police department
+
+Department: LA_tangipahoa parish sheriff's office
+
+Department: LA_u.s. department of veterans affairs
+
+Department: LA_u.s. federal bureau of investigation
+
+Department: MA_boston police department
+
+Department: MA_framingham police department
+
+Department: MA_massachusetts state police
+Event-Date: 11aug2013
+(840 real changes made)
+
+Department: MA_springfield police department
+
+Department: MD_baltimore county police department
+Event-Date: 13jun2012
+(7,560 real changes made)
+Event-Date: 13aug2013
+(7,560 real changes made)
+Event-Date: 22jul2014
+(7,560 real changes made)
+
+Department: MD_baltimore police department
+Event-Date: 09jan2011
+(5,880 real changes made)
+Event-Date: 19may2012
+(5,880 real changes made)
+Event-Date: 01jul2012
+(5,880 real changes made)
+Event-Date: 21sep2012
+(5,880 real changes made)
+Event-Date: 07may2013
+(5,880 real changes made)
+Event-Date: 18jul2013
+(5,880 real changes made)
+Event-Date: 16oct2013
+(5,880 real changes made)
+
+Department: MD_cecil county sheriff's office
+Event-Date: 11mar2015
+(840 real changes made)
+
+Department: MD_greensboro police department
+Event-Date: 15sep2018
+(840 real changes made)
+
+Department: MD_howard county police department
+Event-Date: 09aug2012
+(840 real changes made)
+
+Department: MD_maryland state police
+Event-Date: 20dec2012
+(2,520 real changes made)
+Event-Date: 18mar2014
+(2,520 real changes made)
+Event-Date: 21mar2014
+(2,520 real changes made)
+
+Department: MD_maryland transportation authority police
+Event-Date: 07jun2014
+(840 real changes made)
+
+Department: MD_national security administration police department
+
+Department: MD_prince george's county police department
+Event-Date: 02oct2013
+(2,520 real changes made)
+
+Department: MD_prince george's county sheriff's office
+
+Department: MD_u.s. federal bureau of investigation
+
+Department: MD_u.s. national park service
+
+Department: MI_dearborn police department
+
+Department: MI_detroit police department
+
+Department: MI_detroit transit police agency
+
+Department: MI_flint township police department
+
+Department: MI_lathrup village police department
+
+Department: MI_wayne county sheriff's office
+
+Department: MN_brooklyn center police department
+
+Department: MN_lino lakes public safety department
+
+Department: MN_minneapolis police department
+
+Department: MN_st. paul police department
+
+Department: MN_woodbury police department
+
+Department: MO_beverly hills police department
+Event-Date: 06dec2011
+(840 real changes made)
+
+Department: MO_chesterfield police department
+Event-Date: 31dec2019
+(840 real changes made)
+
+Department: MO_ferguson police department
+Event-Date: 09aug2014
+(840 real changes made)
+
+Department: MO_kansas city police department
+
+Department: MO_pagedale police department
+Event-Date: 26may2013
+(840 real changes made)
+
+Department: MO_pine lawn police department
+Event-Date: 05jul2014
+(840 real changes made)
+
+Department: MO_sikeston department of public safety
+Event-Date: 29apr2020
+(840 real changes made)
+
+Department: MO_st. louis county police department
+Event-Date: 09jul2016
+(840 real changes made)
+
+Department: MO_st. louis county sheriff's department
+
+Department: MO_st. louis metropolitan police department
+Event-Date: 19dec2014
+(2,520 real changes made)
+
+Department: MO_u.s. bureau of alcohol tobacco firearms and explosives
+
+Department: MO_wellston police department
+Event-Date: 28feb2015
+(840 real changes made)
+
+Department: MS_bolivar county sheriff's office
+
+Department: MS_canton police department
+
+Department: MS_durant police department
+
+Department: MS_edwards police department
+Event-Date: 10nov2017
+(840 real changes made)
+
+Department: MS_gulfport police department
+Event-Date: 01feb2020
+(840 real changes made)
+
+Department: MS_hinds county sheriff's office
+Event-Date: 05may2014
+(840 real changes made)
+
+Department: MS_jackson police department
+Event-Date: 20nov2011
+(4,200 real changes made)
+Event-Date: 27jan2018
+(4,200 real changes made)
+
+Department: MS_moss point police department
+Event-Date: 08jun2014
+(840 real changes made)
+
+Department: MS_oxford police department
+Event-Date: 19may2019
+(840 real changes made)
+
+Department: MS_philadelphia police department
+Event-Date: 02nov2014
+(840 real changes made)
+
+Department: MS_southaven police department
+Event-Date: 28may2014
+(840 real changes made)
+
+Department: MS_stonewall police department
+Event-Date: 08jul2015
+(840 real changes made)
+
+Department: MS_tupelo police department
+Event-Date: 18jun2016
+(840 real changes made)
+
+Department: NC_anson county probation department
+
+Department: NC_asheville police department
+Event-Date: 29sep2013
+(840 real changes made)
+
+Department: NC_catawba county sheriff's office
+Event-Date: 28nov2016
+(840 real changes made)
+
+Department: NC_charlotte-mecklenburg police department
+Event-Date: 14sep2013
+(840 real changes made)
+
+Department: NC_dallas police department
+
+Department: NC_durham police department
+Event-Date: 30mar2019
+(840 real changes made)
+
+Department: NC_graham police department
+Event-Date: 28jan2020
+(840 real changes made)
+
+Department: NC_greensboro police department
+Event-Date: 08sep2018
+(840 real changes made)
+
+Department: NC_greenville police department
+Event-Date: 09jul2019
+(840 real changes made)
+
+Department: NC_hoke county sheriff's office
+Event-Date: 31may2014
+(840 real changes made)
+
+Department: NC_new hanover county sheriff's office
+Event-Date: 13oct2013
+(840 real changes made)
+
+Department: NC_north carolina department of motor vehicles
+Event-Date: 13nov2019
+(840 real changes made)
+
+Department: NC_north carolina state highway patrol
+Event-Date: 01jan2019
+(840 real changes made)
+
+Department: NC_u.s. immigration and customs enforcement
+
+Department: NJ_bloomingdale police department
+
+Department: NJ_bridgeton police department
+
+Department: NJ_cape may county prosecutor's office
+
+Department: NJ_deptford township police department
+
+Department: NJ_essex county sheriff's office
+
+Department: NJ_haddon township police department
+
+Department: NJ_jersey city police department
+
+Department: NJ_lyndhurst police department
+
+Department: NJ_mercer county sheriff's office
+
+Department: NJ_new jersey department of corrections
+
+Department: NJ_new jersey state police
+Event-Date: 21apr2015
+(1,680 real changes made)
+
+Department: NJ_paterson police department
+
+Department: NJ_trenton police department
+
+Department: NM_new mexico state police
+
+Department: NM_valencia county sheriff's office
+
+Department: NV_las vegas metropolitan police department
+
+Department: NV_nevada department of corrections
+
+Department: NV_north las vegas police department
+
+Department: NV_u.s. bureau of land management
+
+Department: NV_washoe county sheriff's office
+
+Department: NY_buffalo police department
+
+Department: NY_city of new york police department
+
+Department: NY_nassau county police department
+
+Department: NY_new york state police
+Event-Date: 04oct2012
+(840 real changes made)
+
+Department: NY_onondaga county sheriff's office
+
+Department: NY_rochester police department
+
+Department: NY_saratoga springs police department
+
+Department: NY_suffolk county police department
+
+Department: NY_troy police department
+
+Department: OH_cleveland police department
+
+Department: OH_columbus division of police
+Event-Date: 22dec2020
+(840 real changes made)
+
+Department: OH_euclid police department
+
+Department: OH_niles police department
+
+Department: OH_u.s. federal bureau of investigation
+
+Department: OH_university of cincinnati police department
+
+Department: OK_del city police department
+
+Department: OK_edmond police department
+
+Department: OK_oklahoma city police department
+Event-Date: 19jun2012
+(5,040 real changes made)
+Event-Date: 01may2013
+(5,040 real changes made)
+Event-Date: 25feb2015
+(5,040 real changes made)
+Event-Date: 09jun2016
+(5,040 real changes made)
+Event-Date: 12nov2018
+(5,040 real changes made)
+
+Department: OK_oklahoma highway patrol
+
+Department: OK_tulsa police department
+Event-Date: 25mar2014
+(3,360 real changes made)
+Event-Date: 05aug2014
+(3,360 real changes made)
+Event-Date: 02apr2015
+(3,360 real changes made)
+Event-Date: 16sep2016
+(3,360 real changes made)
+
+Department: PA_east pittsburgh police department
+
+Department: PA_harrisburg police bureau
+
+Department: PA_johnstown police department
+
+Department: PA_pennsylvania state constable
+
+Department: PA_philadelphia police department
+Event-Date: 09aug2012
+(7,560 real changes made)
+Event-Date: 28sep2016
+(7,560 real changes made)
+Event-Date: 11aug2017
+(7,560 real changes made)
+Event-Date: 27dec2017
+(7,560 real changes made)
+Event-Date: 29jan2018
+(7,560 real changes made)
+
+Department: PA_southwest regional police department
+
+Department: PA_temple university campus police department
+
+Department: PA_upper darby township police department
+
+Department: SC_anderson police department
+
+Department: SC_chesterfield county sheriff's office
+
+Department: SC_columbia police department
+
+Department: SC_denmark police department
+
+Department: SC_eutawville police department
+
+Department: SC_kershaw county sheriff's office
+
+Department: SC_myrtle beach police department
+
+Department: SC_north augusta department of public safety
+
+Department: SC_north charleston police department
+
+Department: SC_richland county sheriff's office
+
+Department: SC_south carolina highway patrol
+Event-Date: 14jul2012
+(840 real changes made)
+
+Department: SC_spartanburg methodist college campus safety department
+
+Department: TN_crockett county sheriff's office
+
+Department: TN_henderson county sheriff's office
+
+Department: TN_henderson police department
+
+Department: TN_memphis police department
+
+Department: TN_obion county sheriff's office
+
+Department: TN_shelby county sheriff's office
+
+Department: TX_allen police department
+
+Department: TX_arlington police department
+Event-Date: 07aug2015
+(2,520 real changes made)
+
+Department: TX_austin police department
+Event-Date: 30may2011
+(2,520 real changes made)
+Event-Date: 26jul2013
+(2,520 real changes made)
+Event-Date: 08feb2016
+(2,520 real changes made)
+
+Department: TX_balch springs police department
+
+Department: TX_bastrop county sheriff's office
+
+Department: TX_corpus christi police department
+
+Department: TX_dallas police department
+
+Department: TX_ennis police department
+
+Department: TX_fort worth police department
+
+Department: TX_georgetown police department
+
+Department: TX_harris county constable's office precinct 4
+
+Department: TX_harris county constable's office precinct 7
+
+Department: TX_harris county sheriff's office
+
+Department: TX_harrison county sheriff's office
+
+Department: TX_hearne police department
+
+Department: TX_houston police department
+Event-Date: 16jan2014
+(5,880 real changes made)
+Event-Date: 17mar2014
+(5,880 real changes made)
+Event-Date: 06may2014
+(5,880 real changes made)
+Event-Date: 03sep2014
+(5,880 real changes made)
+Event-Date: 12mar2016
+(5,880 real changes made)
+
+Department: TX_kirbyville police department
+
+Department: TX_lancaster police department
+
+Department: TX_lubbock police department
+Event-Date: 24aug2013
+(1,680 real changes made)
+Event-Date: 21sep2015
+(1,680 real changes made)
+
+Department: TX_port arthur police department
+
+Department: TX_san antonio police department
+Event-Date: 16jul2013
+(5,040 real changes made)
+Event-Date: 20apr2014
+(5,040 real changes made)
+Event-Date: 04feb2016
+(5,040 real changes made)
+Event-Date: 17oct2018
+(5,040 real changes made)
+
+Department: TX_stratford police department
+
+Department: TX_temple police department
+
+Department: TX_texas department of public safety
+Event-Date: 04may2014
+(2,520 real changes made)
+Event-Date: 13feb2016
+(2,520 real changes made)
+Event-Date: 11apr2019
+(2,520 real changes made)
+
+Department: TX_u.s. marshals service
+
+Department: TX_university of texas at houston police department
+
+Department: TX_waco police department
+
+Department: TX_wichita falls police department
+
+Department: TX_williamson county sheriff's office
+
+Department: TX_wolfe city police department
+
+Department: VA_buckingham county sheriff's office
+
+Department: VA_chesterfield county police department
+
+Department: VA_danville police department
+
+Department: VA_hampton police department
+
+Department: VA_henrico county division of police
+
+Department: VA_immigration and customs enforcement
+
+Department: VA_james city county police department
+
+Department: VA_norfolk police department
+
+Department: VA_portsmouth police department
+
+Department: VA_richmond police department
+
+Department: VA_roanoke police department
+
+Department: VA_virginia beach police department
+
+Department: WA_bellevue police department
+
+Department: WA_franklin county sheriff's office
+
+Department: WA_kent police department
+
+Department: WA_lakewood police department
+
+Department: WA_tacoma police department
+Event-Date: 03mar2020
+(840 real changes made)
+
+Department: WA_yakima police department
+
+Department: WI_appleton police department
+
+Department: WI_beloit police department
+
+Department: WI_madison police department
+Event-Date: 06mar2015
+(840 real changes made)
+
+Department: WI_milwaukee county sheriff's office
+
+Department: WI_milwaukee police department
+
+Department: WI_oshkosh police department
+
+Department: WI_walworth county sheriff's office
+
+Department: WV_kanawha county sheriff's office
+
+Department: WV_mineral county sheriff's office
+(158,760 real changes made)
+(158,760 real changes made)
+
+Department: AL_alexander city police department
+
+Department: AL_barbour county sheriff's office
+
+Department: AL_birmingham police department
+
+Department: AL_childersburg police department
+
+Department: AL_dothan police department
+
+Department: AL_henry county sheriff's office
+
+Department: AL_jefferson county sheriff's office
+
+Department: AL_limestone county sheriff's office
+
+Department: AL_madison county sheriff's office
+
+Department: AL_phenix city police department
+
+Department: AL_prichard police department
+
+Department: AL_selma police department
+
+Department: AL_warrior police department
+
+Department: AR_alexander police department
+
+Department: AR_arkansas state police
+
+Department: AR_blytheville police department
+
+Department: AR_fayetteville police department
+
+Department: AR_jacksonville police department
+
+Department: AR_little rock police department
+Event-Date: 07oct2017
+(4,200 real changes made)
+
+Department: AR_north little rock police department
+
+Department: AR_union county sheriff's office
+
+Department: AR_west memphis police department
+
+Department: AZ_arizona department of public safety
+Event-Date: 07apr2013
+(2,520 real changes made)
+Event-Date: 07dec2017
+(2,520 real changes made)
+
+Department: AZ_casa grande police department
+
+Department: AZ_phoenix police department
+
+Department: AZ_scottsdale police department
+
+Department: AZ_tempe police department
+
+Department: CA_alameda county sheriff's office
+
+Department: CA_anaheim police department
+Event-Date: 02mar2018
+(840 real changes made)
+
+Department: CA_antioch police department
+
+Department: CA_bakersfield police department
+Event-Date: 04nov2017
+(840 real changes made)
+
+Department: CA_barstow police department
+
+Department: CA_berkeley police department
+
+Department: CA_california department of corrections and rehabilitation
+
+Department: CA_california highway patrol
+Event-Date: 11may2014
+(840 real changes made)
+
+Department: CA_california state university police department san bernardino
+
+Department: CA_chula vista police department
+
+Department: CA_contra costa sheriff's office
+
+Department: CA_fremont police department
+
+Department: CA_gilroy police department
+
+Department: CA_hayward police department
+
+Department: CA_inglewood police department
+
+Department: CA_long beach police department
+Event-Date: 19nov2013
+(840 real changes made)
+
+Department: CA_los angeles county sheriff's department
+
+Department: CA_los angeles police department
+Event-Date: 14jan2011
+(7,560 real changes made)
+Event-Date: 24jan2011
+(7,560 real changes made)
+Event-Date: 03mar2011
+(7,560 real changes made)
+Event-Date: 22jul2012
+(7,560 real changes made)
+Event-Date: 11aug2014
+(7,560 real changes made)
+Event-Date: 01mar2015
+(7,560 real changes made)
+Event-Date: 06may2015
+(7,560 real changes made)
+Event-Date: 29oct2018
+(7,560 real changes made)
+
+Department: CA_oakland police department
+Event-Date: 18may2011
+(1,680 real changes made)
+Event-Date: 19jul2015
+(1,680 real changes made)
+
+Department: CA_orange county sheriff's department
+
+Department: CA_pasadena police department
+
+Department: CA_riverside county sheriff's department
+
+Department: CA_sacramento county sheriff's office
+
+Department: CA_san bernardino county sheriff's office
+
+Department: CA_san bernardino police department
+Event-Date: 03oct2014
+(840 real changes made)
+
+Department: CA_san diego harbor police department
+
+Department: CA_san francisco police department
+Event-Date: 19may2016
+(1,680 real changes made)
+
+Department: CA_south lake tahoe police department
+
+Department: CA_stockton police department
+Event-Date: 11apr2012
+(2,520 real changes made)
+Event-Date: 13apr2016
+(2,520 real changes made)
+
+Department: CA_torrance police department
+
+Department: CA_tulare police department
+
+Department: CA_u.s. immigration and customs enforcement
+
+Department: CA_vacaville police department
+
+Department: CO_aurora police department
+Event-Date: 06mar2015
+(4,200 real changes made)
+Event-Date: 22dec2015
+(4,200 real changes made)
+
+Department: CO_colorado springs police department
+
+Department: CO_denver police department
+Event-Date: 28dec2020
+(840 real changes made)
+
+Department: CO_westminster police department
+
+Department: CT_bridgeport police department
+Event-Date: 01apr2013
+(840 real changes made)
+
+Department: CT_connecticut state police
+Event-Date: 20feb2019
+(840 real changes made)
+
+Department: CT_new britain police department
+Event-Date: 14dec2017
+(840 real changes made)
+
+Department: DC_u.s. secret service
+
+Department: DC_washington metropolitan police department
+
+Department: DE_new castle county police department
+
+Department: FL_brevard county sheriff's office
+
+Department: FL_broward county sheriff's office
+
+Department: FL_citrus county sheriff's office
+
+Department: FL_fernandina beach police department
+
+Department: FL_florida highway patrol
+Event-Date: 25may2016
+(1,680 real changes made)
+Event-Date: 12mar2019
+(1,680 real changes made)
+
+Department: FL_fort lauderdale police department
+
+Department: FL_gretna police department
+
+Department: FL_hallandale beach police department
+
+Department: FL_hillsborough county sheriff's office
+Event-Date: 30aug2016
+(840 real changes made)
+
+Department: FL_hollywood police department
+
+Department: FL_indian river county sheriff's office
+
+Department: FL_jacksonville sheriff's office
+
+Department: FL_largo police department
+
+Department: FL_lauderhill police department
+
+Department: FL_lee county sheriff's office
+
+Department: FL_manatee county sheriff's office
+
+Department: FL_martin county sheriff's office
+
+Department: FL_miami beach police department
+
+Department: FL_miami-dade police department
+
+Department: FL_miramar police department
+
+Department: FL_nassau county sheriff's office
+
+Department: FL_orlando police department
+
+Department: FL_palm beach county sheriff's office
+
+Department: FL_pasco county sheriff's office
+
+Department: FL_polk county sheriff's office
+
+Department: FL_putnam county sheriff's office
+
+Department: FL_tallahassee police department
+
+Department: FL_winter park police department
+
+Department: GA_adairsville police department
+
+Department: GA_athens-clarke county police department
+
+Department: GA_atlanta police department
+
+Department: GA_avondale estates police department
+
+Department: GA_chatham county sheriff's office
+
+Department: GA_clayton county sheriff's office
+
+Department: GA_cobb county police department
+
+Department: GA_cobb county sheriff's office
+
+Department: GA_college park police department
+
+Department: GA_columbus police department
+
+Department: GA_dekalb county police department
+
+Department: GA_dekalb county sheriff's office
+
+Department: GA_east point police department
+
+Department: GA_georgia state patrol
+Event-Date: 29dec2017
+(2,520 real changes made)
+
+Department: GA_greene county sheriff's office
+
+Department: GA_leesburg police department
+
+Department: GA_lowndes county sheriff's office
+
+Department: GA_macon police department
+
+Department: GA_port wentworth police department
+
+Department: GA_savannah police department
+
+Department: GA_smyrna police department
+
+Department: GA_thomas county sheriff's office
+
+Department: GA_union city police department
+
+Department: IA_waterloo police department
+
+Department: ID_idaho state police
+
+Department: IL_amtrak police department
+
+Department: IL_calumet city police department
+Event-Date: 21apr2012
+(840 real changes made)
+
+Department: IL_champaign police department
+Event-Date: 04aug2015
+(840 real changes made)
+
+Department: IL_chicago police department
+Event-Date: 24nov2011
+(15,960 real changes made)
+Event-Date: 21mar2012
+(15,960 real changes made)
+Event-Date: 11aug2012
+(15,960 real changes made)
+Event-Date: 08nov2012
+(15,960 real changes made)
+Event-Date: 15dec2012
+(15,960 real changes made)
+Event-Date: 07jan2013
+(15,960 real changes made)
+Event-Date: 04jul2013
+(15,960 real changes made)
+Event-Date: 01sep2013
+(15,960 real changes made)
+Event-Date: 07sep2013
+(15,960 real changes made)
+Event-Date: 11may2014
+(15,960 real changes made)
+Event-Date: 26dec2015
+(15,960 real changes made)
+Event-Date: 28jul2016
+(15,960 real changes made)
+Event-Date: 06jun2018
+(15,960 real changes made)
+
+Department: IL_harvey police department
+Event-Date: 13apr2014
+(840 real changes made)
+
+Department: IL_rock falls police department
+Event-Date: 26jan2018
+(840 real changes made)
+
+Department: IL_rockford police department
+Event-Date: 05nov2017
+(840 real changes made)
+
+Department: IL_washington park police department
+Event-Date: 28nov2016
+(840 real changes made)
+
+Department: IL_waukegan police department
+Event-Date: 20oct2020
+(840 real changes made)
+
+Department: IN_cook county (il) department of corrections
+
+Department: IN_east chicago police department
+
+Department: IN_gary police department
+
+Department: IN_goshen police department
+
+Department: IN_greencastle police department
+
+Department: IN_indiana state police
+
+Department: IN_indianapolis metropolitan police department
+
+Department: IN_portage police department
+
+Department: KS_cowley county sheriff's office
+
+Department: KS_leavenworth police department
+
+Department: KS_mcpherson county sheriff's office
+
+Department: KS_wichita police department
+Event-Date: 13apr2012
+(840 real changes made)
+
+Department: KY_kentucky state police
+
+Department: KY_louisville metro police department
+Event-Date: 21apr2011
+(2,520 real changes made)
+Event-Date: 15may2019
+(2,520 real changes made)
+
+Department: KY_shelbyville police department
+
+Department: LA_avoyelles parish sheriff's office
+
+Department: LA_baton rouge police department
+
+Department: LA_breaux bridge police department
+
+Department: LA_converse police department
+
+Department: LA_east baton rouge parish sheriff's office
+
+Department: LA_east feliciana parish sheriff's office
+
+Department: LA_evangeline parish sheriff's office
+
+Department: LA_jefferson parish sheriff's office
+
+Department: LA_kenner police department
+
+Department: LA_louisiana state police
+
+Department: LA_new orleans police department
+Event-Date: 07mar2012
+(1,680 real changes made)
+Event-Date: 14sep2014
+(1,680 real changes made)
+
+Department: LA_shreveport city marshal
+
+Department: LA_shreveport police department
+
+Department: LA_st. john the baptist parish sheriff's office
+
+Department: LA_st. martin parish sheriff's office
+
+Department: LA_st. martinville police department
+
+Department: LA_tangipahoa parish sheriff's office
+
+Department: LA_u.s. department of veterans affairs
+
+Department: LA_u.s. federal bureau of investigation
+
+Department: MA_boston police department
+
+Department: MA_framingham police department
+
+Department: MA_massachusetts state police
+Event-Date: 11aug2013
+(840 real changes made)
+
+Department: MA_springfield police department
+
+Department: MD_baltimore county police department
+Event-Date: 13jun2012
+(7,560 real changes made)
+Event-Date: 13aug2013
+(7,560 real changes made)
+Event-Date: 22jul2014
+(7,560 real changes made)
+
+Department: MD_baltimore police department
+Event-Date: 09jan2011
+(5,880 real changes made)
+Event-Date: 19may2012
+(5,880 real changes made)
+Event-Date: 01jul2012
+(5,880 real changes made)
+Event-Date: 21sep2012
+(5,880 real changes made)
+Event-Date: 07may2013
+(5,880 real changes made)
+Event-Date: 18jul2013
+(5,880 real changes made)
+Event-Date: 16oct2013
+(5,880 real changes made)
+
+Department: MD_cecil county sheriff's office
+Event-Date: 11mar2015
+(840 real changes made)
+
+Department: MD_greensboro police department
+Event-Date: 15sep2018
+(840 real changes made)
+
+Department: MD_howard county police department
+Event-Date: 09aug2012
+(840 real changes made)
+
+Department: MD_maryland state police
+Event-Date: 20dec2012
+(2,520 real changes made)
+Event-Date: 18mar2014
+(2,520 real changes made)
+Event-Date: 21mar2014
+(2,520 real changes made)
+
+Department: MD_maryland transportation authority police
+Event-Date: 07jun2014
+(840 real changes made)
+
+Department: MD_national security administration police department
+
+Department: MD_prince george's county police department
+Event-Date: 02oct2013
+(2,520 real changes made)
+
+Department: MD_prince george's county sheriff's office
+
+Department: MD_u.s. federal bureau of investigation
+
+Department: MD_u.s. national park service
+
+Department: MI_dearborn police department
+
+Department: MI_detroit police department
+
+Department: MI_detroit transit police agency
+
+Department: MI_flint township police department
+
+Department: MI_lathrup village police department
+
+Department: MI_wayne county sheriff's office
+
+Department: MN_brooklyn center police department
+
+Department: MN_lino lakes public safety department
+
+Department: MN_minneapolis police department
+
+Department: MN_st. paul police department
+
+Department: MN_woodbury police department
+
+Department: MO_beverly hills police department
+Event-Date: 06dec2011
+(840 real changes made)
+
+Department: MO_chesterfield police department
+Event-Date: 31dec2019
+(840 real changes made)
+
+Department: MO_ferguson police department
+Event-Date: 09aug2014
+(840 real changes made)
+
+Department: MO_kansas city police department
+
+Department: MO_pagedale police department
+Event-Date: 26may2013
+(840 real changes made)
+
+Department: MO_pine lawn police department
+Event-Date: 05jul2014
+(840 real changes made)
+
+Department: MO_sikeston department of public safety
+Event-Date: 29apr2020
+(840 real changes made)
+
+Department: MO_st. louis county police department
+Event-Date: 09jul2016
+(840 real changes made)
+
+Department: MO_st. louis county sheriff's department
+
+Department: MO_st. louis metropolitan police department
+Event-Date: 19dec2014
+(2,520 real changes made)
+
+Department: MO_u.s. bureau of alcohol tobacco firearms and explosives
+
+Department: MO_wellston police department
+Event-Date: 28feb2015
+(840 real changes made)
+
+Department: MS_bolivar county sheriff's office
+
+Department: MS_canton police department
+
+Department: MS_durant police department
+
+Department: MS_edwards police department
+Event-Date: 10nov2017
+(840 real changes made)
+
+Department: MS_gulfport police department
+Event-Date: 01feb2020
+(840 real changes made)
+
+Department: MS_hinds county sheriff's office
+Event-Date: 05may2014
+(840 real changes made)
+
+Department: MS_jackson police department
+Event-Date: 20nov2011
+(4,200 real changes made)
+Event-Date: 27jan2018
+(4,200 real changes made)
+
+Department: MS_moss point police department
+Event-Date: 08jun2014
+(840 real changes made)
+
+Department: MS_oxford police department
+Event-Date: 19may2019
+(840 real changes made)
+
+Department: MS_philadelphia police department
+Event-Date: 02nov2014
+(840 real changes made)
+
+Department: MS_southaven police department
+Event-Date: 28may2014
+(840 real changes made)
+
+Department: MS_stonewall police department
+Event-Date: 08jul2015
+(840 real changes made)
+
+Department: MS_tupelo police department
+Event-Date: 18jun2016
+(840 real changes made)
+
+Department: NC_anson county probation department
+
+Department: NC_asheville police department
+Event-Date: 29sep2013
+(840 real changes made)
+
+Department: NC_catawba county sheriff's office
+Event-Date: 28nov2016
+(840 real changes made)
+
+Department: NC_charlotte-mecklenburg police department
+Event-Date: 14sep2013
+(840 real changes made)
+
+Department: NC_dallas police department
+
+Department: NC_durham police department
+Event-Date: 30mar2019
+(840 real changes made)
+
+Department: NC_graham police department
+Event-Date: 28jan2020
+(840 real changes made)
+
+Department: NC_greensboro police department
+Event-Date: 08sep2018
+(840 real changes made)
+
+Department: NC_greenville police department
+Event-Date: 09jul2019
+(840 real changes made)
+
+Department: NC_hoke county sheriff's office
+Event-Date: 31may2014
+(840 real changes made)
+
+Department: NC_new hanover county sheriff's office
+Event-Date: 13oct2013
+(840 real changes made)
+
+Department: NC_north carolina department of motor vehicles
+Event-Date: 13nov2019
+(840 real changes made)
+
+Department: NC_north carolina state highway patrol
+Event-Date: 01jan2019
+(840 real changes made)
+
+Department: NC_u.s. immigration and customs enforcement
+
+Department: NJ_bloomingdale police department
+
+Department: NJ_bridgeton police department
+
+Department: NJ_cape may county prosecutor's office
+
+Department: NJ_deptford township police department
+
+Department: NJ_essex county sheriff's office
+
+Department: NJ_haddon township police department
+
+Department: NJ_jersey city police department
+
+Department: NJ_lyndhurst police department
+
+Department: NJ_mercer county sheriff's office
+
+Department: NJ_new jersey department of corrections
+
+Department: NJ_new jersey state police
+Event-Date: 21apr2015
+(1,680 real changes made)
+
+Department: NJ_paterson police department
+
+Department: NJ_trenton police department
+
+Department: NM_new mexico state police
+
+Department: NM_valencia county sheriff's office
+
+Department: NV_las vegas metropolitan police department
+
+Department: NV_nevada department of corrections
+
+Department: NV_north las vegas police department
+
+Department: NV_u.s. bureau of land management
+
+Department: NV_washoe county sheriff's office
+
+Department: NY_buffalo police department
+
+Department: NY_city of new york police department
+
+Department: NY_nassau county police department
+
+Department: NY_new york state police
+Event-Date: 04oct2012
+(840 real changes made)
+
+Department: NY_onondaga county sheriff's office
+
+Department: NY_rochester police department
+
+Department: NY_saratoga springs police department
+
+Department: NY_suffolk county police department
+
+Department: NY_troy police department
+
+Department: OH_cleveland police department
+
+Department: OH_columbus division of police
+Event-Date: 22dec2020
+(840 real changes made)
+
+Department: OH_euclid police department
+
+Department: OH_niles police department
+
+Department: OH_u.s. federal bureau of investigation
+
+Department: OH_university of cincinnati police department
+
+Department: OK_del city police department
+
+Department: OK_edmond police department
+
+Department: OK_oklahoma city police department
+Event-Date: 19jun2012
+(5,040 real changes made)
+Event-Date: 01may2013
+(5,040 real changes made)
+Event-Date: 25feb2015
+(5,040 real changes made)
+Event-Date: 09jun2016
+(5,040 real changes made)
+Event-Date: 12nov2018
+(5,040 real changes made)
+
+Department: OK_oklahoma highway patrol
+
+Department: OK_tulsa police department
+Event-Date: 25mar2014
+(3,360 real changes made)
+Event-Date: 05aug2014
+(3,360 real changes made)
+Event-Date: 02apr2015
+(3,360 real changes made)
+Event-Date: 16sep2016
+(3,360 real changes made)
+
+Department: PA_east pittsburgh police department
+
+Department: PA_harrisburg police bureau
+
+Department: PA_johnstown police department
+
+Department: PA_pennsylvania state constable
+
+Department: PA_philadelphia police department
+Event-Date: 09aug2012
+(7,560 real changes made)
+Event-Date: 28sep2016
+(7,560 real changes made)
+Event-Date: 11aug2017
+(7,560 real changes made)
+Event-Date: 27dec2017
+(7,560 real changes made)
+Event-Date: 29jan2018
+(7,560 real changes made)
+
+Department: PA_southwest regional police department
+
+Department: PA_temple university campus police department
+
+Department: PA_upper darby township police department
+
+Department: SC_anderson police department
+
+Department: SC_chesterfield county sheriff's office
+
+Department: SC_columbia police department
+
+Department: SC_denmark police department
+
+Department: SC_eutawville police department
+
+Department: SC_kershaw county sheriff's office
+
+Department: SC_myrtle beach police department
+
+Department: SC_north augusta department of public safety
+
+Department: SC_north charleston police department
+
+Department: SC_richland county sheriff's office
+
+Department: SC_south carolina highway patrol
+Event-Date: 14jul2012
+(840 real changes made)
+
+Department: SC_spartanburg methodist college campus safety department
+
+Department: TN_crockett county sheriff's office
+
+Department: TN_henderson county sheriff's office
+
+Department: TN_henderson police department
+
+Department: TN_memphis police department
+
+Department: TN_obion county sheriff's office
+
+Department: TN_shelby county sheriff's office
+
+Department: TX_allen police department
+
+Department: TX_arlington police department
+Event-Date: 07aug2015
+(2,520 real changes made)
+
+Department: TX_austin police department
+Event-Date: 30may2011
+(2,520 real changes made)
+Event-Date: 26jul2013
+(2,520 real changes made)
+Event-Date: 08feb2016
+(2,520 real changes made)
+
+Department: TX_balch springs police department
+
+Department: TX_bastrop county sheriff's office
+
+Department: TX_corpus christi police department
+
+Department: TX_dallas police department
+
+Department: TX_ennis police department
+
+Department: TX_fort worth police department
+
+Department: TX_georgetown police department
+
+Department: TX_harris county constable's office precinct 4
+
+Department: TX_harris county constable's office precinct 7
+
+Department: TX_harris county sheriff's office
+
+Department: TX_harrison county sheriff's office
+
+Department: TX_hearne police department
+
+Department: TX_houston police department
+Event-Date: 16jan2014
+(5,880 real changes made)
+Event-Date: 17mar2014
+(5,880 real changes made)
+Event-Date: 06may2014
+(5,880 real changes made)
+Event-Date: 03sep2014
+(5,880 real changes made)
+Event-Date: 12mar2016
+(5,880 real changes made)
+
+Department: TX_kirbyville police department
+
+Department: TX_lancaster police department
+
+Department: TX_lubbock police department
+Event-Date: 24aug2013
+(1,680 real changes made)
+Event-Date: 21sep2015
+(1,680 real changes made)
+
+Department: TX_port arthur police department
+
+Department: TX_san antonio police department
+Event-Date: 16jul2013
+(5,040 real changes made)
+Event-Date: 20apr2014
+(5,040 real changes made)
+Event-Date: 04feb2016
+(5,040 real changes made)
+Event-Date: 17oct2018
+(5,040 real changes made)
+
+Department: TX_stratford police department
+
+Department: TX_temple police department
+
+Department: TX_texas department of public safety
+Event-Date: 04may2014
+(2,520 real changes made)
+Event-Date: 13feb2016
+(2,520 real changes made)
+Event-Date: 11apr2019
+(2,520 real changes made)
+
+Department: TX_u.s. marshals service
+
+Department: TX_university of texas at houston police department
+
+Department: TX_waco police department
+
+Department: TX_wichita falls police department
+
+Department: TX_williamson county sheriff's office
+
+Department: TX_wolfe city police department
+
+Department: VA_buckingham county sheriff's office
+
+Department: VA_chesterfield county police department
+
+Department: VA_danville police department
+
+Department: VA_hampton police department
+
+Department: VA_henrico county division of police
+
+Department: VA_immigration and customs enforcement
+
+Department: VA_james city county police department
+
+Department: VA_norfolk police department
+
+Department: VA_portsmouth police department
+
+Department: VA_richmond police department
+
+Department: VA_roanoke police department
+
+Department: VA_virginia beach police department
+
+Department: WA_bellevue police department
+
+Department: WA_franklin county sheriff's office
+
+Department: WA_kent police department
+
+Department: WA_lakewood police department
+
+Department: WA_tacoma police department
+Event-Date: 03mar2020
+(840 real changes made)
+
+Department: WA_yakima police department
+
+Department: WI_appleton police department
+
+Department: WI_beloit police department
+
+Department: WI_madison police department
+Event-Date: 06mar2015
+(840 real changes made)
+
+Department: WI_milwaukee county sheriff's office
+
+Department: WI_milwaukee police department
+
+Department: WI_oshkosh police department
+
+Department: WI_walworth county sheriff's office
+
+Department: WV_kanawha county sheriff's office
+
+Department: WV_mineral county sheriff's office
+(158,760 real changes made)
+(158,760 real changes made)
+
+Department: AL_alexander city police department
+
+Department: AL_barbour county sheriff's office
+
+Department: AL_birmingham police department
+
+Department: AL_childersburg police department
+
+Department: AL_dothan police department
+
+Department: AL_henry county sheriff's office
+
+Department: AL_jefferson county sheriff's office
+
+Department: AL_limestone county sheriff's office
+
+Department: AL_madison county sheriff's office
+
+Department: AL_phenix city police department
+
+Department: AL_prichard police department
+
+Department: AL_selma police department
+
+Department: AL_warrior police department
+
+Department: AR_alexander police department
+
+Department: AR_arkansas state police
+
+Department: AR_blytheville police department
+
+Department: AR_fayetteville police department
+
+Department: AR_jacksonville police department
+
+Department: AR_little rock police department
+Event-Date: 07oct2017
+(4,200 real changes made)
+
+Department: AR_north little rock police department
+
+Department: AR_union county sheriff's office
+
+Department: AR_west memphis police department
+
+Department: AZ_arizona department of public safety
+Event-Date: 07apr2013
+(2,520 real changes made)
+Event-Date: 07dec2017
+(2,520 real changes made)
+
+Department: AZ_casa grande police department
+
+Department: AZ_phoenix police department
+
+Department: AZ_scottsdale police department
+
+Department: AZ_tempe police department
+
+Department: CA_alameda county sheriff's office
+
+Department: CA_anaheim police department
+Event-Date: 02mar2018
+(840 real changes made)
+
+Department: CA_antioch police department
+
+Department: CA_bakersfield police department
+Event-Date: 04nov2017
+(840 real changes made)
+
+Department: CA_barstow police department
+
+Department: CA_berkeley police department
+
+Department: CA_california department of corrections and rehabilitation
+
+Department: CA_california highway patrol
+Event-Date: 11may2014
+(840 real changes made)
+
+Department: CA_california state university police department san bernardino
+
+Department: CA_chula vista police department
+
+Department: CA_contra costa sheriff's office
+
+Department: CA_fremont police department
+
+Department: CA_gilroy police department
+
+Department: CA_hayward police department
+
+Department: CA_inglewood police department
+
+Department: CA_long beach police department
+Event-Date: 19nov2013
+(840 real changes made)
+
+Department: CA_los angeles county sheriff's department
+
+Department: CA_los angeles police department
+Event-Date: 14jan2011
+(7,560 real changes made)
+Event-Date: 24jan2011
+(7,560 real changes made)
+Event-Date: 03mar2011
+(7,560 real changes made)
+Event-Date: 22jul2012
+(7,560 real changes made)
+Event-Date: 11aug2014
+(7,560 real changes made)
+Event-Date: 01mar2015
+(7,560 real changes made)
+Event-Date: 06may2015
+(7,560 real changes made)
+Event-Date: 29oct2018
+(7,560 real changes made)
+
+Department: CA_oakland police department
+Event-Date: 18may2011
+(1,680 real changes made)
+Event-Date: 19jul2015
+(1,680 real changes made)
+
+Department: CA_orange county sheriff's department
+
+Department: CA_pasadena police department
+
+Department: CA_riverside county sheriff's department
+
+Department: CA_sacramento county sheriff's office
+
+Department: CA_san bernardino county sheriff's office
+
+Department: CA_san bernardino police department
+Event-Date: 03oct2014
+(840 real changes made)
+
+Department: CA_san diego harbor police department
+
+Department: CA_san francisco police department
+Event-Date: 19may2016
+(1,680 real changes made)
+
+Department: CA_south lake tahoe police department
+
+Department: CA_stockton police department
+Event-Date: 11apr2012
+(2,520 real changes made)
+Event-Date: 13apr2016
+(2,520 real changes made)
+
+Department: CA_torrance police department
+
+Department: CA_tulare police department
+
+Department: CA_u.s. immigration and customs enforcement
+
+Department: CA_vacaville police department
+
+Department: CO_aurora police department
+Event-Date: 06mar2015
+(4,200 real changes made)
+Event-Date: 22dec2015
+(4,200 real changes made)
+
+Department: CO_colorado springs police department
+
+Department: CO_denver police department
+Event-Date: 28dec2020
+(840 real changes made)
+
+Department: CO_westminster police department
+
+Department: CT_bridgeport police department
+Event-Date: 01apr2013
+(840 real changes made)
+
+Department: CT_connecticut state police
+Event-Date: 20feb2019
+(840 real changes made)
+
+Department: CT_new britain police department
+Event-Date: 14dec2017
+(840 real changes made)
+
+Department: DC_u.s. secret service
+
+Department: DC_washington metropolitan police department
+
+Department: DE_new castle county police department
+
+Department: FL_brevard county sheriff's office
+
+Department: FL_broward county sheriff's office
+
+Department: FL_citrus county sheriff's office
+
+Department: FL_fernandina beach police department
+
+Department: FL_florida highway patrol
+Event-Date: 25may2016
+(1,680 real changes made)
+Event-Date: 12mar2019
+(1,680 real changes made)
+
+Department: FL_fort lauderdale police department
+
+Department: FL_gretna police department
+
+Department: FL_hallandale beach police department
+
+Department: FL_hillsborough county sheriff's office
+Event-Date: 30aug2016
+(840 real changes made)
+
+Department: FL_hollywood police department
+
+Department: FL_indian river county sheriff's office
+
+Department: FL_jacksonville sheriff's office
+
+Department: FL_largo police department
+
+Department: FL_lauderhill police department
+
+Department: FL_lee county sheriff's office
+
+Department: FL_manatee county sheriff's office
+
+Department: FL_martin county sheriff's office
+
+Department: FL_miami beach police department
+
+Department: FL_miami-dade police department
+
+Department: FL_miramar police department
+
+Department: FL_nassau county sheriff's office
+
+Department: FL_orlando police department
+
+Department: FL_palm beach county sheriff's office
+
+Department: FL_pasco county sheriff's office
+
+Department: FL_polk county sheriff's office
+
+Department: FL_putnam county sheriff's office
+
+Department: FL_tallahassee police department
+
+Department: FL_winter park police department
+
+Department: GA_adairsville police department
+
+Department: GA_athens-clarke county police department
+
+Department: GA_atlanta police department
+
+Department: GA_avondale estates police department
+
+Department: GA_chatham county sheriff's office
+
+Department: GA_clayton county sheriff's office
+
+Department: GA_cobb county police department
+
+Department: GA_cobb county sheriff's office
+
+Department: GA_college park police department
+
+Department: GA_columbus police department
+
+Department: GA_dekalb county police department
+
+Department: GA_dekalb county sheriff's office
+
+Department: GA_east point police department
+
+Department: GA_georgia state patrol
+Event-Date: 29dec2017
+(2,520 real changes made)
+
+Department: GA_greene county sheriff's office
+
+Department: GA_leesburg police department
+
+Department: GA_lowndes county sheriff's office
+
+Department: GA_macon police department
+
+Department: GA_port wentworth police department
+
+Department: GA_savannah police department
+
+Department: GA_smyrna police department
+
+Department: GA_thomas county sheriff's office
+
+Department: GA_union city police department
+
+Department: IA_waterloo police department
+
+Department: ID_idaho state police
+
+Department: IL_amtrak police department
+
+Department: IL_calumet city police department
+Event-Date: 21apr2012
+(840 real changes made)
+
+Department: IL_champaign police department
+Event-Date: 04aug2015
+(840 real changes made)
+
+Department: IL_chicago police department
+Event-Date: 24nov2011
+(15,960 real changes made)
+Event-Date: 21mar2012
+(15,960 real changes made)
+Event-Date: 11aug2012
+(15,960 real changes made)
+Event-Date: 08nov2012
+(15,960 real changes made)
+Event-Date: 15dec2012
+(15,960 real changes made)
+Event-Date: 07jan2013
+(15,960 real changes made)
+Event-Date: 04jul2013
+(15,960 real changes made)
+Event-Date: 01sep2013
+(15,960 real changes made)
+Event-Date: 07sep2013
+(15,960 real changes made)
+Event-Date: 11may2014
+(15,960 real changes made)
+Event-Date: 26dec2015
+(15,960 real changes made)
+Event-Date: 28jul2016
+(15,960 real changes made)
+Event-Date: 06jun2018
+(15,960 real changes made)
+
+Department: IL_harvey police department
+Event-Date: 13apr2014
+(840 real changes made)
+
+Department: IL_rock falls police department
+Event-Date: 26jan2018
+(840 real changes made)
+
+Department: IL_rockford police department
+Event-Date: 05nov2017
+(840 real changes made)
+
+Department: IL_washington park police department
+Event-Date: 28nov2016
+(840 real changes made)
+
+Department: IL_waukegan police department
+Event-Date: 20oct2020
+(840 real changes made)
+
+Department: IN_cook county (il) department of corrections
+
+Department: IN_east chicago police department
+
+Department: IN_gary police department
+
+Department: IN_goshen police department
+
+Department: IN_greencastle police department
+
+Department: IN_indiana state police
+
+Department: IN_indianapolis metropolitan police department
+
+Department: IN_portage police department
+
+Department: KS_cowley county sheriff's office
+
+Department: KS_leavenworth police department
+
+Department: KS_mcpherson county sheriff's office
+
+Department: KS_wichita police department
+Event-Date: 13apr2012
+(840 real changes made)
+
+Department: KY_kentucky state police
+
+Department: KY_louisville metro police department
+Event-Date: 21apr2011
+(2,520 real changes made)
+Event-Date: 15may2019
+(2,520 real changes made)
+
+Department: KY_shelbyville police department
+
+Department: LA_avoyelles parish sheriff's office
+
+Department: LA_baton rouge police department
+
+Department: LA_breaux bridge police department
+
+Department: LA_converse police department
+
+Department: LA_east baton rouge parish sheriff's office
+
+Department: LA_east feliciana parish sheriff's office
+
+Department: LA_evangeline parish sheriff's office
+
+Department: LA_jefferson parish sheriff's office
+
+Department: LA_kenner police department
+
+Department: LA_louisiana state police
+
+Department: LA_new orleans police department
+Event-Date: 07mar2012
+(1,680 real changes made)
+Event-Date: 14sep2014
+(1,680 real changes made)
+
+Department: LA_shreveport city marshal
+
+Department: LA_shreveport police department
+
+Department: LA_st. john the baptist parish sheriff's office
+
+Department: LA_st. martin parish sheriff's office
+
+Department: LA_st. martinville police department
+
+Department: LA_tangipahoa parish sheriff's office
+
+Department: LA_u.s. department of veterans affairs
+
+Department: LA_u.s. federal bureau of investigation
+
+Department: MA_boston police department
+
+Department: MA_framingham police department
+
+Department: MA_massachusetts state police
+Event-Date: 11aug2013
+(840 real changes made)
+
+Department: MA_springfield police department
+
+Department: MD_baltimore county police department
+Event-Date: 13jun2012
+(7,560 real changes made)
+Event-Date: 13aug2013
+(7,560 real changes made)
+Event-Date: 22jul2014
+(7,560 real changes made)
+
+Department: MD_baltimore police department
+Event-Date: 09jan2011
+(5,880 real changes made)
+Event-Date: 19may2012
+(5,880 real changes made)
+Event-Date: 01jul2012
+(5,880 real changes made)
+Event-Date: 21sep2012
+(5,880 real changes made)
+Event-Date: 07may2013
+(5,880 real changes made)
+Event-Date: 18jul2013
+(5,880 real changes made)
+Event-Date: 16oct2013
+(5,880 real changes made)
+
+Department: MD_cecil county sheriff's office
+Event-Date: 11mar2015
+(840 real changes made)
+
+Department: MD_greensboro police department
+Event-Date: 15sep2018
+(840 real changes made)
+
+Department: MD_howard county police department
+Event-Date: 09aug2012
+(840 real changes made)
+
+Department: MD_maryland state police
+Event-Date: 20dec2012
+(2,520 real changes made)
+Event-Date: 18mar2014
+(2,520 real changes made)
+Event-Date: 21mar2014
+(2,520 real changes made)
+
+Department: MD_maryland transportation authority police
+Event-Date: 07jun2014
+(840 real changes made)
+
+Department: MD_national security administration police department
+
+Department: MD_prince george's county police department
+Event-Date: 02oct2013
+(2,520 real changes made)
+
+Department: MD_prince george's county sheriff's office
+
+Department: MD_u.s. federal bureau of investigation
+
+Department: MD_u.s. national park service
+
+Department: MI_dearborn police department
+
+Department: MI_detroit police department
+
+Department: MI_detroit transit police agency
+
+Department: MI_flint township police department
+
+Department: MI_lathrup village police department
+
+Department: MI_wayne county sheriff's office
+
+Department: MN_brooklyn center police department
+
+Department: MN_lino lakes public safety department
+
+Department: MN_minneapolis police department
+
+Department: MN_st. paul police department
+
+Department: MN_woodbury police department
+
+Department: MO_beverly hills police department
+Event-Date: 06dec2011
+(840 real changes made)
+
+Department: MO_chesterfield police department
+Event-Date: 31dec2019
+(840 real changes made)
+
+Department: MO_ferguson police department
+Event-Date: 09aug2014
+(840 real changes made)
+
+Department: MO_kansas city police department
+
+Department: MO_pagedale police department
+Event-Date: 26may2013
+(840 real changes made)
+
+Department: MO_pine lawn police department
+Event-Date: 05jul2014
+(840 real changes made)
+
+Department: MO_sikeston department of public safety
+Event-Date: 29apr2020
+(840 real changes made)
+
+Department: MO_st. louis county police department
+Event-Date: 09jul2016
+(840 real changes made)
+
+Department: MO_st. louis county sheriff's department
+
+Department: MO_st. louis metropolitan police department
+Event-Date: 19dec2014
+(2,520 real changes made)
+
+Department: MO_u.s. bureau of alcohol tobacco firearms and explosives
+
+Department: MO_wellston police department
+Event-Date: 28feb2015
+(840 real changes made)
+
+Department: MS_bolivar county sheriff's office
+
+Department: MS_canton police department
+
+Department: MS_durant police department
+
+Department: MS_edwards police department
+Event-Date: 10nov2017
+(840 real changes made)
+
+Department: MS_gulfport police department
+Event-Date: 01feb2020
+(840 real changes made)
+
+Department: MS_hinds county sheriff's office
+Event-Date: 05may2014
+(840 real changes made)
+
+Department: MS_jackson police department
+Event-Date: 20nov2011
+(4,200 real changes made)
+Event-Date: 27jan2018
+(4,200 real changes made)
+
+Department: MS_moss point police department
+Event-Date: 08jun2014
+(840 real changes made)
+
+Department: MS_oxford police department
+Event-Date: 19may2019
+(840 real changes made)
+
+Department: MS_philadelphia police department
+Event-Date: 02nov2014
+(840 real changes made)
+
+Department: MS_southaven police department
+Event-Date: 28may2014
+(840 real changes made)
+
+Department: MS_stonewall police department
+Event-Date: 08jul2015
+(840 real changes made)
+
+Department: MS_tupelo police department
+Event-Date: 18jun2016
+(840 real changes made)
+
+Department: NC_anson county probation department
+
+Department: NC_asheville police department
+Event-Date: 29sep2013
+(840 real changes made)
+
+Department: NC_catawba county sheriff's office
+Event-Date: 28nov2016
+(840 real changes made)
+
+Department: NC_charlotte-mecklenburg police department
+Event-Date: 14sep2013
+(840 real changes made)
+
+Department: NC_dallas police department
+
+Department: NC_durham police department
+Event-Date: 30mar2019
+(840 real changes made)
+
+Department: NC_graham police department
+Event-Date: 28jan2020
+(840 real changes made)
+
+Department: NC_greensboro police department
+Event-Date: 08sep2018
+(840 real changes made)
+
+Department: NC_greenville police department
+Event-Date: 09jul2019
+(840 real changes made)
+
+Department: NC_hoke county sheriff's office
+Event-Date: 31may2014
+(840 real changes made)
+
+Department: NC_new hanover county sheriff's office
+Event-Date: 13oct2013
+(840 real changes made)
+
+Department: NC_north carolina department of motor vehicles
+Event-Date: 13nov2019
+(840 real changes made)
+
+Department: NC_north carolina state highway patrol
+Event-Date: 01jan2019
+(840 real changes made)
+
+Department: NC_u.s. immigration and customs enforcement
+
+Department: NJ_bloomingdale police department
+
+Department: NJ_bridgeton police department
+
+Department: NJ_cape may county prosecutor's office
+
+Department: NJ_deptford township police department
+
+Department: NJ_essex county sheriff's office
+
+Department: NJ_haddon township police department
+
+Department: NJ_jersey city police department
+
+Department: NJ_lyndhurst police department
+
+Department: NJ_mercer county sheriff's office
+
+Department: NJ_new jersey department of corrections
+
+Department: NJ_new jersey state police
+Event-Date: 21apr2015
+(1,680 real changes made)
+
+Department: NJ_paterson police department
+
+Department: NJ_trenton police department
+
+Department: NM_new mexico state police
+
+Department: NM_valencia county sheriff's office
+
+Department: NV_las vegas metropolitan police department
+
+Department: NV_nevada department of corrections
+
+Department: NV_north las vegas police department
+
+Department: NV_u.s. bureau of land management
+
+Department: NV_washoe county sheriff's office
+
+Department: NY_buffalo police department
+
+Department: NY_city of new york police department
+
+Department: NY_nassau county police department
+
+Department: NY_new york state police
+Event-Date: 04oct2012
+(840 real changes made)
+
+Department: NY_onondaga county sheriff's office
+
+Department: NY_rochester police department
+
+Department: NY_saratoga springs police department
+
+Department: NY_suffolk county police department
+
+Department: NY_troy police department
+
+Department: OH_cleveland police department
+
+Department: OH_columbus division of police
+Event-Date: 22dec2020
+(840 real changes made)
+
+Department: OH_euclid police department
+
+Department: OH_niles police department
+
+Department: OH_u.s. federal bureau of investigation
+
+Department: OH_university of cincinnati police department
+
+Department: OK_del city police department
+
+Department: OK_edmond police department
+
+Department: OK_oklahoma city police department
+Event-Date: 19jun2012
+(5,040 real changes made)
+Event-Date: 01may2013
+(5,040 real changes made)
+Event-Date: 25feb2015
+(5,040 real changes made)
+Event-Date: 09jun2016
+(5,040 real changes made)
+Event-Date: 12nov2018
+(5,040 real changes made)
+
+Department: OK_oklahoma highway patrol
+
+Department: OK_tulsa police department
+Event-Date: 25mar2014
+(3,360 real changes made)
+Event-Date: 05aug2014
+(3,360 real changes made)
+Event-Date: 02apr2015
+(3,360 real changes made)
+Event-Date: 16sep2016
+(3,360 real changes made)
+
+Department: PA_east pittsburgh police department
+
+Department: PA_harrisburg police bureau
+
+Department: PA_johnstown police department
+
+Department: PA_pennsylvania state constable
+
+Department: PA_philadelphia police department
+Event-Date: 09aug2012
+(7,560 real changes made)
+Event-Date: 28sep2016
+(7,560 real changes made)
+Event-Date: 11aug2017
+(7,560 real changes made)
+Event-Date: 27dec2017
+(7,560 real changes made)
+Event-Date: 29jan2018
+(7,560 real changes made)
+
+Department: PA_southwest regional police department
+
+Department: PA_temple university campus police department
+
+Department: PA_upper darby township police department
+
+Department: SC_anderson police department
+
+Department: SC_chesterfield county sheriff's office
+
+Department: SC_columbia police department
+
+Department: SC_denmark police department
+
+Department: SC_eutawville police department
+
+Department: SC_kershaw county sheriff's office
+
+Department: SC_myrtle beach police department
+
+Department: SC_north augusta department of public safety
+
+Department: SC_north charleston police department
+
+Department: SC_richland county sheriff's office
+
+Department: SC_south carolina highway patrol
+Event-Date: 14jul2012
+(840 real changes made)
+
+Department: SC_spartanburg methodist college campus safety department
+
+Department: TN_crockett county sheriff's office
+
+Department: TN_henderson county sheriff's office
+
+Department: TN_henderson police department
+
+Department: TN_memphis police department
+
+Department: TN_obion county sheriff's office
+
+Department: TN_shelby county sheriff's office
+
+Department: TX_allen police department
+
+Department: TX_arlington police department
+Event-Date: 07aug2015
+(2,520 real changes made)
+
+Department: TX_austin police department
+Event-Date: 30may2011
+(2,520 real changes made)
+Event-Date: 26jul2013
+(2,520 real changes made)
+Event-Date: 08feb2016
+(2,520 real changes made)
+
+Department: TX_balch springs police department
+
+Department: TX_bastrop county sheriff's office
+
+Department: TX_corpus christi police department
+
+Department: TX_dallas police department
+
+Department: TX_ennis police department
+
+Department: TX_fort worth police department
+
+Department: TX_georgetown police department
+
+Department: TX_harris county constable's office precinct 4
+
+Department: TX_harris county constable's office precinct 7
+
+Department: TX_harris county sheriff's office
+
+Department: TX_harrison county sheriff's office
+
+Department: TX_hearne police department
+
+Department: TX_houston police department
+Event-Date: 16jan2014
+(5,880 real changes made)
+Event-Date: 17mar2014
+(5,880 real changes made)
+Event-Date: 06may2014
+(5,880 real changes made)
+Event-Date: 03sep2014
+(5,880 real changes made)
+Event-Date: 12mar2016
+(5,880 real changes made)
+
+Department: TX_kirbyville police department
+
+Department: TX_lancaster police department
+
+Department: TX_lubbock police department
+Event-Date: 24aug2013
+(1,680 real changes made)
+Event-Date: 21sep2015
+(1,680 real changes made)
+
+Department: TX_port arthur police department
+
+Department: TX_san antonio police department
+Event-Date: 16jul2013
+(5,040 real changes made)
+Event-Date: 20apr2014
+(5,040 real changes made)
+Event-Date: 04feb2016
+(5,040 real changes made)
+Event-Date: 17oct2018
+(5,040 real changes made)
+
+Department: TX_stratford police department
+
+Department: TX_temple police department
+
+Department: TX_texas department of public safety
+Event-Date: 04may2014
+(2,520 real changes made)
+Event-Date: 13feb2016
+(2,520 real changes made)
+Event-Date: 11apr2019
+(2,520 real changes made)
+
+Department: TX_u.s. marshals service
+
+Department: TX_university of texas at houston police department
+
+Department: TX_waco police department
+
+Department: TX_wichita falls police department
+
+Department: TX_williamson county sheriff's office
+
+Department: TX_wolfe city police department
+
+Department: VA_buckingham county sheriff's office
+
+Department: VA_chesterfield county police department
+
+Department: VA_danville police department
+
+Department: VA_hampton police department
+
+Department: VA_henrico county division of police
+
+Department: VA_immigration and customs enforcement
+
+Department: VA_james city county police department
+
+Department: VA_norfolk police department
+
+Department: VA_portsmouth police department
+
+Department: VA_richmond police department
+
+Department: VA_roanoke police department
+
+Department: VA_virginia beach police department
+
+Department: WA_bellevue police department
+
+Department: WA_franklin county sheriff's office
+
+Department: WA_kent police department
+
+Department: WA_lakewood police department
+
+Department: WA_tacoma police department
+Event-Date: 03mar2020
+(840 real changes made)
+
+Department: WA_yakima police department
+
+Department: WI_appleton police department
+
+Department: WI_beloit police department
+
+Department: WI_madison police department
+Event-Date: 06mar2015
+(840 real changes made)
+
+Department: WI_milwaukee county sheriff's office
+
+Department: WI_milwaukee police department
+
+Department: WI_oshkosh police department
+
+Department: WI_walworth county sheriff's office
+
+Department: WV_kanawha county sheriff's office
+
+Department: WV_mineral county sheriff's office
+(158,760 real changes made)
+(158,760 real changes made)
+
+Department: AL_alexander city police department
+
+Department: AL_barbour county sheriff's office
+
+Department: AL_birmingham police department
+
+Department: AL_childersburg police department
+
+Department: AL_dothan police department
+
+Department: AL_henry county sheriff's office
+
+Department: AL_jefferson county sheriff's office
+
+Department: AL_limestone county sheriff's office
+
+Department: AL_madison county sheriff's office
+
+Department: AL_phenix city police department
+
+Department: AL_prichard police department
+
+Department: AL_selma police department
+
+Department: AL_warrior police department
+
+Department: AR_alexander police department
+
+Department: AR_arkansas state police
+
+Department: AR_blytheville police department
+
+Department: AR_fayetteville police department
+
+Department: AR_jacksonville police department
+
+Department: AR_little rock police department
+Event-Date: 07oct2017
+(4,200 real changes made)
+
+Department: AR_north little rock police department
+
+Department: AR_union county sheriff's office
+
+Department: AR_west memphis police department
+
+Department: AZ_arizona department of public safety
+Event-Date: 07apr2013
+(2,520 real changes made)
+Event-Date: 07dec2017
+(2,520 real changes made)
+
+Department: AZ_casa grande police department
+
+Department: AZ_phoenix police department
+
+Department: AZ_scottsdale police department
+
+Department: AZ_tempe police department
+
+Department: CA_alameda county sheriff's office
+
+Department: CA_anaheim police department
+Event-Date: 02mar2018
+(840 real changes made)
+
+Department: CA_antioch police department
+
+Department: CA_bakersfield police department
+Event-Date: 04nov2017
+(840 real changes made)
+
+Department: CA_barstow police department
+
+Department: CA_berkeley police department
+
+Department: CA_california department of corrections and rehabilitation
+
+Department: CA_california highway patrol
+Event-Date: 11may2014
+(840 real changes made)
+
+Department: CA_california state university police department san bernardino
+
+Department: CA_chula vista police department
+
+Department: CA_contra costa sheriff's office
+
+Department: CA_fremont police department
+
+Department: CA_gilroy police department
+
+Department: CA_hayward police department
+
+Department: CA_inglewood police department
+
+Department: CA_long beach police department
+Event-Date: 19nov2013
+(840 real changes made)
+
+Department: CA_los angeles county sheriff's department
+
+Department: CA_los angeles police department
+Event-Date: 14jan2011
+(7,560 real changes made)
+Event-Date: 24jan2011
+(7,560 real changes made)
+Event-Date: 03mar2011
+(7,560 real changes made)
+Event-Date: 22jul2012
+(7,560 real changes made)
+Event-Date: 11aug2014
+(7,560 real changes made)
+Event-Date: 01mar2015
+(7,560 real changes made)
+Event-Date: 06may2015
+(7,560 real changes made)
+Event-Date: 29oct2018
+(7,560 real changes made)
+
+Department: CA_oakland police department
+Event-Date: 18may2011
+(1,680 real changes made)
+Event-Date: 19jul2015
+(1,680 real changes made)
+
+Department: CA_orange county sheriff's department
+
+Department: CA_pasadena police department
+
+Department: CA_riverside county sheriff's department
+
+Department: CA_sacramento county sheriff's office
+
+Department: CA_san bernardino county sheriff's office
+
+Department: CA_san bernardino police department
+Event-Date: 03oct2014
+(840 real changes made)
+
+Department: CA_san diego harbor police department
+
+Department: CA_san francisco police department
+Event-Date: 19may2016
+(1,680 real changes made)
+
+Department: CA_south lake tahoe police department
+
+Department: CA_stockton police department
+Event-Date: 11apr2012
+(2,520 real changes made)
+Event-Date: 13apr2016
+(2,520 real changes made)
+
+Department: CA_torrance police department
+
+Department: CA_tulare police department
+
+Department: CA_u.s. immigration and customs enforcement
+
+Department: CA_vacaville police department
+
+Department: CO_aurora police department
+Event-Date: 06mar2015
+(4,200 real changes made)
+Event-Date: 22dec2015
+(4,200 real changes made)
+
+Department: CO_colorado springs police department
+
+Department: CO_denver police department
+Event-Date: 28dec2020
+(840 real changes made)
+
+Department: CO_westminster police department
+
+Department: CT_bridgeport police department
+Event-Date: 01apr2013
+(840 real changes made)
+
+Department: CT_connecticut state police
+Event-Date: 20feb2019
+(840 real changes made)
+
+Department: CT_new britain police department
+Event-Date: 14dec2017
+(840 real changes made)
+
+Department: DC_u.s. secret service
+
+Department: DC_washington metropolitan police department
+
+Department: DE_new castle county police department
+
+Department: FL_brevard county sheriff's office
+
+Department: FL_broward county sheriff's office
+
+Department: FL_citrus county sheriff's office
+
+Department: FL_fernandina beach police department
+
+Department: FL_florida highway patrol
+Event-Date: 25may2016
+(1,680 real changes made)
+Event-Date: 12mar2019
+(1,680 real changes made)
+
+Department: FL_fort lauderdale police department
+
+Department: FL_gretna police department
+
+Department: FL_hallandale beach police department
+
+Department: FL_hillsborough county sheriff's office
+Event-Date: 30aug2016
+(840 real changes made)
+
+Department: FL_hollywood police department
+
+Department: FL_indian river county sheriff's office
+
+Department: FL_jacksonville sheriff's office
+
+Department: FL_largo police department
+
+Department: FL_lauderhill police department
+
+Department: FL_lee county sheriff's office
+
+Department: FL_manatee county sheriff's office
+
+Department: FL_martin county sheriff's office
+
+Department: FL_miami beach police department
+
+Department: FL_miami-dade police department
+
+Department: FL_miramar police department
+
+Department: FL_nassau county sheriff's office
+
+Department: FL_orlando police department
+
+Department: FL_palm beach county sheriff's office
+
+Department: FL_pasco county sheriff's office
+
+Department: FL_polk county sheriff's office
+
+Department: FL_putnam county sheriff's office
+
+Department: FL_tallahassee police department
+
+Department: FL_winter park police department
+
+Department: GA_adairsville police department
+
+Department: GA_athens-clarke county police department
+
+Department: GA_atlanta police department
+
+Department: GA_avondale estates police department
+
+Department: GA_chatham county sheriff's office
+
+Department: GA_clayton county sheriff's office
+
+Department: GA_cobb county police department
+
+Department: GA_cobb county sheriff's office
+
+Department: GA_college park police department
+
+Department: GA_columbus police department
+
+Department: GA_dekalb county police department
+
+Department: GA_dekalb county sheriff's office
+
+Department: GA_east point police department
+
+Department: GA_georgia state patrol
+Event-Date: 29dec2017
+(2,520 real changes made)
+
+Department: GA_greene county sheriff's office
+
+Department: GA_leesburg police department
+
+Department: GA_lowndes county sheriff's office
+
+Department: GA_macon police department
+
+Department: GA_port wentworth police department
+
+Department: GA_savannah police department
+
+Department: GA_smyrna police department
+
+Department: GA_thomas county sheriff's office
+
+Department: GA_union city police department
+
+Department: IA_waterloo police department
+
+Department: ID_idaho state police
+
+Department: IL_amtrak police department
+
+Department: IL_calumet city police department
+Event-Date: 21apr2012
+(840 real changes made)
+
+Department: IL_champaign police department
+Event-Date: 04aug2015
+(840 real changes made)
+
+Department: IL_chicago police department
+Event-Date: 24nov2011
+(15,960 real changes made)
+Event-Date: 21mar2012
+(15,960 real changes made)
+Event-Date: 11aug2012
+(15,960 real changes made)
+Event-Date: 08nov2012
+(15,960 real changes made)
+Event-Date: 15dec2012
+(15,960 real changes made)
+Event-Date: 07jan2013
+(15,960 real changes made)
+Event-Date: 04jul2013
+(15,960 real changes made)
+Event-Date: 01sep2013
+(15,960 real changes made)
+Event-Date: 07sep2013
+(15,960 real changes made)
+Event-Date: 11may2014
+(15,960 real changes made)
+Event-Date: 26dec2015
+(15,960 real changes made)
+Event-Date: 28jul2016
+(15,960 real changes made)
+Event-Date: 06jun2018
+(15,960 real changes made)
+
+Department: IL_harvey police department
+Event-Date: 13apr2014
+(840 real changes made)
+
+Department: IL_rock falls police department
+Event-Date: 26jan2018
+(840 real changes made)
+
+Department: IL_rockford police department
+Event-Date: 05nov2017
+(840 real changes made)
+
+Department: IL_washington park police department
+Event-Date: 28nov2016
+(840 real changes made)
+
+Department: IL_waukegan police department
+Event-Date: 20oct2020
+(840 real changes made)
+
+Department: IN_cook county (il) department of corrections
+
+Department: IN_east chicago police department
+
+Department: IN_gary police department
+
+Department: IN_goshen police department
+
+Department: IN_greencastle police department
+
+Department: IN_indiana state police
+
+Department: IN_indianapolis metropolitan police department
+
+Department: IN_portage police department
+
+Department: KS_cowley county sheriff's office
+
+Department: KS_leavenworth police department
+
+Department: KS_mcpherson county sheriff's office
+
+Department: KS_wichita police department
+Event-Date: 13apr2012
+(840 real changes made)
+
+Department: KY_kentucky state police
+
+Department: KY_louisville metro police department
+Event-Date: 21apr2011
+(2,520 real changes made)
+Event-Date: 15may2019
+(2,520 real changes made)
+
+Department: KY_shelbyville police department
+
+Department: LA_avoyelles parish sheriff's office
+
+Department: LA_baton rouge police department
+
+Department: LA_breaux bridge police department
+
+Department: LA_converse police department
+
+Department: LA_east baton rouge parish sheriff's office
+
+Department: LA_east feliciana parish sheriff's office
+
+Department: LA_evangeline parish sheriff's office
+
+Department: LA_jefferson parish sheriff's office
+
+Department: LA_kenner police department
+
+Department: LA_louisiana state police
+
+Department: LA_new orleans police department
+Event-Date: 07mar2012
+(1,680 real changes made)
+Event-Date: 14sep2014
+(1,680 real changes made)
+
+Department: LA_shreveport city marshal
+
+Department: LA_shreveport police department
+
+Department: LA_st. john the baptist parish sheriff's office
+
+Department: LA_st. martin parish sheriff's office
+
+Department: LA_st. martinville police department
+
+Department: LA_tangipahoa parish sheriff's office
+
+Department: LA_u.s. department of veterans affairs
+
+Department: LA_u.s. federal bureau of investigation
+
+Department: MA_boston police department
+
+Department: MA_framingham police department
+
+Department: MA_massachusetts state police
+Event-Date: 11aug2013
+(840 real changes made)
+
+Department: MA_springfield police department
+
+Department: MD_baltimore county police department
+Event-Date: 13jun2012
+(7,560 real changes made)
+Event-Date: 13aug2013
+(7,560 real changes made)
+Event-Date: 22jul2014
+(7,560 real changes made)
+
+Department: MD_baltimore police department
+Event-Date: 09jan2011
+(5,880 real changes made)
+Event-Date: 19may2012
+(5,880 real changes made)
+Event-Date: 01jul2012
+(5,880 real changes made)
+Event-Date: 21sep2012
+(5,880 real changes made)
+Event-Date: 07may2013
+(5,880 real changes made)
+Event-Date: 18jul2013
+(5,880 real changes made)
+Event-Date: 16oct2013
+(5,880 real changes made)
+
+Department: MD_cecil county sheriff's office
+Event-Date: 11mar2015
+(840 real changes made)
+
+Department: MD_greensboro police department
+Event-Date: 15sep2018
+(840 real changes made)
+
+Department: MD_howard county police department
+Event-Date: 09aug2012
+(840 real changes made)
+
+Department: MD_maryland state police
+Event-Date: 20dec2012
+(2,520 real changes made)
+Event-Date: 18mar2014
+(2,520 real changes made)
+Event-Date: 21mar2014
+(2,520 real changes made)
+
+Department: MD_maryland transportation authority police
+Event-Date: 07jun2014
+(840 real changes made)
+
+Department: MD_national security administration police department
+
+Department: MD_prince george's county police department
+Event-Date: 02oct2013
+(2,520 real changes made)
+
+Department: MD_prince george's county sheriff's office
+
+Department: MD_u.s. federal bureau of investigation
+
+Department: MD_u.s. national park service
+
+Department: MI_dearborn police department
+
+Department: MI_detroit police department
+
+Department: MI_detroit transit police agency
+
+Department: MI_flint township police department
+
+Department: MI_lathrup village police department
+
+Department: MI_wayne county sheriff's office
+
+Department: MN_brooklyn center police department
+
+Department: MN_lino lakes public safety department
+
+Department: MN_minneapolis police department
+
+Department: MN_st. paul police department
+
+Department: MN_woodbury police department
+
+Department: MO_beverly hills police department
+Event-Date: 06dec2011
+(840 real changes made)
+
+Department: MO_chesterfield police department
+Event-Date: 31dec2019
+(840 real changes made)
+
+Department: MO_ferguson police department
+Event-Date: 09aug2014
+(840 real changes made)
+
+Department: MO_kansas city police department
+
+Department: MO_pagedale police department
+Event-Date: 26may2013
+(840 real changes made)
+
+Department: MO_pine lawn police department
+Event-Date: 05jul2014
+(840 real changes made)
+
+Department: MO_sikeston department of public safety
+Event-Date: 29apr2020
+(840 real changes made)
+
+Department: MO_st. louis county police department
+Event-Date: 09jul2016
+(840 real changes made)
+
+Department: MO_st. louis county sheriff's department
+
+Department: MO_st. louis metropolitan police department
+Event-Date: 19dec2014
+(2,520 real changes made)
+
+Department: MO_u.s. bureau of alcohol tobacco firearms and explosives
+
+Department: MO_wellston police department
+Event-Date: 28feb2015
+(840 real changes made)
+
+Department: MS_bolivar county sheriff's office
+
+Department: MS_canton police department
+
+Department: MS_durant police department
+
+Department: MS_edwards police department
+Event-Date: 10nov2017
+(840 real changes made)
+
+Department: MS_gulfport police department
+Event-Date: 01feb2020
+(840 real changes made)
+
+Department: MS_hinds county sheriff's office
+Event-Date: 05may2014
+(840 real changes made)
+
+Department: MS_jackson police department
+Event-Date: 20nov2011
+(4,200 real changes made)
+Event-Date: 27jan2018
+(4,200 real changes made)
+
+Department: MS_moss point police department
+Event-Date: 08jun2014
+(840 real changes made)
+
+Department: MS_oxford police department
+Event-Date: 19may2019
+(840 real changes made)
+
+Department: MS_philadelphia police department
+Event-Date: 02nov2014
+(840 real changes made)
+
+Department: MS_southaven police department
+Event-Date: 28may2014
+(840 real changes made)
+
+Department: MS_stonewall police department
+Event-Date: 08jul2015
+(840 real changes made)
+
+Department: MS_tupelo police department
+Event-Date: 18jun2016
+(840 real changes made)
+
+Department: NC_anson county probation department
+
+Department: NC_asheville police department
+Event-Date: 29sep2013
+(840 real changes made)
+
+Department: NC_catawba county sheriff's office
+Event-Date: 28nov2016
+(840 real changes made)
+
+Department: NC_charlotte-mecklenburg police department
+Event-Date: 14sep2013
+(840 real changes made)
+
+Department: NC_dallas police department
+
+Department: NC_durham police department
+Event-Date: 30mar2019
+(840 real changes made)
+
+Department: NC_graham police department
+Event-Date: 28jan2020
+(840 real changes made)
+
+Department: NC_greensboro police department
+Event-Date: 08sep2018
+(840 real changes made)
+
+Department: NC_greenville police department
+Event-Date: 09jul2019
+(840 real changes made)
+
+Department: NC_hoke county sheriff's office
+Event-Date: 31may2014
+(840 real changes made)
+
+Department: NC_new hanover county sheriff's office
+Event-Date: 13oct2013
+(840 real changes made)
+
+Department: NC_north carolina department of motor vehicles
+Event-Date: 13nov2019
+(840 real changes made)
+
+Department: NC_north carolina state highway patrol
+Event-Date: 01jan2019
+(840 real changes made)
+
+Department: NC_u.s. immigration and customs enforcement
+
+Department: NJ_bloomingdale police department
+
+Department: NJ_bridgeton police department
+
+Department: NJ_cape may county prosecutor's office
+
+Department: NJ_deptford township police department
+
+Department: NJ_essex county sheriff's office
+
+Department: NJ_haddon township police department
+
+Department: NJ_jersey city police department
+
+Department: NJ_lyndhurst police department
+
+Department: NJ_mercer county sheriff's office
+
+Department: NJ_new jersey department of corrections
+
+Department: NJ_new jersey state police
+Event-Date: 21apr2015
+(1,680 real changes made)
+
+Department: NJ_paterson police department
+
+Department: NJ_trenton police department
+
+Department: NM_new mexico state police
+
+Department: NM_valencia county sheriff's office
+
+Department: NV_las vegas metropolitan police department
+
+Department: NV_nevada department of corrections
+
+Department: NV_north las vegas police department
+
+Department: NV_u.s. bureau of land management
+
+Department: NV_washoe county sheriff's office
+
+Department: NY_buffalo police department
+
+Department: NY_city of new york police department
+
+Department: NY_nassau county police department
+
+Department: NY_new york state police
+Event-Date: 04oct2012
+(840 real changes made)
+
+Department: NY_onondaga county sheriff's office
+
+Department: NY_rochester police department
+
+Department: NY_saratoga springs police department
+
+Department: NY_suffolk county police department
+
+Department: NY_troy police department
+
+Department: OH_cleveland police department
+
+Department: OH_columbus division of police
+Event-Date: 22dec2020
+(840 real changes made)
+
+Department: OH_euclid police department
+
+Department: OH_niles police department
+
+Department: OH_u.s. federal bureau of investigation
+
+Department: OH_university of cincinnati police department
+
+Department: OK_del city police department
+
+Department: OK_edmond police department
+
+Department: OK_oklahoma city police department
+Event-Date: 19jun2012
+(5,040 real changes made)
+Event-Date: 01may2013
+(5,040 real changes made)
+Event-Date: 25feb2015
+(5,040 real changes made)
+Event-Date: 09jun2016
+(5,040 real changes made)
+Event-Date: 12nov2018
+(5,040 real changes made)
+
+Department: OK_oklahoma highway patrol
+
+Department: OK_tulsa police department
+Event-Date: 25mar2014
+(3,360 real changes made)
+Event-Date: 05aug2014
+(3,360 real changes made)
+Event-Date: 02apr2015
+(3,360 real changes made)
+Event-Date: 16sep2016
+(3,360 real changes made)
+
+Department: PA_east pittsburgh police department
+
+Department: PA_harrisburg police bureau
+
+Department: PA_johnstown police department
+
+Department: PA_pennsylvania state constable
+
+Department: PA_philadelphia police department
+Event-Date: 09aug2012
+(7,560 real changes made)
+Event-Date: 28sep2016
+(7,560 real changes made)
+Event-Date: 11aug2017
+(7,560 real changes made)
+Event-Date: 27dec2017
+(7,560 real changes made)
+Event-Date: 29jan2018
+(7,560 real changes made)
+
+Department: PA_southwest regional police department
+
+Department: PA_temple university campus police department
+
+Department: PA_upper darby township police department
+
+Department: SC_anderson police department
+
+Department: SC_chesterfield county sheriff's office
+
+Department: SC_columbia police department
+
+Department: SC_denmark police department
+
+Department: SC_eutawville police department
+
+Department: SC_kershaw county sheriff's office
+
+Department: SC_myrtle beach police department
+
+Department: SC_north augusta department of public safety
+
+Department: SC_north charleston police department
+
+Department: SC_richland county sheriff's office
+
+Department: SC_south carolina highway patrol
+Event-Date: 14jul2012
+(840 real changes made)
+
+Department: SC_spartanburg methodist college campus safety department
+
+Department: TN_crockett county sheriff's office
+
+Department: TN_henderson county sheriff's office
+
+Department: TN_henderson police department
+
+Department: TN_memphis police department
+
+Department: TN_obion county sheriff's office
+
+Department: TN_shelby county sheriff's office
+
+Department: TX_allen police department
+
+Department: TX_arlington police department
+Event-Date: 07aug2015
+(2,520 real changes made)
+
+Department: TX_austin police department
+Event-Date: 30may2011
+(2,520 real changes made)
+Event-Date: 26jul2013
+(2,520 real changes made)
+Event-Date: 08feb2016
+(2,520 real changes made)
+
+Department: TX_balch springs police department
+
+Department: TX_bastrop county sheriff's office
+
+Department: TX_corpus christi police department
+
+Department: TX_dallas police department
+
+Department: TX_ennis police department
+
+Department: TX_fort worth police department
+
+Department: TX_georgetown police department
+
+Department: TX_harris county constable's office precinct 4
+
+Department: TX_harris county constable's office precinct 7
+
+Department: TX_harris county sheriff's office
+
+Department: TX_harrison county sheriff's office
+
+Department: TX_hearne police department
+
+Department: TX_houston police department
+Event-Date: 16jan2014
+(5,880 real changes made)
+Event-Date: 17mar2014
+(5,880 real changes made)
+Event-Date: 06may2014
+(5,880 real changes made)
+Event-Date: 03sep2014
+(5,880 real changes made)
+Event-Date: 12mar2016
+(5,880 real changes made)
+
+Department: TX_kirbyville police department
+
+Department: TX_lancaster police department
+
+Department: TX_lubbock police department
+Event-Date: 24aug2013
+(1,680 real changes made)
+Event-Date: 21sep2015
+(1,680 real changes made)
+
+Department: TX_port arthur police department
+
+Department: TX_san antonio police department
+Event-Date: 16jul2013
+(5,040 real changes made)
+Event-Date: 20apr2014
+(5,040 real changes made)
+Event-Date: 04feb2016
+(5,040 real changes made)
+Event-Date: 17oct2018
+(5,040 real changes made)
+
+Department: TX_stratford police department
+
+Department: TX_temple police department
+
+Department: TX_texas department of public safety
+Event-Date: 04may2014
+(2,520 real changes made)
+Event-Date: 13feb2016
+(2,520 real changes made)
+Event-Date: 11apr2019
+(2,520 real changes made)
+
+Department: TX_u.s. marshals service
+
+Department: TX_university of texas at houston police department
+
+Department: TX_waco police department
+
+Department: TX_wichita falls police department
+
+Department: TX_williamson county sheriff's office
+
+Department: TX_wolfe city police department
+
+Department: VA_buckingham county sheriff's office
+
+Department: VA_chesterfield county police department
+
+Department: VA_danville police department
+
+Department: VA_hampton police department
+
+Department: VA_henrico county division of police
+
+Department: VA_immigration and customs enforcement
+
+Department: VA_james city county police department
+
+Department: VA_norfolk police department
+
+Department: VA_portsmouth police department
+
+Department: VA_richmond police department
+
+Department: VA_roanoke police department
+
+Department: VA_virginia beach police department
+
+Department: WA_bellevue police department
+
+Department: WA_franklin county sheriff's office
+
+Department: WA_kent police department
+
+Department: WA_lakewood police department
+
+Department: WA_tacoma police department
+Event-Date: 03mar2020
+(840 real changes made)
+
+Department: WA_yakima police department
+
+Department: WI_appleton police department
+
+Department: WI_beloit police department
+
+Department: WI_madison police department
+Event-Date: 06mar2015
+(840 real changes made)
+
+Department: WI_milwaukee county sheriff's office
+
+Department: WI_milwaukee police department
+
+Department: WI_oshkosh police department
+
+Department: WI_walworth county sheriff's office
+
+Department: WV_kanawha county sheriff's office
+
+Department: WV_mineral county sheriff's office
+(158,760 real changes made)
+(158,760 real changes made)
+
+. 
+. 
+. 
+. * reverting above adjustment, easier to have scrutiny type within its own nam
+> e
+
+. 
+. rename scr_1 scr_nl
+
+. 
+. rename scr_2 scr_nu
+
+. 
+. rename scr_3 scr_dl
+
+. 
+. rename scr_4 scr_du
+
+. 
+. 
+. 
+. * reducing step: if not nearest reg_edate0, can't be nearest sig*_edate or in
+> sig_edate
+
+. 
+. * I have event*date obs, but events outnumber depts, so multiple dates for ma
+> ny depts 
+
+. 
+. * want only 1 date for each dept; (dropping dept-edate combinations that are 
+> not nearest)
+
+. 
+. drop if (edate != reg_edate0) & (edate != reg_edate1) & (edate != reg_edate2)
+>  & (edate != reg_edate3) & (edate!= reg_edate4)
+(97,016 observations deleted)
+
+. 
+. 
+. 
+. * instead of dropping, marking rows as "samples", hopefully this works out? 
+
+. 
+. gen sample0 = (edate == reg_edate0)
+
+. 
+. gen sample1 = (edate == reg_edate1)
+
+. 
+. gen sample2 = (edate == reg_edate2)
+
+. 
+. gen sample3 = (edate == reg_edate3)
+
+. 
+. gen sample4 = (edate == reg_edate4)
+
+. 
+. 
+. 
+. save "2000_data/300_cleaning/10_FE/FE_pre_merge_stop_level_reg.dta", replace
+file 2000_data/300_cleaning/10_FE/FE_pre_merge_stop_level_reg.dta saved
+
+. 
+. 
+. 
+. display "string variables:"
+string variables:
+
+. 
+. ds, has(type string) var(32)
+st_dept
+
+. 
+. display ""
+
+
+. 
+. display "non-string variables:"
+non-string variables:
+
+. 
+. ds, not(type string) var(32)
+STN               date              reg_etime1        reg_edate3
+STN_stories       scr_nl            reg_etime2        reg_edate4
+fe_id             scr_nu            reg_etime3        sample0
+shooting_date     scr_dl            reg_etime4        sample1
+num_deaths_any    scr_du            reg_edate0        sample2
+num_deaths_focal  match_tag         reg_edate1        sample3
+edate             reg_etime0        reg_edate2        sample4
+
+. 
+. 
+. 
+. *****************************************************************************
+> ***
+
+. 
+. 
+. 
+. * Dates for consideration: 
+
+. 
+. * 01Jan2011 = 18628, 31Dec2020 = 22280
+
+. 
+. * So WHY did I have: 
+
+. 
+. *if ((date>=18053) & (date<22646)), 05Jun2009-01Jan2022? 575 and 366 days wro
+> ng?
+
+. 
+. use st_dept search_conducted contraband_found subject_race stop_date search_b
+> asis officer_race type rep_monthly rep_annually if (stop_date>=18628 & stop_d
+> ate<=22280) using "2000_data/300_cleaning/20_SOPP/SOPP_clean.dta", replace
+
+. 
+. 
+. 
+. display "string variables:"
+string variables:
+
+. 
+. ds, has(type string) var(32)
+type     st_dept
+
+. 
+. display ""
+
+
+. 
+. display "non-string variables:"
+non-string variables:
+
+. 
+. ds, not(type string) var(32)
+search_conducted  search_basis      rep_monthly       subject_race
+contraband_found  stop_date         rep_annually      officer_race
+
+. 
+. 
+. 
+. gen temp_st_dept = st_dept
+
+. 
+. drop st_dept
+
+. 
+. rename temp_st_dept st_dept
+
+. 
+. 
+. 
+. rename stop_date date 
+
+. 
+. 
+. 
+. sort st_dept date
+
+. 
+. 
+. 
+. joinby st_dept date using "2000_data/300_cleaning/10_FE/FE_pre_merge_stop_lev
+> el_reg.dta", unmatched(both) _merge(FEgtrend_SOPP_merge)
+
+. 
+. 
+. 
+. * joinby _merge: (1=master, 2=using, 3=both)
+
+. 
+. * dropping FE-only (using) departments, i.e. depts with ZERO stop obs
+
+. 
+. * (no st_dept*date) data & (_merge variable invariant)
+
+. 
+. bysort st_dept: egen temp_max = max(FEgtrend_SOPP_merge)
+
+. 
+. bysort st_dept: egen temp_min = min(FEgtrend_SOPP_merge)
+
+. 
+. gen temp_test = temp_max - temp_min 
+
+. 
+. drop if (FEgtrend_SOPP_merge == 2) & (temp_test == 0)
+(293,358 observations deleted)
+
+. 
+. drop temp_*
+
+. 
+. 
+. 
+. * generating a few variables to use in regressions: 
+
+. 
+. gen white = 0
+
+. 
+. gen black = 0
+
+. 
+. gen hispanic = 0
+
+. 
+. replace white = 1 if (subject_race==1)
+(84,144,051 real changes made)
+
+. 
+. replace black = 1 if (subject_race==2)
+(25,048,258 real changes made)
+
+. 
+. 
+. 
+. gen n_stops = 1
+
+. 
+. encode st_dept, gen(num_dept)
+
+. 
+. 
+. 
+. sum date
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+        date |158,398,982    19792.85    708.9655      18208      22696
+
+. 
+. 
+. 
+. display "string variables:"
+string variables:
+
+. 
+. ds, has(type string) var(32)
+type     st_dept
+
+. 
+. display ""
+
+
+. 
+. display "non-string variables:"
+non-string variables:
+
+. 
+. ds, not(type string) var(32)
+search_conducted     num_deaths_focal     reg_edate2
+contraband_found     edate                reg_edate3
+search_basis         scr_nl               reg_edate4
+date                 scr_nu               sample0
+rep_monthly          scr_dl               sample1
+rep_annually         scr_du               sample2
+subject_race         match_tag            sample3
+officer_race         reg_etime0           sample4
+FEgtrend_SOPP_merge  reg_etime1           white
+STN                  reg_etime2           black
+STN_stories          reg_etime3           hispanic
+fe_id                reg_etime4           n_stops
+shooting_date        reg_edate0           num_dept
+num_deaths_any       reg_edate1
+
+. 
+. 
+. 
+. save "2000_data/400_base/10_merged/merged_gtrends", replace
+file 2000_data/400_base/10_merged/merged_gtrends.dta saved
+
+. 
+. 
+. 
+. log close
+      name:  <unnamed>
+       log:  /bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/3000_code
+> /04_merge/04_SMCL_logs/04b_id_merge_sig_etime.smcl
+  log type:  smcl
+ closed on:  24 Jan 2025, 12:08:42
+-------------------------------------------------------------------------------
+
+. 
+. 

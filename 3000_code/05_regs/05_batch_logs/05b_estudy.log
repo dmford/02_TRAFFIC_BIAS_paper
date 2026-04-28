@@ -1,0 +1,2471 @@
+
+  ___  ____  ____  ____  ____ (R)
+ /__    /   ____/   /   ____/
+___/   /   /___/   /   /___/   16.1   Copyright 1985-2019 StataCorp LLC
+  Statistics/Data analysis            StataCorp
+                                      4905 Lakeway Drive
+     MP - Parallel Edition            College Station, Texas 77845 USA
+                                      800-STATA-PC        https://www.stata.com
+                                      979-696-4600        stata@stata.com
+                                      979-696-4601 (fax)
+
+Stata license: 4-user 32-core network perpetual
+Serial number: 501606358866
+  Licensed to: Michael Bates
+               University of California, Riverside
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000; see help set_maxvar.
+      5. New update available; type -update all-
+
+. * 05b_estudy.do
+
+. 
+. 
+. 
+. clear all
+
+. 
+. 
+. 
+. * (1) HPCC cluster, and (2) personal machine: 
+
+. 
+. cd "/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper"
+/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper
+
+. 
+. *cd "~\coding\02_TRAFFIC_BIAS_paper\"
+
+. 
+. 
+. 
+. *****************************************************************************
+> ***
+
+. 
+. 
+. 
+. capture log close
+
+. 
+. log using "3000_code/05_regs/05_SMCL_logs/05b_estudy", smcl replace
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/3000_code
+> /05_regs/05_SMCL_logs/05b_estudy.smcl
+  log type:  smcl
+ opened on:   6 Sep 2025, 16:27:07
+
+. 
+. 
+. 
+. about 
+
+Stata/MP 16.1 for Unix (Linux 64-bit x86-64)
+Revision 11 Oct 2022
+Copyright 1985-2019 StataCorp LLC
+
+Total usable memory: 1007.68 GB
+
+Stata license: 4-user 32-core network perpetual
+Serial number: 501606358866
+  Licensed to: Michael Bates
+               University of California, Riverside
+
+. 
+. 
+. 
+. set maxvar 32767
+
+. 
+. 
+. 
+. set varabbrev off
+
+. 
+. 
+. 
+. * bin-size: 
+
+. 
+. local k=14
+
+. 
+. 
+. 
+. * event-window, +/- b: 
+
+. 
+. local b=14
+
+. 
+. 
+. 
+. *forvalues k = 7(7)28 {
+
+. 
+. forvalues s = 1(1)2 {
+  2. 
+. if (`s' == 1) local suffix = "_full_etwfe"
+  3. 
+. if (`s' == 2) local suffix = "_wbal_etwfe"
+  4. 
+. 
+. 
+. if (`s' == 1) local load_if = "(unreliable_bstops!=1)"
+  5. 
+. if (`s' == 2) local load_if = "(unreliable_bstops!=1) & (weak_bal>=`b')"
+  6. 
+. 
+. 
+. use "2000_data/500_working/`k'_days/reg_prep.dta" if `load_if', replace
+  7. 
+. * use "~/coding/02_TRAFFIC_BIAS_paper/2000_data/500_working/14_days/reg_prep.
+> dta" if (unreliable_bstops!=1) & (weak_bal>=14), replace
+. 
+. 
+. 
+. * defining lower and upper event-window bookends: 
+. 
+. replace b0_`k' = 1 if ((b0_`k'<27-`b') & (b0_`k'>=1))
+  8. 
+. replace b0_`k' = 52 if ((b0_`k'>26+`b') & (b0_`k'<=52))
+  9. 
+. 
+. 
+. ** department-based scrutiny: scr2
+. 
+. *qui gen scr2=0
+. 
+. *qui replace scr2=1 if (treat==1)
+. 
+. *qui replace scr2=2 if inlist(event_id, 79, 21, 77, 18, 87, 16, 64, 75, 31, 3
+> 5, 53, 63, 13, 70, 58, 1, 65, 7, 72, 23, 80, 76, 34, 27, 54, 32, 62, 61, 3, 8
+> 1, 36)
+. 
+. 
+. 
+. foreach o in bstop_share bsearch_share bhit_share bsearch_rate bhit_rate bhit
+> _bstop_ratio n_stops n_bstops n_searches n_bsearches n_hits n_bhits {
+ 10. 
+. display ""
+ 11. 
+. 
+. 
+. local i_absorb = "i.dept_year i.year_mo i.memorial i.labor i.fourth i.tg i.xm
+> as i.nye i.NOLA_Bourbon i.Philly_DNC i.WA_mar_2017"
+ 12. 
+. local absorb = "dept_year year_mo memorial labor fourth tg xmas nye NOLA_Bour
+> bon Philly_DNC WA_mar_2017"
+ 13. 
+. 
+. 
+. * Setting AWEIGHTS: 
+. 
+. if ("`o'" == "bstop_share") local aweight = "[aweight=n_stops_weight]"
+ 14. 
+. if ("`o'" == "bsearch_share") local aweight = "[aweight=n_searches_weight]"
+ 15. 
+. if ("`o'" == "bhit_share") local aweight = "[aweight=n_hits_weight]"
+ 16. 
+. if ("`o'" == "bsearch_rate") local aweight = "[aweight=n_bstops_weight]"
+ 17. 
+. if ("`o'" == "bhit_rate") local aweight = "[aweight=n_bsearches_weight]"
+ 18. 
+. if ("`o'" == "bhit_bstop_ratio") local aweight = "[aweight=n_bstops_weight]"
+ 19. 
+. if ("`o'" == "n_stops") local aweight = ""
+ 20. 
+. if ("`o'" == "n_bstops") local aweight = ""
+ 21. 
+. if ("`o'" == "n_searches") local aweight = ""
+ 22. 
+. if ("`o'" == "n_bsearches") local aweight = ""
+ 23. 
+. if ("`o'" == "n_hits") local aweight = ""
+ 24. 
+. if ("`o'" == "n_bhits") local aweight = ""
+ 25. 
+. 
+. 
+. * Setting WEIGHTS: 
+. 
+. if ("`o'" == "bstop_share") local weight = "[weight=n_stops_weight]"
+ 26. 
+. if ("`o'" == "bsearch_share") local weight = "[weight=n_searches_weight]"
+ 27. 
+. if ("`o'" == "bhit_share") local weight = "[weight=n_hits_weight]"
+ 28. 
+. if ("`o'" == "bsearch_rate") local weight = "[weight=n_bstops_weight]"
+ 29. 
+. if ("`o'" == "bhit_rate") local weight = "[weight=n_bsearches_weight]"
+ 30. 
+. if ("`o'" == "bhit_bstop_ratio") local weight = "[weight=n_bstops_weight]"
+ 31. 
+. if ("`o'" == "n_stops") local weight = ""
+ 32. 
+. if ("`o'" == "n_bstops") local weight = ""
+ 33. 
+. if ("`o'" == "n_searches") local weight = ""
+ 34. 
+. if ("`o'" == "n_bsearches") local weight = ""
+ 35. 
+. if ("`o'" == "n_hits") local weight = ""
+ 36. 
+. if ("`o'" == "n_bhits") local weight = ""
+ 37. 
+. 
+. 
+. * Setting IFS: 
+. 
+. if ("`o'" == "bstop_share") local ifs = ""
+ 38. 
+. if ("`o'" == "bsearch_share") local ifs = "& (unreliable_searches!=1)"
+ 39. 
+. if ("`o'" == "bhit_share") local ifs = "& (unreliable_searches!=1) & (unrelia
+> ble_hits!=1)"
+ 40. 
+. if ("`o'" == "bsearch_rate") local ifs = "& (unreliable_searches!=1)"
+ 41. 
+. if ("`o'" == "bhit_rate") local ifs = "& (unreliable_searches!=1) & (unreliab
+> le_hits!=1)"
+ 42. 
+. if ("`o'" == "bhit_bstop_ratio") local ifs = "& (unreliable_searches!=1) & (u
+> nreliable_hits!=1)"
+ 43. 
+. if ("`o'" == "n_stops") local ifs = ""
+ 44. 
+. if ("`o'" == "n_bstops") local ifs = ""
+ 45. 
+. if ("`o'" == "n_searches") local ifs = "& (unreliable_searches!=1)"
+ 46. 
+. if ("`o'" == "n_bsearches") local ifs = "& (unreliable_searches!=1)"
+ 47. 
+. if ("`o'" == "n_hits") local ifs = "& (unreliable_searches!=1) & (unreliable_
+> hits!=1)"
+ 48. 
+. if ("`o'" == "n_bhits") local ifs = "& (unreliable_searches!=1) & (unreliable
+> _hits!=1)"
+ 49. 
+. 
+. 
+. * Setting OUTCOME DESCRIPTIONS: 
+. 
+. if ("`o'" == "bstop_share") local o_desc = "Black Share of Stops"
+ 50. 
+. if ("`o'" == "bsearch_share") local o_desc = "Black Share of Searches"
+ 51. 
+. if ("`o'" == "bhit_share") local o_desc = "Black Share of Hits"
+ 52. 
+. if ("`o'" == "bsearch_rate") local o_desc = "Black Search Rate"
+ 53. 
+. if ("`o'" == "bhit_rate") local o_desc = "Black Hit Rate"
+ 54. 
+. if ("`o'" == "bhit_bstop_ratio") local o_desc = "Black Hits-to-Stops Ratio"
+ 55. 
+. if ("`o'" == "n_stops") local o_desc = "Overall Stop Volume"
+ 56. 
+. if ("`o'" == "n_bstops") local o_desc = "Black Stop Volume"
+ 57. 
+. if ("`o'" == "n_searches") local o_desc = "Overall Search Volume"
+ 58. 
+. if ("`o'" == "n_bsearches") local o_desc = "Black Search Volume"
+ 59. 
+. if ("`o'" == "n_hits") local o_desc = "Overall Hit Volume"
+ 60. 
+. if ("`o'" == "n_bhits") local o_desc = "Black Hit Volume"
+ 61. 
+. 
+. 
+. display ""
+ 62. 
+. display "********************************************************************
+> *"
+ 63. 
+. display "Eq2: Estudy, outcome=""`o'"": `o_desc'"
+ 64. 
+. display "********************************************************************
+> *"
+ 65. 
+. 
+. 
+. * CT Hartford has very abnormal stop patterns, and even moreso for searches: 
+> 
+. 
+. drop if (num_dept==90) & (date<19663)
+ 66. 
+. drop if (num_dept==90) & (year>2015)
+ 67. 
+. 
+. 
+. xtset num_dept date 
+ 68. 
+. 
+. 
+. display ""
+ 69. 
+. display "Main Specification: ""`o'""" 
+ 70. 
+. reghdfe `o' ib26.b0_`k' `aweight' if (date>1) `ifs', a(`i_absorb') cl(num_dep
+> t) base resid 
+ 71. 
+. est save "4000_outputs/`k'_days/eq2/`o'/estudy_main`suffix'", replace
+ 72. 
+. gen emain_`o' = (e(sample)==1)
+ 73. 
+. 
+. 
+. ***display ""
+. 
+. ***display "A01, Dropping T-1: ""`o'""" 
+. 
+. ***reghdfe `o' ib25.b0_`k' `aweight' if (b0_`k' != 11) `ifs', a(i.(`absorb'))
+>  cl(num_dept) base resid 
+. 
+. ***est save "4000_outputs/`k'_days/eq2/`o'/estudy_A01`suffix'", replace
+. 
+. ***gen eA01_`o' = (e(sample)==1)
+. 
+. 
+. 
+. ***display ""
+. 
+. ***display "A02, Pretrend Controls: ""`o'""" 
+. 
+. ***reghdfe `o' ib26.b0_`k' (1.treat#event_id#0.post0#c.date) `aweight' if (da
+> te>1) `ifs', a(i.(`absorb')) cl(num_dept) base resid 
+. 
+. ***est save "4000_outputs/`k'_days/eq2/`o'/estudy_A02`suffix'", replace
+. 
+. ***gen eA02_`o' = (e(sample)==1)
+. 
+. 
+. 
+. ***display ""
+. 
+. ***display "A05, Non-Statewide Depts: ""`o'""" 
+. 
+. ***reghdfe `o' ib26.b0_`k' `aweight' if (statewide==0) `ifs', a(i.(`absorb'))
+>  cl(num_dept) base resid 
+. 
+. ***est save "4000_outputs/`k'_days/eq2/`o'/estudy_A05`suffix'", replace
+. 
+. ***gen eA05_`o' = (e(sample)==1)
+. 
+. 
+. 
+. ***display ""
+. 
+. ***display "A06, Statewide Depts: ""`o'""" 
+. 
+. ***reghdfe `o' ib26.b0_`k' `aweight' if (statewide==1) `ifs', a(i.(`absorb'))
+>  cl(num_dept) base resid 
+. 
+. ***est save "4000_outputs/`k'_days/eq2/`o'/estudy_A06`suffix'", replace
+. 
+. ***gen eA06_`o' = (e(sample)==1)
+. 
+. 
+. 
+. ***display ""
+. 
+. ***display "A07, Single Event Depts: ""`o'""" 
+. 
+. ***reghdfe `o' ib26.b0_`k' `aweight' if (multi_dept==0) `ifs', a(i.(`absorb')
+> ) cl(num_dept) base resid 
+. 
+. ***est save "4000_outputs/`k'_days/eq2/`o'/estudy_A07`suffix'", replace
+. 
+. ***gen eA07_`o' = (e(sample)==1)
+. 
+. 
+. 
+. ***display ""
+. 
+. ***display "A08, Multi Event Depts: ""`o'""" 
+. 
+. ***reghdfe `o' ib26.b0_`k' `aweight' if (multi_dept==1) `ifs', a(i.(`absorb')
+> ) cl(num_dept) base resid 
+. 
+. ***est save "4000_outputs/`k'_days/eq2/`o'/estudy_A08`suffix'", replace
+. 
+. ***gen eA08_`o' = (e(sample)==1)
+. 
+. }
+ 74. 
+. keep if (post0==0 & treat==1)
+ 75. 
+. save "2000_data/500_working/`k'_days/eq2_esamples`suffix'.dta", replace
+ 76. 
+. }
+(6,725 real changes made)
+(5,973 real changes made)
+
+
+*********************************************************************
+Eq2: Estudy, outcome=bstop_share: Black Share of Stops
+*********************************************************************
+(7 observations deleted)
+(266 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bstop_share
+(dropped 5 singleton observations)
+(MWFE estimator converged in 8 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,662,125
+Absorbing 11 HDFE groups                          F(  29,   1867) =      15.37
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.8245
+                                                  Adj R-squared   =     0.8236
+                                                  Within R-sq.    =     0.0002
+Number of clusters (num_dept) =      1,868        Root MSE        =     0.0711
+
+                           (Std. Err. adjusted for 1,868 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+ bstop_share |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.0052662   .0019465    -2.71   0.007    -.0090838   -.0014486
+         13  |  -.0050976   .0028391    -1.80   0.073    -.0106658    .0004705
+         14  |  -.0042351   .0023372    -1.81   0.070    -.0088189    .0003487
+         15  |  -.0045998   .0022701    -2.03   0.043    -.0090519   -.0001476
+         16  |  -.0035969   .0026364    -1.36   0.173    -.0087675    .0015737
+         17  |  -.0055269   .0022785    -2.43   0.015    -.0099955   -.0010582
+         18  |  -.0035903   .0025462    -1.41   0.159     -.008584    .0014034
+         19  |  -.0034576   .0018293    -1.89   0.059    -.0070453    .0001301
+         20  |  -.0041318   .0018853    -2.19   0.029    -.0078293   -.0004342
+         21  |  -.0024955   .0015139    -1.65   0.099    -.0054647    .0004736
+         22  |  -.0027923   .0015377    -1.82   0.070    -.0058081    .0002234
+         23  |  -.0030612   .0018029    -1.70   0.090    -.0065972    .0004747
+         24  |  -.0022257   .0016034    -1.39   0.165    -.0053703    .0009189
+         25  |  -.0004602   .0015698    -0.29   0.769    -.0035388    .0026185
+         26  |          0  (base)
+         27  |  -.0034069   .0012735    -2.68   0.008    -.0059046   -.0009093
+         28  |  -.0045375   .0018558    -2.44   0.015    -.0081772   -.0008977
+         29  |  -.0050099   .0025934    -1.93   0.054    -.0100961    .0000764
+         30  |     -.0031   .0021535    -1.44   0.150    -.0073235    .0011235
+         31  |  -.0043668   .0025148    -1.74   0.083    -.0092989    .0005654
+         32  |  -.0054069   .0022224    -2.43   0.015    -.0097656   -.0010483
+         33  |   -.003691   .0017968    -2.05   0.040     -.007215    -.000167
+         34  |  -.0082638   .0021076    -3.92   0.000    -.0123974   -.0041303
+         35  |  -.0038322   .0022092    -1.73   0.083    -.0081649    .0005006
+         36  |  -.0039909   .0026481    -1.51   0.132    -.0091844    .0012026
+         37  |   -.001679    .002771    -0.61   0.545    -.0071135    .0037555
+         38  |  -.0010147   .0029497    -0.34   0.731    -.0067997    .0047703
+         39  |    .000307   .0026772     0.11   0.909    -.0049437    .0055577
+         40  |  -.0032307   .0029886    -1.08   0.280    -.0090919    .0026306
+         52  |  -.0061752   .0019263    -3.21   0.001    -.0099531   -.0023973
+             |
+       _cons |   .1848081    .000591   312.69   0.000      .183649    .1859672
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      8323        8323           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/bstop_share/estudy_main_full_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=bsearch_share: Black Share of Searches
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bsearch_share
+(dropped 473 singleton observations)
+(MWFE estimator converged in 8 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    300,936
+Absorbing 11 HDFE groups                          F(  29,   1238) =      60.31
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.6393
+                                                  Adj R-squared   =     0.6333
+                                                  Within R-sq.    =     0.0002
+Number of clusters (num_dept) =      1,239        Root MSE        =     0.1615
+
+                           (Std. Err. adjusted for 1,239 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+bsearch_sh~e |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.0002086   .0074424    -0.03   0.978    -.0148097    .0143925
+         13  |   .0021914   .0103562     0.21   0.832    -.0181263    .0225092
+         14  |  -.0053586   .0112171    -0.48   0.633    -.0273653     .016648
+         15  |   .0006663    .008375     0.08   0.937    -.0157645    .0170972
+         16  |   .0050005   .0091389     0.55   0.584    -.0129289      .02293
+         17  |   .0026923   .0089491     0.30   0.764    -.0148648    .0202494
+         18  |   .0008842   .0074323     0.12   0.905     -.013697    .0154655
+         19  |   -.003351   .0042331    -0.79   0.429    -.0116559    .0049539
+         20  |  -.0013172   .0057767    -0.23   0.820    -.0126505    .0100161
+         21  |  -.0043862   .0056075    -0.78   0.434    -.0153875     .006615
+         22  |  -.0054272   .0080648    -0.67   0.501    -.0212493    .0103949
+         23  |  -.0046095   .0052314    -0.88   0.378     -.014873    .0056539
+         24  |  -.0077327   .0064906    -1.19   0.234    -.0204666    .0050011
+         25  |  -.0084859   .0047708    -1.78   0.076    -.0178457    .0008739
+         26  |          0  (base)
+         27  |  -.0056855   .0055056    -1.03   0.302    -.0164868    .0051158
+         28  |  -.0089343   .0071136    -1.26   0.209    -.0228902    .0050217
+         29  |  -.0018783   .0045903    -0.41   0.682     -.010884    .0071274
+         30  |  -.0026758   .0035405    -0.76   0.450    -.0096218    .0042702
+         31  |  -.0068463    .005393    -1.27   0.205    -.0174267    .0037342
+         32  |  -.0056864   .0059668    -0.95   0.341    -.0173926    .0060198
+         33  |  -.0096258   .0079107    -1.22   0.224    -.0251457    .0058941
+         34  |  -.0153362   .0090737    -1.69   0.091    -.0331377    .0024653
+         35  |  -.0065237   .0056699    -1.15   0.250    -.0176473    .0045998
+         36  |  -.0214963    .007771    -2.77   0.006    -.0367421   -.0062506
+         37  |  -.0112553   .0101095    -1.11   0.266     -.031089    .0085784
+         38  |  -.0161802   .0061549    -2.63   0.009    -.0282555    -.004105
+         39  |  -.0098225    .008426    -1.17   0.244    -.0263533    .0067082
+         40  |  -.0061911   .0066142    -0.94   0.349    -.0191675    .0067853
+         52  |  -.0090433   .0051101    -1.77   0.077    -.0190688    .0009821
+             |
+       _cons |   .2790696   .0020217   138.03   0.000     .2751032     .283036
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      4758        4758           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/bsearch_share/estudy_main_full_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=bhit_share: Black Share of Hits
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bhit_share
+(dropped 632 singleton observations)
+(MWFE estimator converged in 9 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    116,133
+Absorbing 11 HDFE groups                          F(  29,    950) =     183.78
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.4874
+                                                  Adj R-squared   =     0.4697
+                                                  Within R-sq.    =     0.0010
+Number of clusters (num_dept) =        951        Root MSE        =     0.2203
+
+                             (Std. Err. adjusted for 951 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+  bhit_share |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   .0078327   .0102277     0.77   0.444    -.0122387    .0279042
+         13  |   -.011041   .0106239    -1.04   0.299      -.03189     .009808
+         14  |  -.0075559   .0170716    -0.44   0.658    -.0410584    .0259465
+         15  |  -.0050571   .0131071    -0.39   0.700    -.0307793    .0206651
+         16  |    .001177   .0131283     0.09   0.929    -.0245869    .0269409
+         17  |   .0167309   .0160929     1.04   0.299    -.0148508    .0483126
+         18  |   .0184914   .0152633     1.21   0.226    -.0114623    .0484451
+         19  |  -.0024162   .0090926    -0.27   0.791    -.0202602    .0154278
+         20  |   .0164148   .0168888     0.97   0.331    -.0167289    .0495586
+         21  |  -.0090803   .0083176    -1.09   0.275    -.0254033    .0072428
+         22  |  -.0050607   .0133304    -0.38   0.704    -.0312211    .0210996
+         23  |   .0033239   .0116848     0.28   0.776     -.019607    .0262549
+         24  |   .0064023   .0176528     0.36   0.717    -.0282408    .0410453
+         25  |  -.0022386    .006834    -0.33   0.743    -.0156501    .0111729
+         26  |          0  (base)
+         27  |   .0057377   .0129804     0.44   0.659     -.019736    .0312113
+         28  |  -.0023201   .0097161    -0.24   0.811    -.0213877    .0167475
+         29  |  -.0085893   .0113622    -0.76   0.450    -.0308872    .0137086
+         30  |   .0178963   .0106003     1.69   0.092    -.0029064    .0386991
+         31  |  -.0066469   .0144707    -0.46   0.646    -.0350451    .0217512
+         32  |  -.0065188    .013507    -0.48   0.629    -.0330258    .0199882
+         33  |  -.0233697   .0100675    -2.32   0.020    -.0431268   -.0036125
+         34  |  -.0033411   .0157539    -0.21   0.832    -.0342576    .0275754
+         35  |   .0189226   .0090516     2.09   0.037     .0011591    .0366861
+         36  |   -.024231   .0202442    -1.20   0.232    -.0639596    .0154975
+         37  |   .0002985   .0131904     0.02   0.982    -.0255873    .0261842
+         38  |  -.0507905   .0113135    -4.49   0.000    -.0729928   -.0285882
+         39  |  -.0073255    .008624    -0.85   0.396    -.0242499    .0095988
+         40  |   -.008421   .0166436    -0.51   0.613    -.0410835    .0242416
+         52  |   .0004389   .0112243     0.04   0.969    -.0215884    .0224661
+             |
+       _cons |   .2969574   .0040368    73.56   0.000     .2890352    .3048795
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      3762        3762           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/bhit_share/estudy_main_full_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=bsearch_rate: Black Search Rate
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bsearch_rate
+(dropped 259 singleton observations)
+(MWFE estimator converged in 8 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    696,571
+Absorbing 11 HDFE groups                          F(  29,   1318) =       9.72
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.3937
+                                                  Adj R-squared   =     0.3887
+                                                  Within R-sq.    =     0.0001
+Number of clusters (num_dept) =      1,319        Root MSE        =     0.0618
+
+                           (Std. Err. adjusted for 1,319 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+bsearch_rate |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   .0026623   .0035275     0.75   0.451    -.0042578    .0095824
+         13  |   .0029012   .0039663     0.73   0.465    -.0048796    .0106821
+         14  |   .0010919   .0044631     0.24   0.807    -.0076637    .0098474
+         15  |   .0013064   .0039422     0.33   0.740    -.0064272      .00904
+         16  |   .0021468    .004365     0.49   0.623    -.0064164    .0107099
+         17  |   .0020362   .0045749     0.45   0.656    -.0069387    .0110112
+         18  |   4.32e-06    .003018     0.00   0.999    -.0059163     .005925
+         19  |   .0005469   .0026109     0.21   0.834    -.0045751     .005669
+         20  |  -.0010523   .0025708    -0.41   0.682    -.0060957     .003991
+         21  |  -.0015782   .0020924    -0.75   0.451     -.005683    .0025266
+         22  |  -.0007956   .0017615    -0.45   0.652    -.0042513    .0026601
+         23  |   .0000261   .0015512     0.02   0.987     -.003017    .0030691
+         24  |  -.0010958    .000869    -1.26   0.208    -.0028005     .000609
+         25  |  -.0018823   .0009803    -1.92   0.055    -.0038055    .0000409
+         26  |          0  (base)
+         27  |   5.86e-06   .0017028     0.00   0.997    -.0033346    .0033463
+         28  |   .0002952   .0012188     0.24   0.809    -.0020959    .0026863
+         29  |  -.0004283   .0012139    -0.35   0.724    -.0028096    .0019531
+         30  |   .0008006    .000976     0.82   0.412    -.0011141    .0027152
+         31  |   .0001067   .0014093     0.08   0.940     -.002658    .0028714
+         32  |  -.0018834   .0013736    -1.37   0.171    -.0045781    .0008112
+         33  |  -.0009051   .0020233    -0.45   0.655    -.0048743    .0030642
+         34  |  -.0022892    .002943    -0.78   0.437    -.0080627    .0034843
+         35  |  -.0013705   .0029971    -0.46   0.648    -.0072501     .004509
+         36  |  -.0013046   .0028817    -0.45   0.651    -.0069578    .0043487
+         37  |   .0014455   .0036353     0.40   0.691    -.0056862    .0085771
+         38  |  -.0016876   .0034907    -0.48   0.629    -.0085356    .0051603
+         39  |   -.000014   .0060414    -0.00   0.998    -.0118657    .0118377
+         40  |  -.0001919    .005488    -0.03   0.972    -.0109581    .0105742
+         52  |   .0034412   .0055141     0.62   0.533    -.0073762    .0142586
+             |
+       _cons |   .0425253   .0009359    45.44   0.000     .0406892    .0443615
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5502        5502           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/bsearch_rate/estudy_main_full_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=bhit_rate: Black Hit Rate
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bhit_rate
+(dropped 610 singleton observations)
+(MWFE estimator converged in 8 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    126,991
+Absorbing 11 HDFE groups                          F(  29,    830) =      59.40
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.3349
+                                                  Adj R-squared   =     0.3168
+                                                  Within R-sq.    =     0.0010
+Number of clusters (num_dept) =        831        Root MSE        =     0.2105
+
+                             (Std. Err. adjusted for 831 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+   bhit_rate |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   -.014847   .0090944    -1.63   0.103    -.0326978    .0030038
+         13  |  -.0328981   .0125252    -2.63   0.009    -.0574828   -.0083133
+         14  |  -.0341588   .0104899    -3.26   0.001    -.0547487   -.0135689
+         15  |  -.0189648   .0138299    -1.37   0.171    -.0461105    .0081809
+         16  |  -.0270498   .0088005    -3.07   0.002    -.0443236    -.009776
+         17  |  -.0014591   .0127025    -0.11   0.909    -.0263919    .0234738
+         18  |  -.0020035    .010377    -0.19   0.847    -.0223718    .0183649
+         19  |  -.0047064   .0120249    -0.39   0.696    -.0283092    .0188964
+         20  |   .0010414   .0098082     0.11   0.915    -.0182105    .0202932
+         21  |   .0055284   .0059656     0.93   0.354    -.0061811    .0172378
+         22  |  -.0082237   .0071534    -1.15   0.251    -.0222645    .0058171
+         23  |   -.014689   .0115241    -1.27   0.203    -.0373088    .0079308
+         24  |  -.0219055   .0097413    -2.25   0.025     -.041026   -.0027851
+         25  |  -.0057797   .0096024    -0.60   0.547    -.0246276    .0130682
+         26  |          0  (base)
+         27  |  -.0121538   .0132291    -0.92   0.359    -.0381202    .0138127
+         28  |  -.0081425   .0077197    -1.05   0.292    -.0232949    .0070099
+         29  |  -.0090747   .0079498    -1.14   0.254    -.0246787    .0065293
+         30  |   .0035236   .0051689     0.68   0.496    -.0066221    .0136693
+         31  |  -.0220889   .0145075    -1.52   0.128    -.0505646    .0063868
+         32  |  -.0128817   .0107673    -1.20   0.232     -.034016    .0082525
+         33  |  -.0122313   .0126685    -0.97   0.335    -.0370975    .0126349
+         34  |   .0144622    .012779     1.13   0.258    -.0106209    .0395452
+         35  |   .0202513    .014634     1.38   0.167    -.0084727    .0489752
+         36  |  -.0193232    .018566    -1.04   0.298    -.0557651    .0171186
+         37  |   .0091752   .0103871     0.88   0.377    -.0112129    .0295633
+         38  |  -.0217739   .0139931    -1.56   0.120    -.0492399    .0056922
+         39  |   .0323997   .0199641     1.62   0.105    -.0067864    .0715858
+         40  |  -.0176723   .0079039    -2.24   0.026    -.0331864   -.0021583
+         52  |  -.0087506   .0097282    -0.90   0.369    -.0278453    .0103441
+             |
+       _cons |   .2394255   .0024958    95.93   0.000     .2345267    .2443244
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      3234        3234           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/bhit_rate/estudy_main_full_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=bhit_bstop_ratio: Black Hits-to-Stops Ratio
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bhit_bstop_ratio
+(dropped 189 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    662,487
+Absorbing 11 HDFE groups                          F(  29,   1085) =      13.86
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.1109
+                                                  Adj R-squared   =     0.1039
+                                                  Within R-sq.    =     0.0001
+Number of clusters (num_dept) =      1,086        Root MSE        =     0.0334
+
+                           (Std. Err. adjusted for 1,086 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+bhit_bstop~o |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   5.67e-07   .0005728     0.00   0.999    -.0011235    .0011246
+         13  |  -.0011931   .0007724    -1.54   0.123    -.0027087    .0003225
+         14  |  -.0015733   .0010841    -1.45   0.147    -.0037006    .0005539
+         15  |  -.0002025   .0008243    -0.25   0.806    -.0018199    .0014149
+         16  |  -.0010824   .0005723    -1.89   0.059    -.0022054    .0000407
+         17  |  -.0001403   .0005407    -0.26   0.795    -.0012013    .0009207
+         18  |    -.00029   .0004911    -0.59   0.555    -.0012536    .0006736
+         19  |  -.0002742   .0007818    -0.35   0.726    -.0018081    .0012597
+         20  |  -.0007529   .0005609    -1.34   0.180    -.0018534    .0003476
+         21  |   -.000483   .0007431    -0.65   0.516    -.0019411     .000975
+         22  |  -.0007569   .0006578    -1.15   0.250    -.0020476    .0005337
+         23  |  -.0007685     .00048    -1.60   0.110    -.0017103    .0001734
+         24  |  -.0007535   .0004699    -1.60   0.109    -.0016754    .0001685
+         25  |   -.000871   .0005618    -1.55   0.121    -.0019732    .0002313
+         26  |          0  (base)
+         27  |   -.000976   .0004759    -2.05   0.041    -.0019098   -.0000422
+         28  |  -.0001349   .0003677    -0.37   0.714    -.0008565    .0005866
+         29  |  -.0002915   .0004681    -0.62   0.534    -.0012099    .0006269
+         30  |   .0003661   .0002883     1.27   0.205    -.0001997    .0009318
+         31  |  -.0010873   .0005968    -1.82   0.069    -.0022583    .0000837
+         32  |  -.0007176   .0005692    -1.26   0.208    -.0018344    .0003992
+         33  |  -.0006478   .0005801    -1.12   0.264    -.0017861    .0004905
+         34  |  -.0000831   .0006469    -0.13   0.898    -.0013524    .0011862
+         35  |  -.0004324   .0004082    -1.06   0.290    -.0012334    .0003686
+         36  |  -.0008117   .0009839    -0.83   0.410    -.0027422    .0011187
+         37  |   .0003148   .0007798     0.40   0.687    -.0012153    .0018448
+         38  |  -.0016217   .0008746    -1.85   0.064    -.0033378    .0000943
+         39  |   .0011798   .0014252     0.83   0.408    -.0016166    .0039762
+         40  |  -.0006762   .0008724    -0.78   0.438    -.0023881    .0010357
+         52  |   .0002337   .0010369     0.23   0.822    -.0018009    .0022683
+             |
+       _cons |    .010751   .0001216    88.44   0.000     .0105125    .0109895
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5044        5044           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/bhit_bstop_ratio/estudy_main_full_etwfe.ster save
+> d
+
+
+*********************************************************************
+Eq2: Estudy, outcome=n_stops: Overall Stop Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_stops
+(dropped 5 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,662,125
+Absorbing 11 HDFE groups                          F(  29,   1867) =       7.24
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.9320
+                                                  Adj R-squared   =     0.9316
+                                                  Within R-sq.    =     0.0047
+Number of clusters (num_dept) =      1,868        Root MSE        =    94.4425
+
+                           (Std. Err. adjusted for 1,868 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+     n_stops |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   6.306737   29.45005     0.21   0.830    -51.45174    64.06521
+         13  |  -18.50933   32.52463    -0.57   0.569    -82.29778    45.27913
+         14  |  -18.86692   29.15163    -0.65   0.518    -76.04014     38.3063
+         15  |  -16.85974   24.37483    -0.69   0.489    -64.66452    30.94503
+         16  |  -63.68304   50.27381    -1.27   0.205    -162.2818    34.91574
+         17  |   51.19261   34.48605     1.48   0.138    -16.44265    118.8279
+         18  |   21.47969   28.92544     0.74   0.458     -35.2499    78.20929
+         19  |  -4.498246   30.16047    -0.15   0.881    -63.65002    54.65353
+         20  |  -31.32756   29.88124    -1.05   0.295     -89.9317    27.27658
+         21  |  -29.80136   19.41489    -1.53   0.125    -67.87853    8.275802
+         22  |  -32.39223    25.4697    -1.27   0.204    -82.34429    17.55984
+         23  |  -2.854552   17.21319    -0.17   0.868    -36.61367    30.90456
+         24  |  -25.04424   16.27823    -1.54   0.124    -56.96968    6.881192
+         25  |  -16.43524   13.09012    -1.26   0.209    -42.10805    9.237567
+         26  |          0  (base)
+         27  |  -15.98678   13.21629    -1.21   0.227    -41.90703    9.933467
+         28  |  -50.60361   21.29258    -2.38   0.018    -92.36337   -8.843848
+         29  |  -25.89662   13.10798    -1.98   0.048    -51.60446    -.188777
+         30  |   -35.5207   23.38045    -1.52   0.129    -81.37526    10.33385
+         31  |  -31.67827   31.41024    -1.01   0.313    -93.28115    29.92461
+         32  |  -70.64504   29.64298    -2.38   0.017    -128.7819   -12.50818
+         33  |  -66.42887   23.59334    -2.82   0.005     -112.701   -20.15678
+         34  |  -61.89919   24.31838    -2.55   0.011    -109.5933   -14.20512
+         35  |   -86.6247   27.46957    -3.15   0.002     -140.499   -32.75041
+         36  |  -118.2047   42.89412    -2.76   0.006    -202.3302   -34.07926
+         37  |  -94.86832   39.54471    -2.40   0.017    -172.4248   -17.31183
+         38  |   -178.494   72.35737    -2.47   0.014    -320.4039   -36.58421
+         39  |  -179.9516   81.28265    -2.21   0.027    -339.3661   -20.53722
+         40  |  -212.0704   97.14095    -2.18   0.029    -402.5866   -21.55411
+         52  |  -151.9968   60.52616    -2.51   0.012    -270.7028   -33.29073
+             |
+       _cons |   49.21216   .4760088   103.38   0.000      48.2786    50.14573
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      8323        8323           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/n_stops/estudy_main_full_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=n_bstops: Black Stop Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_bstops
+(dropped 5 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,662,125
+Absorbing 11 HDFE groups                          F(  29,   1867) =       7.47
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.9060
+                                                  Adj R-squared   =     0.9055
+                                                  Within R-sq.    =     0.0052
+Number of clusters (num_dept) =      1,868        Root MSE        =    15.6973
+
+                           (Std. Err. adjusted for 1,868 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+    n_bstops |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -6.764787   6.356017    -1.06   0.287    -19.23043     5.70086
+         13  |  -8.301068     7.1519    -1.16   0.246    -22.32763    5.725492
+         14  |  -5.430865   8.027305    -0.68   0.499     -21.1743    10.31257
+         15  |   -3.37848   6.262072    -0.54   0.590    -15.65988    8.902916
+         16  |  -6.900626   8.935201    -0.77   0.440    -24.42466    10.62341
+         17  |   5.154544   6.391699     0.81   0.420    -7.381083    17.69017
+         18  |  -.5899136   6.466823    -0.09   0.927    -13.27288    12.09305
+         19  |  -7.032287   5.972165    -1.18   0.239    -18.74511    4.680535
+         20  |  -11.57865   6.410019    -1.81   0.071     -24.1502    .9929101
+         21  |  -9.177739   4.917578    -1.87   0.062    -18.82227     .466788
+         22  |   -11.5211   6.064265    -1.90   0.058    -23.41455    .3723548
+         23  |  -4.067992   5.016124    -0.81   0.417    -13.90579    5.769808
+         24  |  -7.864243   5.560683    -1.41   0.157    -18.77005    3.041565
+         25  |  -4.695846   4.703765    -1.00   0.318    -13.92104    4.529346
+         26  |          0  (base)
+         27  |  -6.443287   4.363232    -1.48   0.140    -15.00061    2.114038
+         28  |  -11.23744   5.731034    -1.96   0.050    -22.47735    .0024666
+         29  |  -8.999662   4.384762    -2.05   0.040    -17.59921   -.4001115
+         30  |  -9.803661   5.561089    -1.76   0.078    -20.71027    1.102944
+         31  |  -11.87947   7.985361    -1.49   0.137    -27.54064    3.781707
+         32  |  -16.94378   7.833881    -2.16   0.031    -32.30787   -1.579695
+         33  |  -17.41715   6.265553    -2.78   0.005    -29.70538   -5.128926
+         34  |  -20.82187   7.366788    -2.83   0.005    -35.26988   -6.373864
+         35  |  -24.91737    8.62388    -2.89   0.004    -41.83083   -8.003915
+         36  |  -25.15701   8.851993    -2.84   0.005    -42.51785   -7.796163
+         37  |  -24.16981    10.4665    -2.31   0.021    -44.69709   -3.642541
+         38  |  -33.77948   14.78981    -2.28   0.022    -62.78578    -4.77319
+         39  |  -33.53757   15.40051    -2.18   0.030     -63.7416   -3.333543
+         40  |  -38.97426   17.52112    -2.22   0.026    -73.33729   -4.611226
+         52  |  -31.55226   11.04611    -2.86   0.004    -53.21628   -9.888232
+             |
+       _cons |   9.081184   .1257042    72.24   0.000     8.834648    9.327719
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      8323        8323           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/n_bstops/estudy_main_full_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=n_searches: Overall Search Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_searches
+(dropped 2 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,316,377
+Absorbing 11 HDFE groups                          F(  29,   1345) =      25.16
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.8867
+                                                  Adj R-squared   =     0.8862
+                                                  Within R-sq.    =     0.0024
+Number of clusters (num_dept) =      1,346        Root MSE        =     3.9061
+
+                           (Std. Err. adjusted for 1,346 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+  n_searches |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   .2245868    1.09914     0.20   0.838    -1.931628    2.380801
+         13  |  -1.005488   1.342379    -0.75   0.454    -3.638872    1.627896
+         14  |  -2.413037    1.66754    -1.45   0.148    -5.684299     .858225
+         15  |  -1.213575   1.585288    -0.77   0.444    -4.323482    1.896331
+         16  |  -2.327066   1.932237    -1.20   0.229    -6.117593     1.46346
+         17  |  -.7570205   1.049961    -0.72   0.471     -2.81676    1.302719
+         18  |     .10138   .9880566     0.10   0.918     -1.83692     2.03968
+         19  |  -.6950965   .9399091    -0.74   0.460    -2.538944    1.148751
+         20  |  -.3818911   .4717333    -0.81   0.418    -1.307304    .5435219
+         21  |  -1.871253   1.335692    -1.40   0.161    -4.491519    .7490122
+         22  |  -1.016537   .7499192    -1.36   0.175    -2.487676    .4546011
+         23  |  -.5168039   1.109332    -0.47   0.641    -2.693012    1.659404
+         24  |  -1.451949   .8905707    -1.63   0.103    -3.199008    .2951092
+         25  |  -1.122291   .7898391    -1.42   0.156    -2.671742    .4271593
+         26  |          0  (base)
+         27  |   -1.17181   .7413834    -1.58   0.114    -2.626204    .2825837
+         28  |  -1.235577   .9003021    -1.37   0.170    -3.001726    .5305716
+         29  |  -1.229543   .7586312    -1.62   0.105    -2.717772    .2586862
+         30  |  -.0104204   .6343419    -0.02   0.987    -1.254828    1.233987
+         31  |  -1.360259   1.038019    -1.31   0.190    -3.396572    .6760545
+         32  |   -2.01438   1.053764    -1.91   0.056     -4.08158    .0528191
+         33  |  -1.394299   .7874676    -1.77   0.077    -2.939098    .1504989
+         34  |  -2.501003   1.065436    -2.35   0.019    -4.591099   -.4109066
+         35  |  -4.107021   1.501268    -2.74   0.006    -7.052103   -1.161939
+         36  |   -4.38599   1.647736    -2.66   0.008    -7.618402   -1.153579
+         37  |  -4.907333   1.832546    -2.68   0.007    -8.502294   -1.312373
+         38  |  -7.325532   2.734794    -2.68   0.007    -12.69046   -1.960606
+         39  |  -6.855722   2.796521    -2.45   0.014    -12.34174   -1.369704
+         40  |   -5.96329    2.81827    -2.12   0.035    -11.49197    -.434608
+         52  |  -5.749596   2.833269    -2.03   0.043     -11.3077   -.1914888
+             |
+       _cons |   1.341524   .0154434    86.87   0.000     1.311228     1.37182
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      6012        6012           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/n_searches/estudy_main_full_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=n_bsearches: Black Search Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_bsearches
+(dropped 2 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,316,377
+Absorbing 11 HDFE groups                          F(  29,   1345) =      52.43
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.7866
+                                                  Adj R-squared   =     0.7856
+                                                  Within R-sq.    =     0.0032
+Number of clusters (num_dept) =      1,346        Root MSE        =     1.0961
+
+                           (Std. Err. adjusted for 1,346 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+ n_bsearches |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.4757024   .3930906    -1.21   0.226     -1.24684    .2954348
+         13  |  -.4234975   .5980379    -0.71   0.479    -1.596686    .7496911
+         14  |  -.7951092   .4393809    -1.81   0.071    -1.657056    .0668372
+         15  |  -.1195453   .3704882    -0.32   0.747    -.8463428    .6072523
+         16  |  -.0904011    .405303    -0.22   0.824    -.8854957    .7046936
+         17  |  -.0244372   .3524321    -0.07   0.945    -.7158135    .6669391
+         18  |  -.0006626   .3551278    -0.00   0.999    -.6973272    .6960019
+         19  |   -.341451   .3372088    -1.01   0.311    -1.002963    .3200614
+         20  |  -.3652768   .3392493    -1.08   0.282    -1.030792    .3002384
+         21  |  -.7764691   .4685723    -1.66   0.098    -1.695681     .142743
+         22  |  -.6990517   .3992469    -1.75   0.080    -1.482266    .0841626
+         23  |  -.1547807   .3231607    -0.48   0.632    -.7887345    .4791731
+         24  |   -.746045   .3472562    -2.15   0.032    -1.427268   -.0648223
+         25  |  -.8035409   .4347936    -1.85   0.065    -1.656488    .0494064
+         26  |          0  (base)
+         27  |  -.6928125   .4519423    -1.53   0.126    -1.579401     .193776
+         28  |  -.6439297   .3959778    -1.63   0.104    -1.420731    .1328715
+         29  |  -.7712995   .4352365    -1.77   0.077    -1.625116    .0825168
+         30  |  -.3771336   .2878553    -1.31   0.190    -.9418278    .1875607
+         31  |  -.9083449   .4857798    -1.87   0.062    -1.861313    .0446235
+         32  |  -.9710671   .4204914    -2.31   0.021    -1.795957   -.1461767
+         33  |  -.9047826    .390637    -2.32   0.021    -1.671107   -.1384584
+         34  |  -1.546733   .6376322    -2.43   0.015    -2.797595   -.2958713
+         35  |  -1.645234   .6710966    -2.45   0.014    -2.961744   -.3287243
+         36  |  -1.875952   .6413952    -2.92   0.004    -3.134195   -.6177079
+         37  |   -1.97361   .6925644    -2.85   0.004    -3.332234   -.6149857
+         38  |  -2.665277   .8422167    -3.16   0.002    -4.317479   -1.013076
+         39  |  -2.310323   .8133823    -2.84   0.005    -3.905959   -.7146873
+         40  |  -1.956416   .7972085    -2.45   0.014    -3.520324   -.3925091
+         52  |  -1.996881    .712221    -2.80   0.005    -3.394065   -.5996958
+             |
+       _cons |   .3854848   .0057989    66.48   0.000     .3741089    .3968607
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      6012        6012           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/n_bsearches/estudy_main_full_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=n_hits: Overall Hit Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_hits
+(dropped 2 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,248,626
+Absorbing 11 HDFE groups                          F(  29,   1098) =    2433.65
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.8854
+                                                  Adj R-squared   =     0.8849
+                                                  Within R-sq.    =     0.0027
+Number of clusters (num_dept) =      1,099        Root MSE        =     0.9722
+
+                           (Std. Err. adjusted for 1,099 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+      n_hits |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.3023024   .4139624    -0.73   0.465    -1.114549    .5099443
+         13  |   .0654649   .4645192     0.14   0.888    -.8459808    .9769105
+         14  |  -1.012068   .8563531    -1.18   0.238    -2.692341    .6682056
+         15  |  -.1578865   .6113067    -0.26   0.796    -1.357348    1.041575
+         16  |  -1.072579    1.01582    -1.06   0.291    -3.065746    .9205875
+         17  |  -.1013283   .7916219    -0.13   0.898    -1.654591    1.451934
+         18  |  -.7523124   .7792583    -0.97   0.335    -2.281316    .7766912
+         19  |  -.6605736   .8027803    -0.82   0.411     -2.23573    .9145833
+         20  |  -.2524007   .2646018    -0.95   0.340    -.7715829    .2667815
+         21  |  -.5003714   .8803055    -0.57   0.570    -2.227642      1.2269
+         22  |  -.6319661   .6572785    -0.96   0.337     -1.92163    .6576977
+         23  |  -.2518311   .6600989    -0.38   0.703    -1.547029    1.043367
+         24  |  -.9571765   .7643019    -1.25   0.211    -2.456834    .5424808
+         25  |  -.2228617   .2884881    -0.77   0.440    -.7889119    .3431886
+         26  |          0  (base)
+         27  |  -.7175343   .5079913    -1.41   0.158    -1.714278    .2792091
+         28  |  -.3223617   .3824398    -0.84   0.399    -1.072757    .4280337
+         29  |  -.5637354   .5211633    -1.08   0.280    -1.586324    .4588531
+         30  |  -.1203798   .3352369    -0.36   0.720    -.7781572    .5373975
+         31  |  -.8665128   .6407251    -1.35   0.177    -2.123697    .3906711
+         32  |  -1.086432   .6570986    -1.65   0.099    -2.375743    .2028787
+         33  |   -.850977    .553796    -1.54   0.125    -1.937595     .235641
+         34  |  -1.179305     .69301    -1.70   0.089    -2.539079     .180468
+         35  |  -1.491643   .7217858    -2.07   0.039    -2.907879    -.075408
+         36  |  -1.606935   .8040893    -2.00   0.046    -3.184661   -.0292102
+         37  |  -1.205291   .6082822    -1.98   0.048    -2.398818   -.0117644
+         38  |  -2.186228   1.186076    -1.84   0.066    -4.513459    .1410023
+         39  |  -1.388035    1.09459    -1.27   0.205    -3.535759      .75969
+         40  |  -1.991309   1.288974    -1.54   0.123     -4.52044    .5378224
+         52  |  -1.520161   .9163692    -1.66   0.097    -3.318193    .2778716
+             |
+       _cons |   .3007895   .0079426    37.87   0.000     .2852052    .3163739
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5380        5380           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/n_hits/estudy_main_full_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=n_bhits: Black Hit Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_bhits
+(dropped 2 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,248,626
+Absorbing 11 HDFE groups                          F(  29,   1098) =     444.93
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.6380
+                                                  Adj R-squared   =     0.6364
+                                                  Within R-sq.    =     0.0015
+Number of clusters (num_dept) =      1,099        Root MSE        =     0.4227
+
+                           (Std. Err. adjusted for 1,099 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+     n_bhits |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.1693838   .1678851    -1.01   0.313    -.4987956     .160028
+         13  |  -.2183593   .1912487    -1.14   0.254    -.5936135     .156895
+         14  |  -.4347298   .2544957    -1.71   0.088    -.9340827    .0646231
+         15  |  -.0013037   .2248253    -0.01   0.995    -.4424395    .4398321
+         16  |  -.2608626    .245996    -1.06   0.289     -.743538    .2218128
+         17  |  -.0111691   .1900417    -0.06   0.953     -.384055    .3617168
+         18  |  -.0439256   .1071368    -0.41   0.682    -.2541417    .1662904
+         19  |  -.2180472   .1962875    -1.11   0.267    -.6031881    .1670938
+         20  |  -.1707595   .1231549    -1.39   0.166    -.4124051    .0708861
+         21  |  -.2213827   .2205034    -1.00   0.316    -.6540383    .2112729
+         22  |  -.3768321   .2343122    -1.61   0.108    -.8365824    .0829182
+         23  |  -.1921829   .1815911    -1.06   0.290    -.5484876    .1641218
+         24  |   -.343568   .1844102    -1.86   0.063    -.7054041    .0182682
+         25  |  -.3323214   .2124736    -1.56   0.118    -.7492215    .0845788
+         26  |          0  (base)
+         27  |  -.3091962   .2146596    -1.44   0.150    -.7303856    .1119932
+         28  |  -.2470479   .1790716    -1.38   0.168    -.5984091    .1043132
+         29  |  -.2964779   .2069502    -1.43   0.152    -.7025405    .1095846
+         30  |  -.1103664   .1122635    -0.98   0.326    -.3306417    .1099088
+         31  |  -.4547338   .2645041    -1.72   0.086    -.9737244    .0642567
+         32  |  -.3843534    .219039    -1.75   0.080    -.8141357     .045429
+         33  |  -.3831208   .1970573    -1.94   0.052    -.7697722    .0035306
+         34  |  -.3657026   .1706987    -2.14   0.032     -.700635   -.0307702
+         35  |  -.4847361   .1942236    -2.50   0.013    -.8658275   -.1036447
+         36  |  -.5798881   .2769135    -2.09   0.036    -1.123227   -.0365488
+         37  |  -.3362461   .1821425    -1.85   0.065    -.6936327    .0211405
+         38  |  -.8171213   .3491406    -2.34   0.019     -1.50218    -.132063
+         39  |  -.3311849   .3326276    -1.00   0.320    -.9838425    .3214727
+         40  |  -.6176254   .3504681    -1.76   0.078    -1.305288    .0700375
+         52  |   -.527865   .2210828    -2.39   0.017    -.9616574   -.0940725
+             |
+       _cons |   .0971553   .0025013    38.84   0.000     .0922474    .1020632
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5380        5380           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         2           1           1    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/n_bhits/estudy_main_full_etwfe.ster saved
+(1,643,246 observations deleted)
+file 2000_data/500_working/14_days/eq2_esamples_full_etwfe.dta saved
+(3,996 real changes made)
+(4,050 real changes made)
+
+
+*********************************************************************
+Eq2: Estudy, outcome=bstop_share: Black Share of Stops
+*********************************************************************
+(7 observations deleted)
+(266 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bstop_share
+(dropped 5 singleton observations)
+(MWFE estimator converged in 8 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,645,724
+Absorbing 11 HDFE groups                          F(  29,   1848) =      26.03
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.7976
+                                                  Adj R-squared   =     0.7966
+                                                  Within R-sq.    =     0.0001
+Number of clusters (num_dept) =      1,849        Root MSE        =     0.0731
+
+                           (Std. Err. adjusted for 1,849 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+ bstop_share |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   -.002392   .0019164    -1.25   0.212    -.0061505    .0013665
+         13  |  -.0015727   .0030208    -0.52   0.603    -.0074973    .0043519
+         14  |   -.001172   .0022741    -0.52   0.606    -.0056321     .003288
+         15  |  -.0022013   .0021839    -1.01   0.314    -.0064846    .0020819
+         16  |  -.0019784    .002802    -0.71   0.480    -.0074739    .0035171
+         17  |  -.0045184   .0025316    -1.78   0.074    -.0094834    .0004466
+         18  |  -.0031356   .0027257    -1.15   0.250    -.0084813    .0022101
+         19  |  -.0031641   .0021659    -1.46   0.144    -.0074121    .0010838
+         20  |  -.0036861    .002116    -1.74   0.082    -.0078362    .0004639
+         21  |  -.0025939    .001023    -2.54   0.011    -.0046002   -.0005876
+         22  |  -.0035397   .0018699    -1.89   0.059    -.0072069    .0001276
+         23  |  -.0022695   .0016774    -1.35   0.176    -.0055592    .0010202
+         24  |  -.0024303   .0013893    -1.75   0.080     -.005155    .0002945
+         25  |  -.0012238   .0008602    -1.42   0.155    -.0029109    .0004633
+         26  |          0  (base)
+         27  |  -.0029705   .0014269    -2.08   0.037     -.005769    -.000172
+         28  |  -.0039199   .0021584    -1.82   0.070     -.008153    .0003132
+         29  |  -.0032951   .0012845    -2.57   0.010    -.0058144   -.0007758
+         30  |  -.0015132   .0009409    -1.61   0.108    -.0033586    .0003323
+         31  |  -.0025676   .0016638    -1.54   0.123    -.0058308    .0006956
+         32  |  -.0036736   .0022045    -1.67   0.096    -.0079971    .0006499
+         33  |  -.0039346    .001971    -2.00   0.046    -.0078003   -.0000689
+         34  |  -.0071519   .0019912    -3.59   0.000    -.0110571   -.0032467
+         35  |   -.005577   .0028653    -1.95   0.052    -.0111965    .0000425
+         36  |  -.0067232   .0029623    -2.27   0.023     -.012533   -.0009134
+         37  |   -.003949    .003067    -1.29   0.198     -.009964    .0020661
+         38  |  -.0039505   .0023092    -1.71   0.087    -.0084795    .0005785
+         39  |  -.0014118    .002537    -0.56   0.578    -.0063875    .0035639
+         40  |  -.0041964    .003307    -1.27   0.205    -.0106822    .0022893
+         52  |  -.0059052    .002021    -2.92   0.004    -.0098689   -.0019414
+             |
+       _cons |   .1735217   .0005975   290.43   0.000       .17235    .1746935
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      8256        8256           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/bstop_share/estudy_main_wbal_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=bsearch_share: Black Share of Searches
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bsearch_share
+(dropped 473 singleton observations)
+(MWFE estimator converged in 9 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    293,454
+Absorbing 11 HDFE groups                          F(  29,   1227) =     206.09
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.6032
+                                                  Adj R-squared   =     0.5965
+                                                  Within R-sq.    =     0.0003
+Number of clusters (num_dept) =      1,228        Root MSE        =     0.1627
+
+                           (Std. Err. adjusted for 1,228 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+bsearch_sh~e |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   .0107209   .0094103     1.14   0.255    -.0077412    .0291829
+         13  |   .0180785   .0125938     1.44   0.151    -.0066292    .0427863
+         14  |   .0145394    .012192     1.19   0.233    -.0093802     .038459
+         15  |   .0107081   .0102888     1.04   0.298    -.0094775    .0308938
+         16  |   .0178107    .011331     1.57   0.116    -.0044196     .040041
+         17  |   .0126752    .011328     1.12   0.263    -.0095493    .0348997
+         18  |   .0005181   .0099811     0.05   0.959    -.0190637    .0200999
+         19  |  -.0042859    .005011    -0.86   0.393     -.014117    .0055451
+         20  |   .0060174   .0061593     0.98   0.329    -.0060665    .0181014
+         21  |   .0010093   .0046479     0.22   0.828    -.0081095    .0101281
+         22  |   .0052964   .0073889     0.72   0.474    -.0091998    .0197926
+         23  |    .004612   .0052757     0.87   0.382    -.0057384    .0149623
+         24  |  -.0044595    .006729    -0.66   0.508     -.017661    .0087421
+         25  |  -.0077823   .0062207    -1.25   0.211    -.0199867    .0044221
+         26  |          0  (base)
+         27  |  -.0015851    .004937    -0.32   0.748     -.011271    .0081007
+         28  |  -.0067778   .0070141    -0.97   0.334    -.0205387    .0069831
+         29  |   .0007967   .0051589     0.15   0.877    -.0093245    .0109179
+         30  |   .0001995   .0040098     0.05   0.960    -.0076674    .0080665
+         31  |   .0001784   .0039818     0.04   0.964    -.0076335    .0079903
+         32  |   .0006887   .0040241     0.17   0.864    -.0072062    .0085836
+         33  |  -.0013912   .0060135    -0.23   0.817    -.0131889    .0104066
+         34  |  -.0043783   .0055591    -0.79   0.431    -.0152847    .0065281
+         35  |  -.0021308    .005748    -0.37   0.711    -.0134078    .0091461
+         36  |  -.0204897   .0086667    -2.36   0.018    -.0374928   -.0034866
+         37  |    -.00758   .0107384    -0.71   0.480    -.0286476    .0134876
+         38  |  -.0112676    .005074    -2.22   0.027    -.0212222    -.001313
+         39  |  -.0047502   .0084544    -0.56   0.574     -.021337    .0118365
+         40  |   .0002135   .0060451     0.04   0.972    -.0116464    .0120734
+         52  |  -.0025504    .003475    -0.73   0.463     -.009368    .0042672
+             |
+       _cons |   .2583667   .0016247   159.02   0.000     .2551791    .2615542
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      4719        4719           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/bsearch_share/estudy_main_wbal_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=bhit_share: Black Share of Hits
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bhit_share
+(dropped 631 singleton observations)
+(MWFE estimator converged in 8 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    111,742
+Absorbing 11 HDFE groups                          F(  29,    940) =     318.83
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.4493
+                                                  Adj R-squared   =     0.4295
+                                                  Within R-sq.    =     0.0014
+Number of clusters (num_dept) =        941        Root MSE        =     0.2262
+
+                             (Std. Err. adjusted for 941 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+  bhit_share |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   .0267972   .0125766     2.13   0.033     .0021157    .0514787
+         13  |   .0028654   .0128077     0.22   0.823    -.0222695    .0280004
+         14  |   .0295007   .0190984     1.54   0.123    -.0079798    .0669813
+         15  |  -.0023679   .0150813    -0.16   0.875    -.0319648     .027229
+         16  |    .005575   .0170132     0.33   0.743    -.0278133    .0389633
+         17  |   .0418784    .027651     1.51   0.130    -.0123865    .0961433
+         18  |   .0229884   .0187369     1.23   0.220    -.0137826    .0597594
+         19  |  -.0066706   .0101377    -0.66   0.511    -.0265658    .0132246
+         20  |   .0399618   .0284739     1.40   0.161    -.0159179    .0958414
+         21  |   .0026628   .0092813     0.29   0.774    -.0155517    .0208772
+         22  |      .0233   .0189279     1.23   0.219    -.0138458    .0604457
+         23  |   .0244921   .0195531     1.25   0.211    -.0138806    .0628648
+         24  |    .008101   .0294348     0.28   0.783    -.0496645    .0658666
+         25  |   .0142051     .01487     0.96   0.340    -.0149771    .0433872
+         26  |          0  (base)
+         27  |   .0147446   .0231043     0.64   0.524    -.0305974    .0600865
+         28  |   .0101012   .0173245     0.58   0.560     -.023898    .0441004
+         29  |   .0112777   .0098737     1.14   0.254    -.0080994    .0306548
+         30  |   .0292965   .0163473     1.79   0.073    -.0027849     .061378
+         31  |  -.0051711   .0181671    -0.28   0.776    -.0408239    .0304817
+         32  |   .0066628   .0116854     0.57   0.569    -.0162696    .0295952
+         33  |  -.0173851   .0144861    -1.20   0.230    -.0458138    .0110437
+         34  |   .0164981   .0134225     1.23   0.219    -.0098434    .0428397
+         35  |   .0276998   .0137525     2.01   0.044     .0007107     .054689
+         36  |  -.0139169   .0269537    -0.52   0.606    -.0668133    .0389796
+         37  |   .0062598   .0156894     0.40   0.690    -.0245306    .0370501
+         38  |  -.0375126   .0148976    -2.52   0.012     -.066749   -.0082762
+         39  |   .0042581   .0114279     0.37   0.710    -.0181691    .0266853
+         40  |   .0075756    .014213     0.53   0.594    -.0203173    .0354684
+         52  |    .016063   .0146502     1.10   0.273     -.012688    .0448139
+             |
+       _cons |   .2877804   .0052454    54.86   0.000     .2774863    .2980745
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      3731        3731           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/bhit_share/estudy_main_wbal_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=bsearch_rate: Black Search Rate
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bsearch_rate
+(dropped 259 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    687,605
+Absorbing 11 HDFE groups                          F(  29,   1307) =      18.43
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.3700
+                                                  Adj R-squared   =     0.3648
+                                                  Within R-sq.    =     0.0002
+Number of clusters (num_dept) =      1,308        Root MSE        =     0.0645
+
+                           (Std. Err. adjusted for 1,308 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+bsearch_rate |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   .0062977   .0056795     1.11   0.268    -.0048442    .0174396
+         13  |   .0074229   .0061998     1.20   0.231    -.0047398    .0195856
+         14  |   .0072938   .0062689     1.16   0.245    -.0050043     .019592
+         15  |   .0064371   .0062517     1.03   0.303    -.0058274    .0187016
+         16  |   .0075035   .0068681     1.09   0.275    -.0059703    .0209772
+         17  |   .0074117   .0068257     1.09   0.278    -.0059788    .0208023
+         18  |   .0031416   .0045885     0.68   0.494    -.0058601    .0121432
+         19  |   .0014764   .0041086     0.36   0.719    -.0065838    .0095366
+         20  |   .0013467   .0039238     0.34   0.731     -.006351    .0090443
+         21  |    .000466    .003351     0.14   0.889     -.006108    .0070399
+         22  |   .0029687   .0028226     1.05   0.293    -.0025687    .0085062
+         23  |   .0016215   .0032123     0.50   0.614    -.0046803    .0079232
+         24  |  -.0010192   .0013276    -0.77   0.443    -.0036237    .0015854
+         25  |    -.00297   .0015615    -1.90   0.057    -.0060333    .0000933
+         26  |          0  (base)
+         27  |   .0006203   .0014644     0.42   0.672    -.0022526    .0034932
+         28  |   .0021727   .0014938     1.45   0.146    -.0007578    .0051031
+         29  |    .001071   .0020683     0.52   0.605    -.0029865    .0051285
+         30  |   .0023951   .0018872     1.27   0.205    -.0013071    .0060973
+         31  |   .0024835   .0019331     1.28   0.199    -.0013088    .0062757
+         32  |   .0006541   .0012813     0.51   0.610    -.0018596    .0031678
+         33  |   .0028012   .0024139     1.16   0.246    -.0019343    .0075366
+         34  |   .0032129   .0031689     1.01   0.311    -.0030037    .0094295
+         35  |   .0038892   .0036246     1.07   0.283    -.0032215    .0109999
+         36  |   .0018216   .0037458     0.49   0.627    -.0055268      .00917
+         37  |   .0042137   .0052644     0.80   0.424     -.006114    .0145413
+         38  |   .0015007   .0045708     0.33   0.743    -.0074662    .0104676
+         39  |   .0016662   .0077222     0.22   0.829     -.013483    .0168155
+         40  |   .0012627   .0069138     0.18   0.855    -.0123006     .014826
+         52  |   .0062648   .0072671     0.86   0.389    -.0079917    .0205214
+             |
+       _cons |   .0408764   .0012326    33.16   0.000     .0384582    .0432946
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5462        5462           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/bsearch_rate/estudy_main_wbal_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=bhit_rate: Black Hit Rate
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bhit_rate
+(dropped 610 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    121,706
+Absorbing 11 HDFE groups                          F(  29,    820) =     546.84
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.2894
+                                                  Adj R-squared   =     0.2694
+                                                  Within R-sq.    =     0.0010
+Number of clusters (num_dept) =        821        Root MSE        =     0.2174
+
+                             (Std. Err. adjusted for 821 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+   bhit_rate |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   -.021099   .0142804    -1.48   0.140    -.0491295    .0069315
+         13  |  -.0362587   .0174209    -2.08   0.038    -.0704534    -.002064
+         14  |  -.0375845    .015893    -2.36   0.018    -.0687802   -.0063887
+         15  |  -.0368788   .0182086    -2.03   0.043    -.0726198   -.0011378
+         16  |  -.0430423   .0113062    -3.81   0.000    -.0652347   -.0208498
+         17  |  -.0108371   .0172264    -0.63   0.529    -.0446501     .022976
+         18  |  -.0037135   .0157966    -0.24   0.814      -.03472     .027293
+         19  |  -.0089863    .019667    -0.46   0.648    -.0475899    .0296174
+         20  |  -.0021144   .0141826    -0.15   0.882    -.0299528     .025724
+         21  |   .0068954   .0098393     0.70   0.484    -.0124178    .0262087
+         22  |  -.0016399   .0103705    -0.16   0.874    -.0219959     .018716
+         23  |  -.0020184   .0177568    -0.11   0.910    -.0368725    .0328357
+         24  |  -.0362412   .0149171    -2.43   0.015    -.0655214   -.0069611
+         25  |  -.0130042    .013922    -0.93   0.351    -.0403312    .0143228
+         26  |          0  (base)
+         27  |  -.0114924   .0244924    -0.47   0.639    -.0595676    .0365827
+         28  |  -.0113847   .0141739    -0.80   0.422     -.039206    .0164367
+         29  |  -.0118202   .0157896    -0.75   0.454    -.0428131    .0191726
+         30  |    .003942   .0080417     0.49   0.624    -.0118427    .0197267
+         31  |  -.0419411   .0229449    -1.83   0.068    -.0869787    .0030965
+         32  |  -.0233295   .0143302    -1.63   0.104    -.0514577    .0047988
+         33  |  -.0377072   .0120374    -3.13   0.002     -.061335   -.0140794
+         34  |   -.002821   .0154096    -0.18   0.855    -.0330679    .0274259
+         35  |   .0065014    .015448     0.42   0.674    -.0238208    .0368237
+         36  |  -.0336852    .027022    -1.25   0.213    -.0867255    .0193552
+         37  |  -.0031302   .0108106    -0.29   0.772    -.0243499    .0180896
+         38  |  -.0350603   .0183055    -1.92   0.056    -.0709915    .0008709
+         39  |   .0108941   .0161651     0.67   0.501    -.0208358     .042624
+         40  |  -.0274709   .0100784    -2.73   0.007    -.0472533   -.0076884
+         52  |  -.0150228    .014129    -1.06   0.288     -.042756    .0127104
+             |
+       _cons |   .2342846   .0034563    67.79   0.000     .2275004    .2410688
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      3202        3202           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/bhit_rate/estudy_main_wbal_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=bhit_bstop_ratio: Black Hits-to-Stops Ratio
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: bhit_bstop_ratio
+(dropped 189 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =    654,573
+Absorbing 11 HDFE groups                          F(  29,   1075) =      23.64
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.0720
+                                                  Adj R-squared   =     0.0647
+                                                  Within R-sq.    =     0.0001
+Number of clusters (num_dept) =      1,076        Root MSE        =     0.0349
+
+                           (Std. Err. adjusted for 1,076 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+bhit_bstop~o |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   .0009816   .0009525     1.03   0.303    -.0008873    .0028506
+         13  |   .0000875   .0008979     0.10   0.922    -.0016744    .0018494
+         14  |   .0003825   .0012108     0.32   0.752    -.0019934    .0027583
+         15  |   .0006299   .0013579     0.46   0.643    -.0020345    .0032942
+         16  |   .0001092   .0007661     0.14   0.887    -.0013939    .0016124
+         17  |   .0011698   .0007172     1.63   0.103    -.0002376    .0025771
+         18  |   .0008332   .0008608     0.97   0.333    -.0008558    .0025222
+         19  |   .0006362    .001321     0.48   0.630    -.0019559    .0032283
+         20  |   .0002614    .001103     0.24   0.813    -.0019029    .0024257
+         21  |   .0008538   .0009083     0.94   0.347    -.0009285    .0026361
+         22  |   .0009912   .0007412     1.34   0.181    -.0004632    .0024455
+         23  |   .0004851   .0010461     0.46   0.643    -.0015676    .0025378
+         24  |  -.0011626   .0007677    -1.51   0.130    -.0026688    .0003437
+         25  |  -.0010247   .0009085    -1.13   0.260    -.0028074    .0007579
+         26  |          0  (base)
+         27  |  -.0002394   .0011925    -0.20   0.841    -.0025793    .0021005
+         28  |   .0004535   .0004954     0.92   0.360    -.0005186    .0014256
+         29  |   .0002236   .0009357     0.24   0.811    -.0016124    .0020597
+         30  |   .0012302   .0005834     2.11   0.035     .0000855    .0023748
+         31  |  -.0011206   .0009273    -1.21   0.227    -.0029402     .000699
+         32  |    -.00003   .0007865    -0.04   0.970    -.0015732    .0015133
+         33  |  -.0006356   .0005508    -1.15   0.249    -.0017164    .0004452
+         34  |   .0008066   .0008937     0.90   0.367    -.0009471    .0025602
+         35  |    .000391   .0005657     0.69   0.490    -.0007189    .0015009
+         36  |  -.0001876    .001412    -0.13   0.894    -.0029581    .0025829
+         37  |   .0008424   .0010241     0.82   0.411    -.0011671    .0028519
+         38  |  -.0008765   .0009875    -0.89   0.375    -.0028143    .0010612
+         39  |   .0012172   .0013397     0.91   0.364    -.0014115     .003846
+         40  |   .0001294   .0010321     0.13   0.900    -.0018958    .0021546
+         52  |   .0011637    .001322     0.88   0.379    -.0014303    .0037578
+             |
+       _cons |   .0102328   .0001812    56.46   0.000     .0098772    .0105885
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5011        5011           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/bhit_bstop_ratio/estudy_main_wbal_etwfe.ster save
+> d
+
+
+*********************************************************************
+Eq2: Estudy, outcome=n_stops: Overall Stop Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_stops
+(dropped 5 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,645,724
+Absorbing 11 HDFE groups                          F(  29,   1848) =     342.53
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.9322
+                                                  Adj R-squared   =     0.9319
+                                                  Within R-sq.    =     0.0083
+Number of clusters (num_dept) =      1,849        Root MSE        =    93.5593
+
+                           (Std. Err. adjusted for 1,849 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+     n_stops |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |    58.1072   61.26134     0.95   0.343    -62.04151    178.2559
+         13  |  -31.41182   59.14195    -0.53   0.595    -147.4039    84.58024
+         14  |  -27.99059   48.84292    -0.57   0.567    -123.7837    67.80251
+         15  |  -10.69794   38.20802    -0.28   0.780    -85.63337    64.23748
+         16  |  -88.64533   90.37043    -0.98   0.327    -265.8842    88.59354
+         17  |   119.6732   63.84439     1.87   0.061    -5.541468     244.888
+         18  |   68.85448   62.28446     1.11   0.269    -53.30083    191.0098
+         19  |   38.69161   65.66285     0.59   0.556    -90.08956    167.4728
+         20  |  -1.749309   47.78564    -0.04   0.971    -95.46882    91.97021
+         21  |   6.461849   33.12757     0.20   0.845    -58.50955    71.43325
+         22  |  -17.38877   40.51952    -0.43   0.668    -96.85762    62.08009
+         23  |   5.970749   32.20299     0.19   0.853    -57.18731    69.12881
+         24  |  -35.25294    31.2955    -1.13   0.260    -96.63119     26.1253
+         25  |  -47.94278   28.27193    -1.70   0.090    -103.3911    7.505501
+         26  |          0  (base)
+         27  |  -18.07525   32.51098    -0.56   0.578    -81.83735    45.68686
+         28  |  -104.3504   44.37206    -2.35   0.019     -191.375   -17.32573
+         29  |  -57.84997   25.06967    -2.31   0.021    -107.0178   -8.682127
+         30  |  -44.68652   45.29094    -0.99   0.324    -133.5133    44.14026
+         31  |  -39.75468    62.3887    -0.64   0.524    -162.1144    82.60507
+         32  |  -113.6487    50.5307    -2.25   0.025     -212.752   -14.54544
+         33  |  -97.36711   46.39998    -2.10   0.036     -188.369   -6.365222
+         34  |  -102.5949   48.88143    -2.10   0.036    -198.4635   -6.726275
+         35  |  -137.4896   53.98194    -2.55   0.011    -243.3616   -31.61761
+         36  |  -195.9619   74.15234    -2.64   0.008     -341.393   -50.53069
+         37  |   -159.201   71.50441    -2.23   0.026    -299.4389   -18.96303
+         38  |  -287.1903   113.5786    -2.53   0.012    -509.9462   -64.43445
+         39  |  -290.1478   128.3612    -2.26   0.024    -541.8961   -38.39954
+         40  |  -350.8502   151.6398    -2.31   0.021    -648.2535    -53.4469
+         52  |  -256.9077   104.8032    -2.45   0.014    -462.4527   -51.36265
+             |
+       _cons |   45.87853   .5037138    91.08   0.000     44.89062    46.86644
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      8256        8256           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/n_stops/estudy_main_wbal_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=n_bstops: Black Stop Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_bstops
+(dropped 5 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,645,724
+Absorbing 11 HDFE groups                          F(  29,   1848) =     587.93
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.9003
+                                                  Adj R-squared   =     0.8998
+                                                  Within R-sq.    =     0.0093
+Number of clusters (num_dept) =      1,849        Root MSE        =    15.0767
+
+                           (Std. Err. adjusted for 1,849 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+    n_bstops |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -6.386917   10.51073    -0.61   0.543    -27.00107    14.22724
+         13  |  -17.00056   11.43093    -1.49   0.137    -39.41945    5.418333
+         14  |  -15.77564   11.89193    -1.33   0.185    -39.09867    7.547396
+         15  |  -9.727438   7.908128    -1.23   0.219    -25.23724    5.782366
+         16  |  -17.45441   13.20101    -1.32   0.186    -43.34488    8.436058
+         17  |   5.078328    9.17135     0.55   0.580    -12.90897    23.06562
+         18  |  -3.993594   8.572692    -0.47   0.641    -20.80677    12.81958
+         19  |   -9.83133   10.76981    -0.91   0.361     -30.9536    11.29094
+         20  |  -11.81905    8.68536    -1.36   0.174     -28.8532    5.215097
+         21  |  -6.434629    7.00263    -0.92   0.358    -20.16853    7.299269
+         22  |   -14.6216   8.236485    -1.78   0.076     -30.7754    1.532189
+         23  |  -7.335495   5.839941    -1.26   0.209    -18.78907    4.118081
+         24  |  -13.92615   10.71772    -1.30   0.194    -34.94626     7.09397
+         25  |  -14.67762    8.48391    -1.73   0.084    -31.31667    1.961438
+         26  |          0  (base)
+         27  |  -8.431633   11.00512    -0.77   0.444     -30.0154    13.15214
+         28  |  -23.69254   12.31075    -1.92   0.054    -47.83699    .4519085
+         29  |  -17.27042   8.038558    -2.15   0.032    -33.03603   -1.504809
+         30  |  -13.34539   9.084587    -1.47   0.142    -31.16252    4.471747
+         31  |  -19.40336   14.41703    -1.35   0.179    -47.67874     8.87202
+         32  |  -28.63519    12.6792    -2.26   0.024    -53.50225   -3.768129
+         33  |  -24.46338   12.66445    -1.93   0.054    -49.30152    .3747601
+         34  |  -33.90672   14.36802    -2.36   0.018    -62.08598   -5.727473
+         35  |   -38.8502   16.39827    -2.37   0.018    -71.01128   -6.689121
+         36  |  -44.75031   15.79508    -2.83   0.005    -75.72838   -13.77224
+         37  |  -44.02298   19.22593    -2.29   0.022    -81.72981   -6.316146
+         38  |  -59.92357    24.1387    -2.48   0.013    -107.2656   -12.58158
+         39  |  -58.98774   24.84325    -2.37   0.018    -107.7115   -10.26395
+         40  |  -68.73667   28.26507    -2.43   0.015    -124.1715   -13.30185
+         52  |  -55.44364   19.62113    -2.83   0.005    -93.92555   -16.96173
+             |
+       _cons |   8.024353   .1314662    61.04   0.000     7.766515    8.282191
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      8256        8256           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/n_bstops/estudy_main_wbal_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=n_searches: Overall Search Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_searches
+(dropped 2 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,306,994
+Absorbing 11 HDFE groups                          F(  29,   1334) =    5465.96
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.8846
+                                                  Adj R-squared   =     0.8840
+                                                  Within R-sq.    =     0.0039
+Number of clusters (num_dept) =      1,335        Root MSE        =     3.8516
+
+                           (Std. Err. adjusted for 1,335 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+  n_searches |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |   .6311811   2.254047     0.28   0.780    -3.790682    5.053044
+         13  |  -2.679766   2.009673    -1.33   0.183    -6.622229    1.262698
+         14  |  -3.118645   2.573984    -1.21   0.226    -8.168142    1.930851
+         15  |  -2.021568   2.512993    -0.80   0.421    -6.951417     2.90828
+         16  |  -3.522224      2.789    -1.26   0.207    -8.993528     1.94908
+         17  |  -.0841701   1.381413    -0.06   0.951    -2.794149    2.625809
+         18  |   1.393238   1.703449     0.82   0.414    -1.948493    4.734968
+         19  |  -.1813099   1.289489    -0.14   0.888    -2.710956    2.348337
+         20  |  -.2396863   .9282714    -0.26   0.796    -2.060717    1.581344
+         21  |  -1.417957   2.358865    -0.60   0.548    -6.045446    3.209533
+         22  |  -.2690966   .9276095    -0.29   0.772    -2.088829    1.550636
+         23  |  -.8389364   2.116541    -0.40   0.692    -4.991049    3.313176
+         24  |  -1.075186   1.301471    -0.83   0.409    -3.628338    1.477966
+         25  |  -2.655664   1.627403    -1.63   0.103    -5.848213    .5368845
+         26  |          0  (base)
+         27  |  -.8085226   1.718728    -0.47   0.638    -4.180227    2.563182
+         28  |  -1.957623   2.008939    -0.97   0.330    -5.898647    1.983401
+         29  |  -1.451164   1.100143    -1.32   0.187    -3.609363    .7070341
+         30  |   1.494916   1.355869     1.10   0.270    -1.164952    4.154783
+         31  |   -1.73892   1.440896    -1.21   0.228     -4.56559    1.087749
+         32  |  -2.838633   1.525433    -1.86   0.063    -5.831141    .1538757
+         33  |  -.9364567   1.127532    -0.83   0.406    -3.148385    1.275472
+         34  |  -2.358591   1.541014    -1.53   0.126    -5.381665    .6644831
+         35  |  -5.119466   2.409935    -2.12   0.034    -9.847141   -.3917902
+         36  |  -6.316459    2.47269    -2.55   0.011    -11.16724   -1.465675
+         37  |  -7.245487   2.811742    -2.58   0.010     -12.7614    -1.72957
+         38  |  -10.55586   3.662741    -2.88   0.004    -17.74121   -3.370497
+         39  |  -10.48806   3.801142    -2.76   0.006    -17.94493   -3.031196
+         40  |  -9.835022   3.972663    -2.48   0.013    -17.62837   -2.041675
+         52  |  -8.890955   4.281365    -2.08   0.038     -17.2899   -.4920129
+             |
+       _cons |   1.241043   .0139628    88.88   0.000     1.213652    1.268434
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5972        5972           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/n_searches/estudy_main_wbal_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=n_bsearches: Black Search Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_bsearches
+(dropped 2 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,306,994
+Absorbing 11 HDFE groups                          F(  29,   1334) =   10805.18
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.7737
+                                                  Adj R-squared   =     0.7726
+                                                  Within R-sq.    =     0.0043
+Number of clusters (num_dept) =      1,335        Root MSE        =     1.0278
+
+                           (Std. Err. adjusted for 1,335 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+ n_bsearches |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.6284139   .6738812    -0.93   0.351    -1.950396    .6935683
+         13  |  -.7132425    1.00568    -0.71   0.478    -2.686129    1.259644
+         14  |  -.7378121    .606304    -1.22   0.224    -1.927225    .4516012
+         15  |  -.4249839   .5690329    -0.75   0.455    -1.541281    .6913129
+         16  |  -.2846952   .5351136    -0.53   0.595    -1.334451    .7650606
+         17  |   .1441175   .5452552     0.26   0.792    -.9255336    1.213768
+         18  |  -.0667213   .6503932    -0.10   0.918    -1.342626    1.209184
+         19  |  -.6700228   .4825474    -1.39   0.165    -1.616657    .2766117
+         20  |  -.1474594   .3423337    -0.43   0.667    -.8190306    .5241117
+         21  |  -.5867219   .5396904    -1.09   0.277    -1.645456    .4720124
+         22  |  -.2819056   .5903008    -0.48   0.633    -1.439925    .8761133
+         23  |  -.2116685   .3908578    -0.54   0.588    -.9784314    .5550944
+         24  |  -.6890706   .6093573    -1.13   0.258    -1.884474    .5063324
+         25  |  -1.499397   .7892608    -1.90   0.058    -3.047725    .0489302
+         26  |          0  (base)
+         27  |  -.3531751    .931877    -0.38   0.705    -2.181279    1.474929
+         28  |   -.641287   .6879547    -0.93   0.351    -1.990878    .7083039
+         29  |  -.7726814   .7079877    -1.09   0.275    -2.161572     .616209
+         30  |  -.1257009   .3920754    -0.32   0.749    -.8948524    .6434506
+         31  |  -1.031057   .6830881    -1.51   0.131    -2.371101    .3089868
+         32  |  -1.193618   .6557753    -1.82   0.069    -2.480081    .0928448
+         33  |  -.5736653   .4861748    -1.18   0.238    -1.527416    .3800851
+         34  |  -1.209105   .6713375    -1.80   0.072    -2.526098    .1078869
+         35  |  -1.394551   .8643477    -1.61   0.107     -3.09018    .3010776
+         36  |  -2.314078   .7811185    -2.96   0.003    -3.846433   -.7817241
+         37  |  -2.643045    .953976    -2.77   0.006    -4.514502   -.7715886
+         38  |  -3.467414   .9765989    -3.55   0.000    -5.383251   -1.551577
+         39  |  -3.317778   .9901166    -3.35   0.001    -5.260133   -1.375422
+         40  |  -3.078745   .9481717    -3.25   0.001    -4.938815   -1.218675
+         52  |  -2.747455   .8784888    -3.13   0.002    -4.470826   -1.024085
+             |
+       _cons |   .3388136   .0046514    72.84   0.000     .3296887    .3479385
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5972        5972           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/n_bsearches/estudy_main_wbal_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=n_hits: Overall Hit Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_hits
+(dropped 2 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,240,392
+Absorbing 11 HDFE groups                          F(  29,   1088) =   22037.25
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.7525
+                                                  Adj R-squared   =     0.7514
+                                                  Within R-sq.    =     0.0059
+Number of clusters (num_dept) =      1,089        Root MSE        =     0.8297
+
+                           (Std. Err. adjusted for 1,089 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+      n_hits |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.3250815   .7076432    -0.46   0.646    -1.713581    1.063418
+         13  |  -.5442795   .5328633    -1.02   0.307    -1.589836    .5012766
+         14  |  -.4668985   .7539343    -0.62   0.536    -1.946228    1.012431
+         15  |   .1412461    .823558     0.17   0.864    -1.474695    1.757188
+         16  |  -.6275202   1.014913    -0.62   0.537    -2.618928    1.363888
+         17  |   .9335652   .7854234     1.19   0.235    -.6075508    2.474681
+         18  |  -.0025629   .4555059    -0.01   0.996    -.8963323    .8912066
+         19  |   .2711043   .7155823     0.38   0.705    -1.132973    1.675182
+         20  |  -.2394287   .5786246    -0.41   0.679    -1.374775    .8959177
+         21  |   .8238428    .644428     1.28   0.201    -.4406195    2.088305
+         22  |   .0885304   .4740912     0.19   0.852     -.841706    1.018767
+         23  |   .5203674   1.026733     0.51   0.612    -1.494234    2.534969
+         24  |  -.4792396   .6221341    -0.77   0.441    -1.699958    .7414788
+         25  |  -.7147848   .5839466    -1.22   0.221    -1.860574    .4310041
+         26  |          0  (base)
+         27  |  -.6158863   .7688971    -0.80   0.423    -2.124575    .8928027
+         28  |  -.3368387   .5770537    -0.58   0.560    -1.469103    .7954253
+         29  |  -.5169261   .6205254    -0.83   0.405    -1.734488    .7006358
+         30  |   .6594179   .5624783     1.17   0.241    -.4442471    1.763083
+         31  |  -1.120007   .8219873    -1.36   0.173    -2.732867    .4928528
+         32  |  -1.494603    .742339    -2.01   0.044    -2.951181   -.0380254
+         33  |   -.907669   .5666069    -1.60   0.109    -2.019435    .2040968
+         34  |   -1.44341   .7519593    -1.92   0.055    -2.918864    .0320448
+         35  |  -1.881431   1.049351    -1.79   0.073    -3.940412     .177549
+         36  |  -2.186459   .9609594    -2.28   0.023    -4.072002   -.3009155
+         37  |  -1.564797   .7349689    -2.13   0.033    -3.006914   -.1226803
+         38  |  -2.841672   1.425997    -1.99   0.047    -5.639688   -.0436565
+         39  |  -2.105869   1.260189    -1.67   0.095    -4.578544    .3668069
+         40  |  -3.014705   1.730873    -1.74   0.082    -6.410932    .3815219
+         52  |  -2.003602   1.145461    -1.75   0.081    -4.251165    .2439601
+             |
+       _cons |   .2460696   .0056058    43.90   0.000     .2350702    .2570691
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5347        5347           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/n_hits/estudy_main_wbal_etwfe.ster saved
+
+
+*********************************************************************
+Eq2: Estudy, outcome=n_bhits: Black Hit Volume
+*********************************************************************
+(0 observations deleted)
+(0 observations deleted)
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+Main Specification: n_bhits
+(dropped 2 singleton observations)
+(MWFE estimator converged in 7 iterations)
+note: 0bn.b0_14 is probably collinear with the fixed effects (all partialled-ou
+> t values are close to zero; tol = 1.0e-09)
+
+HDFE Linear regression                            Number of obs   =  1,240,392
+Absorbing 11 HDFE groups                          F(  29,   1088) =    5098.65
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.5782
+                                                  Adj R-squared   =     0.5764
+                                                  Within R-sq.    =     0.0024
+Number of clusters (num_dept) =      1,089        Root MSE        =     0.3866
+
+                           (Std. Err. adjusted for 1,089 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+     n_bhits |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       b0_14 |
+          0  |          0  (omitted)
+          1  |  -.3303474   .2929649    -1.13   0.260    -.9051875    .2444927
+         13  |  -.4676635   .3122585    -1.50   0.135     -1.08036    .1450335
+         14  |  -.4421916   .3521117    -1.26   0.209    -1.133086    .2487032
+         15  |  -.3277263   .3417896    -0.96   0.338    -.9983677     .342915
+         16  |  -.4527764   .2849532    -1.59   0.112    -1.011896    .1063436
+         17  |   .0376721   .2133879     0.18   0.860    -.3810263    .4563705
+         18  |  -.0922808   .1817947    -0.51   0.612    -.4489888    .2644271
+         19  |  -.2743674   .3243449    -0.85   0.398    -.9107796    .3620448
+         20  |  -.2080119   .2319221    -0.90   0.370     -.663077    .2470533
+         21  |  -.0668102   .2543246    -0.26   0.793    -.5658325     .432212
+         22  |   -.236972   .1735104    -1.37   0.172    -.5774249    .1034809
+         23  |  -.1336405   .3153926    -0.42   0.672    -.7524871     .485206
+         24  |  -.6005421   .3432692    -1.75   0.080    -1.274087    .0730024
+         25  |  -.5795908   .3221645    -1.80   0.072    -1.211725    .0525433
+         26  |          0  (base)
+         27  |  -.3189664   .4825658    -0.66   0.509    -1.265831    .6278986
+         28  |  -.3459566    .317643    -1.09   0.276    -.9692188    .2773055
+         29  |  -.3899919   .3957587    -0.99   0.325    -1.166529    .3865448
+         30  |  -.0703923   .2061651    -0.34   0.733    -.4749184    .3341339
+         31  |  -.7794724    .467932    -1.67   0.096    -1.697624     .138679
+         32  |  -.6235287   .3449189    -1.81   0.071     -1.30031    .0532528
+         33  |  -.6315908    .295706    -2.14   0.033    -1.211809   -.0513724
+         34  |  -.4618093   .2748538    -1.68   0.093    -1.001113    .0774942
+         35  |  -.6732153   .3361807    -2.00   0.045    -1.332851   -.0135795
+         36  |  -.8838349   .4435285    -1.99   0.047    -1.754103   -.0135668
+         37  |  -.5898954    .252897    -2.33   0.020    -1.086116   -.0936742
+         38  |  -1.112739    .470826    -2.36   0.018    -2.036569   -.1889094
+         39  |  -.7486616   .3735773    -2.00   0.045    -1.481675   -.0156481
+         40  |  -1.077165   .4798332    -2.24   0.025    -2.018669   -.1356623
+         52  |  -.7676082   .3229711    -2.38   0.018    -1.401325   -.1338916
+             |
+       _cons |   .0846043   .0023435    36.10   0.000     .0800061    .0892025
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      5347        5347           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq2/n_bhits/estudy_main_wbal_etwfe.ster saved
+(1,635,920 observations deleted)
+file 2000_data/500_working/14_days/eq2_esamples_wbal_etwfe.dta saved
+
+. 
+. *}
+
+. 
+. 
+. 
+. log close
+      name:  <unnamed>
+       log:  /bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/3000_code
+> /05_regs/05_SMCL_logs/05b_estudy.smcl
+  log type:  smcl
+ closed on:   6 Sep 2025, 17:16:58
+-------------------------------------------------------------------------------
+
+. 
+. 

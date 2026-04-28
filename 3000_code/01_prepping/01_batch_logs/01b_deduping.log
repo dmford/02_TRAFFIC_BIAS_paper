@@ -1,0 +1,737 @@
+
+  ___  ____  ____  ____  ____ (R)
+ /__    /   ____/   /   ____/
+___/   /   /___/   /   /___/   16.1   Copyright 1985-2019 StataCorp LLC
+  Statistics/Data analysis            StataCorp
+                                      4905 Lakeway Drive
+                                      College Station, Texas 77845 USA
+                                      800-STATA-PC        https://www.stata.com
+                                      979-696-4600        stata@stata.com
+                                      979-696-4601 (fax)
+
+Stata license: 4-user network perpetual
+Serial number: 501606358866
+  Licensed to: Michael Bates
+               University of California, Riverside
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. New update available; type -update all-
+
+. * 01b_deduping
+
+. 
+. 
+. 
+. clear all
+
+. 
+. 
+. 
+. * (1) HPCC cluster, and (2) personal machine: 
+
+. 
+. cd "/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper"
+/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper
+
+. 
+. *cd "~\coding\02_TRAFFIC_BIAS_paper\"
+
+. 
+. 
+. 
+. *****************************************************************************
+> ***
+
+. 
+. 
+. 
+. log using "1000_notes/200_smcl_logs/01_prepping/01b_deduping", replace
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/1000_note
+> s/200_smcl_logs/01_prepping/01b_deduping.smcl
+  log type:  smcl
+ opened on:  20 Nov 2024, 17:26:40
+
+. 
+. 
+. 
+. * manually selected states with potential-duplicates to loop over
+
+. 
+. * this was determined by looking over the 88 SOPP locations
+
+. 
+. foreach state in ct il md nc {
+  2. 
+. display ""
+  3. 
+. local temp_state = upper("`state'")
+  4. 
+. display "Deduping `state' at $S_TIME" 
+  5. 
+. filelist, dir("2000_data/200_raw/20_SOPP_DTAs") pat("`state'*") maxdeep(1)
+  6. 
+. gen path = dirname + "/" + filename
+  7. 
+. gen backup_dirname = dirname + "/" + "1_pre_dedupe"
+  8. 
+. gen backup_filename = subinstr(filename, ".dta", "_pre_dedupe.dta", .)
+  9. 
+. gen backup_path = backup_dirname + "/" + backup_filename
+ 10. 
+. local N = _N
+ 11. 
+. local Np1 = _N+1
+ 12. 
+. forvalues i=1/`N' {
+ 13. 
+. local temp_path = path[`i']
+ 14. 
+. local temp_backup_path = backup_path[`i']
+ 15. 
+. copy `temp_path' `temp_backup_path', replace
+ 16. 
+. }
+ 17. 
+. qui levelsof path if path != "", clean local(dedupe_path)
+ 18. 
+. foreach dupe_check of local dedupe_path {
+ 19. 
+. append using `dupe_check', force
+ 20. 
+. }
+ 21. 
+. display "finished loading `state' files"
+ 22. 
+. display _N
+ 23. 
+. local N2 = _N
+ 24. 
+. la var locale "not for dupe checking"
+ 25. 
+. la var state_locale "not for dupe checking"
+ 26. 
+. la var dirname "not for dupe checking"
+ 27. 
+. la var filename "not for dupe checking"
+ 28. 
+. la var fsize "not for dupe checking"
+ 29. 
+. la var path "not for dupe checking"
+ 30. 
+. la var backup_path "not for dupe checking"
+ 31. 
+. la var backup_dirname "not for dupe checking"
+ 32. 
+. la var backup_filename "not for dupe checking"
+ 33. 
+. ds, not(varlabel "not for dupe checking")
+ 34. 
+. duplicates tag `r(varlist)' in `Np1'/`N2', generate(dupe)
+ 35. 
+. ds, not(varlabel "not for dupe checking")
+ 36. 
+. duplicates drop `r(varlist)' in `Np1'/`N2', force
+ 37. 
+. display ""
+ 38. 
+. qui levelsof state_locale, clean local(dedupe_locales)
+ 39. 
+. display "locales for save loop: `dedupe_locales'"
+ 40. 
+. foreach locale of local dedupe_locales {
+ 41. 
+.     local state_locale_lower = lower("`locale'")
+ 42. 
+. preserve
+ 43. 
+. keep if state_locale == "`locale'"
+ 44. 
+. display "`state' string variables:"
+ 45. 
+. ds, has(type string) var(32)
+ 46. 
+. display ""
+ 47. 
+. display "`state' non-string variables:"
+ 48. 
+. ds, not(type string) var(32)
+ 49. 
+. save "2000_data/200_raw/20_SOPP_DTAs/`state_locale_lower'.dta", replace
+ 50. 
+. restore
+ 51. 
+. display ""
+ 52. 
+. }
+ 53. 
+. }
+
+Deduping ct at 17:26:40
+Number of files found = 2
+(note: variable locale was str12, now str13 to accommodate using data's
+       values)
+(note: variable state_locale was str11, now str12 to accommodate using data's
+       values)
+(note: variable location was str41, now str98 to accommodate using data's
+       values)
+(note: variable county_name was str1, now str17 to accommodate using data's
+       values)
+(note: variable subject_age was str2, now str3 to accommodate using data's
+       values)
+(note: variable department_name was str8, now str24 to accommodate using
+       data's values)
+(note: variable reason_for_stop was str36, now str75 to accommodate using
+       data's values)
+finished loading ct files
+1193780
+state         subject_sex   search_con~d  officer_race  department~d
+date          officer_id~h  search_veh~e  officer_age   violation
+time          department~e  search_basis  officer_sex   raw_su~ecode
+location      type          reason_for~p  search_per~n  raw_su~ycode
+lat           arrest_made   raw_s~e_code  contraband~l  raw_se~ncode
+lng           citation_i~d  raw_s~y_code  contraban~gs
+district      warning_is~d  raw_se~_code  contraban~ns
+subject_age   outcome       raw_interv~d  contraband~r
+subject_race  contraband~d  county_name   reason_for~h
+
+Duplicates in terms of state date time location lat lng district subject_age
+    subject_race subject_sex officer_id_hash department_name type arrest_made
+    citation_issued warning_issued outcome contraband_found search_conducted
+    search_vehicle search_basis reason_for_stop raw_subject_race_code
+    raw_subject_ethnicity_code raw_search_authorization_code
+    raw_intervention_disposition_cod county_name officer_race officer_age
+    officer_sex search_person contraband_alcohol contraband_drugs
+    contraband_weapons contraband_other reason_for_search department_id
+    violation raw_subjectracecode raw_subjectethnicitycode
+    raw_searchauthorizationcode
+state         subject_sex   search_con~d  officer_race  department~d
+date          officer_id~h  search_veh~e  officer_age   violation
+time          department~e  search_basis  officer_sex   raw_su~ecode
+location      type          reason_for~p  search_per~n  raw_su~ycode
+lat           arrest_made   raw_s~e_code  contraband~l  raw_se~ncode
+lng           citation_i~d  raw_s~y_code  contraban~gs  dupe
+district      warning_is~d  raw_se~_code  contraban~ns
+subject_age   outcome       raw_interv~d  contraband~r
+subject_race  contraband~d  county_name   reason_for~h
+
+Duplicates in terms of state date time location lat lng district subject_age
+    subject_race subject_sex officer_id_hash department_name type arrest_made
+    citation_issued warning_issued outcome contraband_found search_conducted
+    search_vehicle search_basis reason_for_stop raw_subject_race_code
+    raw_subject_ethnicity_code raw_search_authorization_code
+    raw_intervention_disposition_cod county_name officer_race officer_age
+    officer_sex search_person contraband_alcohol contraband_drugs
+    contraband_weapons contraband_other reason_for_search department_id
+    violation raw_subjectracecode raw_subjectethnicitycode
+    raw_searchauthorizationcode dupe
+
+(10 observations deleted)
+
+locales for save loop: CT_HARTFORD CT_STATEWIDE
+(1,175,331 observations deleted)
+ct string variables:
+dirname                           contraband_found
+filename                          search_conducted
+path                              search_vehicle
+backup_dirname                    search_basis
+backup_filename                   reason_for_stop
+backup_path                       raw_subject_race_code
+state                             raw_subject_ethnicity_code
+locale                            raw_search_authorization_code
+state_locale                      raw_intervention_disposition_cod
+date                              county_name
+time                              officer_race
+location                          officer_age
+lat                               officer_sex
+lng                               search_person
+district                          contraband_alcohol
+subject_age                       contraband_drugs
+subject_race                      contraband_weapons
+subject_sex                       contraband_other
+officer_id_hash                   reason_for_search
+department_name                   department_id
+type                              violation
+arrest_made                       raw_subjectracecode
+citation_issued                   raw_subjectethnicitycode
+warning_issued                    raw_searchauthorizationcode
+outcome
+
+ct non-string variables:
+fsize  dupe
+file 2000_data/200_raw/20_SOPP_DTAs/ct_hartford.dta saved
+
+(18,441 observations deleted)
+ct string variables:
+dirname                           contraband_found
+filename                          search_conducted
+path                              search_vehicle
+backup_dirname                    search_basis
+backup_filename                   reason_for_stop
+backup_path                       raw_subject_race_code
+state                             raw_subject_ethnicity_code
+locale                            raw_search_authorization_code
+state_locale                      raw_intervention_disposition_cod
+date                              county_name
+time                              officer_race
+location                          officer_age
+lat                               officer_sex
+lng                               search_person
+district                          contraband_alcohol
+subject_age                       contraband_drugs
+subject_race                      contraband_weapons
+subject_sex                       contraband_other
+officer_id_hash                   reason_for_search
+department_name                   department_id
+type                              violation
+arrest_made                       raw_subjectracecode
+citation_issued                   raw_subjectethnicitycode
+warning_issued                    raw_searchauthorizationcode
+outcome
+
+ct non-string variables:
+fsize  dupe
+file 2000_data/200_raw/20_SOPP_DTAs/ct_statewide.dta saved
+
+
+Deduping il at 17:27:20
+Number of files found = 2
+(note: variable department_id was int in the using data, but will be str1
+       now)
+(note: variable locale was str11, now str13 to accommodate using data's
+       values)
+(note: variable state_locale was str10, now str12 to accommodate using data's
+       values)
+(note: variable department_name was str1, now str69 to accommodate using
+       data's values)
+(note: variable citation_issued was str4, now str5 to accommodate using
+       data's values)
+(note: variable contraband_found was str1, now str5 to accommodate using
+       data's values)
+(note: variable contraband_drugs was str1, now str5 to accommodate using
+       data's values)
+(note: variable contraband_weapons was str1, now str5 to accommodate using
+       data's values)
+(note: variable search_conducted was str1, now str5 to accommodate using
+       data's values)
+(note: variable search_person was str1, now str5 to accommodate using data's
+       values)
+(note: variable search_vehicle was str1, now str5 to accommodate using data's
+       values)
+(note: variable search_basis was str1, now str7 to accommodate using data's
+       values)
+finished loading il files
+13594631
+state         officer_id~h  outcome       search_per~n  reason_for~p
+date          officer_age   raw_race      contraband~l  vehicle_make
+time          officer_race  raw_dr~_race  contraban~gs  vehicle_year
+location      officer_sex   department~e  contraban~ns  raw_dr~rrace
+lat           officer_ye~e  county_name   contraband~r  raw_reason~p
+lng           type          search_con~d  reason_for~h  raw_typeof~n
+subject_age   violation     contraband~d  department~d  raw_result~p
+subject_race  arrest_made   search_basis  beat
+subject_sex   citation_i~d  search_veh~e  warning_is~d
+
+Duplicates in terms of state date time location lat lng subject_age
+    subject_race subject_sex officer_id_hash officer_age officer_race
+    officer_sex officer_years_of_service type violation arrest_made
+    citation_issued outcome raw_race raw_driver_race department_name
+    county_name search_conducted contraband_found search_basis search_vehicle
+    search_person contraband_alcohol contraband_drugs contraband_weapons
+    contraband_other reason_for_search department_id beat warning_issued
+    reason_for_stop vehicle_make vehicle_year raw_driverrace raw_reasonforstop
+    raw_typeofmovingviolation raw_resultofstop
+state         officer_id~h  outcome       search_per~n  reason_for~p
+date          officer_age   raw_race      contraband~l  vehicle_make
+time          officer_race  raw_dr~_race  contraban~gs  vehicle_year
+location      officer_sex   department~e  contraban~ns  raw_dr~rrace
+lat           officer_ye~e  county_name   contraband~r  raw_reason~p
+lng           type          search_con~d  reason_for~h  raw_typeof~n
+subject_age   violation     contraband~d  department~d  raw_result~p
+subject_race  arrest_made   search_basis  beat          dupe
+subject_sex   citation_i~d  search_veh~e  warning_is~d
+
+Duplicates in terms of state date time location lat lng subject_age
+    subject_race subject_sex officer_id_hash officer_age officer_race
+    officer_sex officer_years_of_service type violation arrest_made
+    citation_issued outcome raw_race raw_driver_race department_name
+    county_name search_conducted contraband_found search_basis search_vehicle
+    search_person contraband_alcohol contraband_drugs contraband_weapons
+    contraband_other reason_for_search department_id beat warning_issued
+    reason_for_stop vehicle_make vehicle_year raw_driverrace raw_reasonforstop
+    raw_typeofmovingviolation raw_resultofstop dupe
+
+(22,089 observations deleted)
+
+locales for save loop: IL_CHICAGO IL_STATEWIDE
+(12,740,405 observations deleted)
+il string variables:
+dirname                   subject_sex               contraband_found
+filename                  officer_id_hash           search_basis
+path                      officer_age               search_vehicle
+backup_dirname            officer_race              search_person
+backup_filename           officer_sex               contraband_alcohol
+backup_path               officer_years_of_service  contraband_drugs
+state                     type                      contraband_weapons
+locale                    violation                 contraband_other
+state_locale              arrest_made               reason_for_search
+date                      citation_issued           department_id
+time                      outcome                   beat
+location                  raw_race                  warning_issued
+lat                       raw_driver_race           reason_for_stop
+lng                       department_name           vehicle_make
+subject_age               county_name               vehicle_year
+subject_race              search_conducted
+
+il non-string variables:
+fsize                      raw_typeofmovingviolation
+raw_driverrace             raw_resultofstop
+raw_reasonforstop          dupe
+file 2000_data/200_raw/20_SOPP_DTAs/il_chicago.dta saved
+
+(832,139 observations deleted)
+il string variables:
+dirname                   subject_sex               contraband_found
+filename                  officer_id_hash           search_basis
+path                      officer_age               search_vehicle
+backup_dirname            officer_race              search_person
+backup_filename           officer_sex               contraband_alcohol
+backup_path               officer_years_of_service  contraband_drugs
+state                     type                      contraband_weapons
+locale                    violation                 contraband_other
+state_locale              arrest_made               reason_for_search
+date                      citation_issued           department_id
+time                      outcome                   beat
+location                  raw_race                  warning_issued
+lat                       raw_driver_race           reason_for_stop
+lng                       department_name           vehicle_make
+subject_age               county_name               vehicle_year
+subject_race              search_conducted
+
+il non-string variables:
+fsize                      raw_typeofmovingviolation
+raw_driverrace             raw_resultofstop
+raw_reasonforstop          dupe
+file 2000_data/200_raw/20_SOPP_DTAs/il_statewide.dta saved
+
+
+Deduping md at 17:36:32
+Number of files found = 2
+(note: variable subject_age was str1, now str3 to accommodate using data's
+       values)
+(note: variable subject_race was str1, now str22 to accommodate using data's
+       values)
+(note: variable subject_sex was str1, now str6 to accommodate using data's
+       values)
+(note: variable department_name was str1, now str60 to accommodate using
+       data's values)
+(note: variable citation_issued was str4, now str5 to accommodate using
+       data's values)
+(note: variable contraband_found was str1, now str5 to accommodate using
+       data's values)
+(note: variable contraband_drugs was str1, now str5 to accommodate using
+       data's values)
+(note: variable contraband_weapons was str1, now str5 to accommodate using
+       data's values)
+(note: variable search_conducted was str1, now str5 to accommodate using
+       data's values)
+(note: variable search_person was str1, now str5 to accommodate using data's
+       values)
+(note: variable search_vehicle was str1, now str5 to accommodate using data's
+       values)
+(note: variable search_basis was str1, now str14 to accommodate using data's
+       values)
+(note: variable reason_for_search was str1, now str22 to accommodate using
+       data's values)
+finished loading md files
+4524426
+state         outcome       officer_age   contraban~ns  warning_is~d
+date          subject_race  officer_sex   contraband~r  reason_for~t
+time          subject_age   contraband~d  reason_for~h  reason_for~p
+beat          subject_sex   search_basis  department~d  raw_race
+district      department~e  search_veh~e  location      raw_outcome
+officer_id~h  county_name   search_per~n  disposition   raw_arrest~e
+type          search_con~d  contraband~l  violation
+citation_i~d  officer_race  contraban~gs  arrest_made
+
+Duplicates in terms of state date time beat district officer_id_hash type
+    citation_issued outcome subject_race subject_age subject_sex
+    department_name county_name search_conducted officer_race officer_age
+    officer_sex contraband_found search_basis search_vehicle search_person
+    contraband_alcohol contraband_drugs contraband_weapons contraband_other
+    reason_for_search department_id location disposition violation arrest_made
+    warning_issued reason_for_arrest reason_for_stop raw_race raw_outcome
+    raw_arrest_made
+state         outcome       officer_age   contraban~ns  warning_is~d
+date          subject_race  officer_sex   contraband~r  reason_for~t
+time          subject_age   contraband~d  reason_for~h  reason_for~p
+beat          subject_sex   search_basis  department~d  raw_race
+district      department~e  search_veh~e  location      raw_outcome
+officer_id~h  county_name   search_per~n  disposition   raw_arrest~e
+type          search_con~d  contraband~l  violation     dupe
+citation_i~d  officer_race  contraban~gs  arrest_made
+
+Duplicates in terms of state date time beat district officer_id_hash type
+    citation_issued outcome subject_race subject_age subject_sex
+    department_name county_name search_conducted officer_race officer_age
+    officer_sex contraband_found search_basis search_vehicle search_person
+    contraband_alcohol contraband_drugs contraband_weapons contraband_other
+    reason_for_search department_id location disposition violation arrest_made
+    warning_issued reason_for_arrest reason_for_stop raw_race raw_outcome
+    raw_arrest_made dupe
+
+(2,835,740 observations deleted)
+
+locales for save loop: MD_BALTIMORE MD_STATEWIDE
+(891,600 observations deleted)
+md string variables:
+dirname             district            officer_age         location
+filename            officer_id_hash     officer_sex         disposition
+path                type                contraband_found    violation
+backup_dirname      citation_issued     search_basis        arrest_made
+backup_filename     outcome             search_vehicle      warning_issued
+backup_path         subject_race        search_person       reason_for_arrest
+state               subject_age         contraband_alcohol  reason_for_stop
+locale              subject_sex         contraband_drugs    raw_race
+state_locale        department_name     contraband_weapons  raw_outcome
+date                county_name         contraband_other    raw_arrest_made
+time                search_conducted    reason_for_search
+beat                officer_race        department_id
+
+md non-string variables:
+fsize  dupe
+file 2000_data/200_raw/20_SOPP_DTAs/md_baltimore.dta saved
+
+(797,088 observations deleted)
+md string variables:
+dirname             district            officer_age         location
+filename            officer_id_hash     officer_sex         disposition
+path                type                contraband_found    violation
+backup_dirname      citation_issued     search_basis        arrest_made
+backup_filename     outcome             search_vehicle      warning_issued
+backup_path         subject_race        search_person       reason_for_arrest
+state               subject_age         contraband_alcohol  reason_for_stop
+locale              subject_sex         contraband_drugs    raw_race
+state_locale        department_name     contraband_weapons  raw_outcome
+date                county_name         contraband_other    raw_arrest_made
+time                search_conducted    reason_for_search
+beat                officer_race        department_id
+
+md non-string variables:
+fsize  dupe
+file 2000_data/200_raw/20_SOPP_DTAs/md_statewide.dta saved
+
+
+Deduping nc at 17:39:58
+Number of files found = 7
+(note: variable raw_ethnicity was str1, now str2 to accommodate using data's
+       values)
+(note: variable raw_race was str1, now str2 to accommodate using data's
+       values)
+(note: variable locale was str13, now str16 to accommodate using data's
+       values)
+(note: variable state_locale was str12, now str15 to accommodate using data's
+       values)
+(note: variable location was str34, now str36 to accommodate using data's
+       values)
+(note: variable department_name was str42, now str47 to accommodate using
+       data's values)
+(note: variable subject_age was int in the using data, but will be str3 now)
+(note: variable location was str36, now str40 to accommodate using data's
+       values)
+(note: variable county_name was str18, now str19 to accommodate using data's
+       values)
+(note: variable department_name was str47, now str55 to accommodate using
+       data's values)
+(note: variable locale was str16, now str17 to accommodate using data's
+       values)
+(note: variable state_locale was str15, now str16 to accommodate using data's
+       values)
+finished loading nc files
+24607118
+state         subject_sex   outcome       search_veh~e  raw_action~n
+date          officer_id~h  contraband~d  search_basis  officer_race
+time          department~e  contraban~gs  reason_for~k  officer_age
+location      type          contraban~ns  reason_for~h  officer_sex
+county_name   arrest_made   frisk_perf~d  reason_for~p  contraband~l
+subject_age   citation_i~d  search_con~d  raw_ethnic~y  contraband~r
+subject_race  warning_is~d  search_per~n  raw_race      department~d
+
+Duplicates in terms of state date time location county_name subject_age
+    subject_race subject_sex officer_id_hash department_name type arrest_made
+    citation_issued warning_issued outcome contraband_found contraband_drugs
+    contraband_weapons frisk_performed search_conducted search_person
+    search_vehicle search_basis reason_for_frisk reason_for_search
+    reason_for_stop raw_ethnicity raw_race raw_action_description officer_race
+    officer_age officer_sex contraband_alcohol contraband_other department_id
+state         officer_id~h  contraban~gs  reason_for~h  contraband~l
+date          department~e  contraban~ns  reason_for~p  contraband~r
+time          type          frisk_perf~d  raw_ethnic~y  department~d
+location      arrest_made   search_con~d  raw_race      dupe
+county_name   citation_i~d  search_per~n  raw_action~n
+subject_age   warning_is~d  search_veh~e  officer_race
+subject_race  outcome       search_basis  officer_age
+subject_sex   contraband~d  reason_for~k  officer_sex
+
+Duplicates in terms of state date time location county_name subject_age
+    subject_race subject_sex officer_id_hash department_name type arrest_made
+    citation_issued warning_issued outcome contraband_found contraband_drugs
+    contraband_weapons frisk_performed search_conducted search_person
+    search_vehicle search_basis reason_for_frisk reason_for_search
+    reason_for_stop raw_ethnicity raw_race raw_action_description officer_race
+    officer_age officer_sex contraband_alcohol contraband_other department_id
+    dupe
+
+(3,818,773 observations deleted)
+
+locales for save loop: NC_CHARLOTTE NC_DURHAM NC_FAYETTEVILLE NC_GREENSBORO NC_
+> RALEIGH NC_STATEWIDE
+(19,193,156 observations deleted)
+nc string variables:
+dirname                 subject_sex             search_basis
+filename                officer_id_hash         reason_for_frisk
+path                    department_name         reason_for_search
+backup_dirname          type                    reason_for_stop
+backup_filename         arrest_made             raw_ethnicity
+backup_path             citation_issued         raw_race
+state                   warning_issued          raw_action_description
+locale                  outcome                 officer_race
+state_locale            contraband_found        officer_age
+date                    contraband_drugs        officer_sex
+time                    contraband_weapons      contraband_alcohol
+location                frisk_performed         contraband_other
+county_name             search_conducted        department_id
+subject_age             search_person
+subject_race            search_vehicle
+
+nc non-string variables:
+fsize  dupe
+file 2000_data/200_raw/20_SOPP_DTAs/nc_charlotte.dta saved
+
+(20,466,478 observations deleted)
+nc string variables:
+dirname                 subject_sex             search_basis
+filename                officer_id_hash         reason_for_frisk
+path                    department_name         reason_for_search
+backup_dirname          type                    reason_for_stop
+backup_filename         arrest_made             raw_ethnicity
+backup_path             citation_issued         raw_race
+state                   warning_issued          raw_action_description
+locale                  outcome                 officer_race
+state_locale            contraband_found        officer_age
+date                    contraband_drugs        officer_sex
+time                    contraband_weapons      contraband_alcohol
+location                frisk_performed         contraband_other
+county_name             search_conducted        department_id
+subject_age             search_person
+subject_race            search_vehicle
+
+nc non-string variables:
+fsize  dupe
+file 2000_data/200_raw/20_SOPP_DTAs/nc_durham.dta saved
+
+(20,305,639 observations deleted)
+nc string variables:
+dirname                 subject_sex             search_basis
+filename                officer_id_hash         reason_for_frisk
+path                    department_name         reason_for_search
+backup_dirname          type                    reason_for_stop
+backup_filename         arrest_made             raw_ethnicity
+backup_path             citation_issued         raw_race
+state                   warning_issued          raw_action_description
+locale                  outcome                 officer_race
+state_locale            contraband_found        officer_age
+date                    contraband_drugs        officer_sex
+time                    contraband_weapons      contraband_alcohol
+location                frisk_performed         contraband_other
+county_name             search_conducted        department_id
+subject_age             search_person
+subject_race            search_vehicle
+
+nc non-string variables:
+fsize  dupe
+file 2000_data/200_raw/20_SOPP_DTAs/nc_fayetteville.dta saved
+
+(20,190,438 observations deleted)
+nc string variables:
+dirname                 subject_sex             search_basis
+filename                officer_id_hash         reason_for_frisk
+path                    department_name         reason_for_search
+backup_dirname          type                    reason_for_stop
+backup_filename         arrest_made             raw_ethnicity
+backup_path             citation_issued         raw_race
+state                   warning_issued          raw_action_description
+locale                  outcome                 officer_race
+state_locale            contraband_found        officer_age
+date                    contraband_drugs        officer_sex
+time                    contraband_weapons      contraband_alcohol
+location                frisk_performed         contraband_other
+county_name             search_conducted        department_id
+subject_age             search_person
+subject_race            search_vehicle
+
+nc non-string variables:
+fsize  dupe
+file 2000_data/200_raw/20_SOPP_DTAs/nc_greensboro.dta saved
+
+(19,932,154 observations deleted)
+nc string variables:
+dirname                 subject_sex             search_basis
+filename                officer_id_hash         reason_for_frisk
+path                    department_name         reason_for_search
+backup_dirname          type                    reason_for_stop
+backup_filename         arrest_made             raw_ethnicity
+backup_path             citation_issued         raw_race
+state                   warning_issued          raw_action_description
+locale                  outcome                 officer_race
+state_locale            contraband_found        officer_age
+date                    contraband_drugs        officer_sex
+time                    contraband_weapons      contraband_alcohol
+location                frisk_performed         contraband_other
+county_name             search_conducted        department_id
+subject_age             search_person
+subject_race            search_vehicle
+
+nc non-string variables:
+fsize  dupe
+file 2000_data/200_raw/20_SOPP_DTAs/nc_raleigh.dta saved
+
+(3,853,867 observations deleted)
+nc string variables:
+dirname                 subject_sex             search_basis
+filename                officer_id_hash         reason_for_frisk
+path                    department_name         reason_for_search
+backup_dirname          type                    reason_for_stop
+backup_filename         arrest_made             raw_ethnicity
+backup_path             citation_issued         raw_race
+state                   warning_issued          raw_action_description
+locale                  outcome                 officer_race
+state_locale            contraband_found        officer_age
+date                    contraband_drugs        officer_sex
+time                    contraband_weapons      contraband_alcohol
+location                frisk_performed         contraband_other
+county_name             search_conducted        department_id
+subject_age             search_person
+subject_race            search_vehicle
+
+nc non-string variables:
+fsize  dupe
+file 2000_data/200_raw/20_SOPP_DTAs/nc_statewide.dta saved
+
+
+. 
+. 
+. 
+. log close
+      name:  <unnamed>
+       log:  /bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/1000_note
+> s/200_smcl_logs/01_prepping/01b_deduping.smcl
+  log type:  smcl
+ closed on:  20 Nov 2024, 18:01:38
+-------------------------------------------------------------------------------
+
+. 
+. 

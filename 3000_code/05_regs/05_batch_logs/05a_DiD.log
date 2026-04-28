@@ -1,0 +1,592 @@
+
+  ___  ____  ____  ____  ____ (R)
+ /__    /   ____/   /   ____/
+___/   /   /___/   /   /___/   16.1   Copyright 1985-2019 StataCorp LLC
+  Statistics/Data analysis            StataCorp
+                                      4905 Lakeway Drive
+     MP - Parallel Edition            College Station, Texas 77845 USA
+                                      800-STATA-PC        https://www.stata.com
+                                      979-696-4600        stata@stata.com
+                                      979-696-4601 (fax)
+
+Stata license: 4-user 32-core network perpetual
+Serial number: 501606358866
+  Licensed to: Michael Bates
+               University of California, Riverside
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000; see help set_maxvar.
+      5. New update available; type -update all-
+
+. * 05a_DiD.do
+
+. 
+. 
+. 
+. clear all
+
+. 
+. 
+. 
+. * (1) HPCC cluster, and (2) personal machine: 
+
+. 
+. cd "/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper"
+/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper
+
+. 
+. *cd "~\coding\02_TRAFFIC_BIAS_paper\"
+
+. 
+. 
+. 
+. *****************************************************************************
+> ***
+
+. 
+. 
+. 
+. ssc install lincomest
+checking lincomest consistency and verifying not already installed...
+all files already exist and are up to date.
+
+. 
+. 
+. 
+. capture log close
+
+. 
+. log using "3000_code/05_regs/05_SMCL_logs/05a_DiD", smcl replace
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/3000_code
+> /05_regs/05_SMCL_logs/05a_DiD.smcl
+  log type:  smcl
+ opened on:  11 Sep 2025, 11:44:21
+
+. 
+. 
+. 
+. about 
+
+Stata/MP 16.1 for Unix (Linux 64-bit x86-64)
+Revision 11 Oct 2022
+Copyright 1985-2019 StataCorp LLC
+
+Total usable memory: 1007.68 GB
+
+Stata license: 4-user 32-core network perpetual
+Serial number: 501606358866
+  Licensed to: Michael Bates
+               University of California, Riverside
+
+. 
+. 
+. 
+. set maxvar 32767
+
+. 
+. 
+. 
+. set varabbrev off
+
+. 
+. 
+. 
+. * bin-size: 
+
+. 
+. local k=14
+
+. 
+. 
+. 
+. * event-window, +/- b: 
+
+. 
+. local b=14
+
+. 
+. 
+. 
+. * only care about wbal for now: 
+
+. 
+. local s=2
+
+. 
+. 
+. 
+. *forvalues s = 1(1)2 {
+
+. 
+. if (`s' == 1) local suffix = "_full"
+
+. 
+. if (`s' == 2) local suffix = "_wbal"
+
+. 
+. 
+. 
+. if (`s' == 1) local load_if = "(unreliable_bstops!=1)"
+
+. 
+. if (`s' == 2) local load_if = "(unreliable_bstops!=1) & (weak_bal>=`b')"
+
+. 
+. 
+. 
+. use "2000_data/500_working/`k'_days/reg_prep.dta" if `load_if', replace
+
+. 
+. * use "~/coding/02_TRAFFIC_BIAS_paper/2000_data/500_working/14_days/reg_prep.
+> dta" if (unreliable_bstops!=1) & (weak_bal>=14), replace
+
+. 
+. 
+. 
+. * defining lower and upper event-window bookends: 
+
+. 
+. replace b0_`k' = 1 if ((b0_`k'<27-`b') & (b0_`k'>=1))
+(3,996 real changes made)
+
+. 
+. replace b0_`k' = 52 if ((b0_`k'>26+`b') & (b0_`k'<=52))
+(4,050 real changes made)
+
+. 
+. 
+. 
+. save "use_in_loop.dta", replace
+file use_in_loop.dta saved
+
+. 
+. 
+. 
+. foreach o in bstop_share bsearch_share bhit_share bsearch_rate bhit_rate bhit
+> _bstop_ratio n_stops n_bstops n_searches n_bsearches n_hits n_bhits {
+  2. 
+. display ""
+  3. 
+. 
+. 
+. use "use_in_loop.dta", replace
+  4. 
+. 
+. 
+. local xit = "post0 dept_year memorial labor fourth tg xmas nye NOLA_Bourbon P
+> hilly_DNC WA_mar_2017"
+  5. 
+. local i_absorb = "i.dept_year i.year_mo i.memorial i.labor i.fourth i.tg i.xm
+> as i.nye i.NOLA_Bourbon i.Philly_DNC i.WA_mar_2017"
+  6. 
+. local absorb = "dept_year year_mo memorial labor fourth tg xmas nye NOLA_Bour
+> bon Philly_DNC WA_mar_2017"
+  7. 
+. 
+. 
+. * Setting AWEIGHTS: 
+. 
+. if ("`o'" == "bstop_share") local aweight = "[aweight=n_stops_weight]"
+  8. 
+. if ("`o'" == "bsearch_share") local aweight = "[aweight=n_searches_weight]"
+  9. 
+. if ("`o'" == "bhit_share") local aweight = "[aweight=n_hits_weight]"
+ 10. 
+. if ("`o'" == "bsearch_rate") local aweight = "[aweight=n_bstops_weight]"
+ 11. 
+. if ("`o'" == "bhit_rate") local aweight = "[aweight=n_bsearches_weight]"
+ 12. 
+. if ("`o'" == "bhit_bstop_ratio") local aweight = "[aweight=n_bstops_weight]"
+ 13. 
+. if ("`o'" == "n_stops") local aweight = ""
+ 14. 
+. if ("`o'" == "n_bstops") local aweight = ""
+ 15. 
+. if ("`o'" == "n_searches") local aweight = ""
+ 16. 
+. if ("`o'" == "n_bsearches") local aweight = ""
+ 17. 
+. if ("`o'" == "n_hits") local aweight = ""
+ 18. 
+. if ("`o'" == "n_bhits") local aweight = ""
+ 19. 
+. 
+. 
+. * Setting WEIGHTS: 
+. 
+. if ("`o'" == "bstop_share") local weight = "[weight=n_stops_weight]"
+ 20. 
+. if ("`o'" == "bsearch_share") local weight = "[weight=n_searches_weight]"
+ 21. 
+. if ("`o'" == "bhit_share") local weight = "[weight=n_hits_weight]"
+ 22. 
+. if ("`o'" == "bsearch_rate") local weight = "[weight=n_bstops_weight]"
+ 23. 
+. if ("`o'" == "bhit_rate") local weight = "[weight=n_bsearches_weight]"
+ 24. 
+. if ("`o'" == "bhit_bstop_ratio") local weight = "[weight=n_bstops_weight]"
+ 25. 
+. if ("`o'" == "n_stops") local weight = ""
+ 26. 
+. if ("`o'" == "n_bstops") local weight = ""
+ 27. 
+. if ("`o'" == "n_searches") local weight = ""
+ 28. 
+. if ("`o'" == "n_bsearches") local weight = ""
+ 29. 
+. if ("`o'" == "n_hits") local weight = ""
+ 30. 
+. if ("`o'" == "n_bhits") local weight = ""
+ 31. 
+. 
+. 
+. * Setting IFS: 
+. 
+. if ("`o'" == "bstop_share") local ifs = ""
+ 32. 
+. if ("`o'" == "bsearch_share") local ifs = "& (unreliable_searches!=1)"
+ 33. 
+. if ("`o'" == "bhit_share") local ifs = "& (unreliable_searches!=1) & (unrelia
+> ble_hits!=1)"
+ 34. 
+. if ("`o'" == "bsearch_rate") local ifs = "& (unreliable_searches!=1)"
+ 35. 
+. if ("`o'" == "bhit_rate") local ifs = "& (unreliable_searches!=1) & (unreliab
+> le_hits!=1)"
+ 36. 
+. if ("`o'" == "bhit_bstop_ratio") local ifs = "& (unreliable_searches!=1) & (u
+> nreliable_hits!=1)"
+ 37. 
+. if ("`o'" == "n_stops") local ifs = ""
+ 38. 
+. if ("`o'" == "n_bstops") local ifs = ""
+ 39. 
+. if ("`o'" == "n_searches") local ifs = "& (unreliable_searches!=1)"
+ 40. 
+. if ("`o'" == "n_bsearches") local ifs = "& (unreliable_searches!=1)"
+ 41. 
+. if ("`o'" == "n_hits") local ifs = "& (unreliable_searches!=1) & (unreliable_
+> hits!=1)"
+ 42. 
+. if ("`o'" == "n_bhits") local ifs = "& (unreliable_searches!=1) & (unreliable
+> _hits!=1)"
+ 43. 
+. 
+. 
+. * Setting OUTCOME DESCRIPTIONS: 
+. 
+. if ("`o'" == "bstop_share") local o_desc = "Black Share of Stops"
+ 44. 
+. if ("`o'" == "bsearch_share") local o_desc = "Black Share of Searches"
+ 45. 
+. if ("`o'" == "bhit_share") local o_desc = "Black Share of Hits"
+ 46. 
+. if ("`o'" == "bsearch_rate") local o_desc = "Black Search Rate"
+ 47. 
+. if ("`o'" == "bhit_rate") local o_desc = "Black Hit Rate"
+ 48. 
+. if ("`o'" == "bhit_bstop_ratio") local o_desc = "Black Hits-to-Stops Ratio"
+ 49. 
+. if ("`o'" == "n_stops") local o_desc = "Overall Stop Volume"
+ 50. 
+. if ("`o'" == "n_bstops") local o_desc = "Black Stop Volume"
+ 51. 
+. if ("`o'" == "n_searches") local o_desc = "Overall Search Volume"
+ 52. 
+. if ("`o'" == "n_bsearches") local o_desc = "Black Search Volume"
+ 53. 
+. if ("`o'" == "n_hits") local o_desc = "Overall Hit Volume"
+ 54. 
+. if ("`o'" == "n_bhits") local o_desc = "Black Hit Volume"
+ 55. 
+. 
+. 
+. display ""
+ 56. 
+. display "********************************************************************
+> *"
+ 57. 
+. display "Eq1: DiD, outcome=""`o'"": `o_desc'"
+ 58. 
+. display "********************************************************************
+> *"
+ 59. 
+. 
+. 
+. xtset num_dept date 
+ 60. 
+. 
+. 
+. display ""
+ 61. 
+. display "0. Main Specification: ""`o'""" 
+ 62. 
+. reghdfe `o' 1b0.post0 `aweight' if (date>1) `ifs', a(`i_absorb') cl(num_dept)
+>  base resid 
+ 63. 
+. est save "4000_outputs/`k'_days/eq1/`o'/DiD_main`suffix'", replace
+ 64. 
+. gen emain_`o' = (e(sample)==1)
+ 65. 
+. 
+. 
+. *display ""
+. 
+. *display "1. Adding i.dow: ""`o'"""
+. 
+. *local i_absorb2 = "`i_absorb' i.dow"
+. 
+. *reghdfe `o' 1b0.post0 `aweight' if (date>1) `ifs', a(`i_absorb2') cl(num_dep
+> t) base resit
+. 
+. *est save "4000_outputs/`k'_days/eq1/`o'/DiD_A01`suffix'", replace
+. 
+. *gen eA01_`o' = (e(sample)==1)
+. 
+. 
+. 
+. *display ""
+. 
+. *display "2. Full, Unbalanced: ""`o'"""
+. 
+. 
+. 
+. *display ""
+. 
+. *display "A03, Single Event Depts: ""`o'""" 
+. 
+. *reghdfe `o' 1b0.post0 `aweight' if (multi_dept==0) `ifs', a(`i_absorb') cl(n
+> um_dept) base resid 
+. 
+. *est save "4000_outputs/`k'_days/eq1/`o'/DiD_A03`suffix'", replace
+. 
+. *gen eA03_`o' = (e(sample)==1)
+. 
+. 
+. 
+. *display ""
+. 
+. *display "A04, Statewide Depts: ""`o'""" 
+. 
+. *reghdfe `o' 1b0.post0 `aweight' if (statewide==1) `ifs', a(`i_absorb') cl(nu
+> m_dept) base resid 
+. 
+. *est save "4000_outputs/`k'_days/eq1/`o'/DiD_A04`suffix'", replace
+. 
+. *gen eA04_`o' = (e(sample)==1)
+. 
+. 
+. 
+. *display ""
+. 
+. *display "A05, Non-Statewide Depts: ""`o'""" 
+. 
+. *reghdfe `o' 1b0.post0 `aweight' if (statewide==0) `ifs', a(`i_absorb') cl(nu
+> m_dept) base resid 
+. 
+. *est save "4000_outputs/`k'_days/eq1/`o'/DiD_A05`suffix'", replace
+. 
+. *gen eA05_`o' = (e(sample)==1)
+. 
+. 
+. 
+. * local macro placeholders: 
+. 
+. local x_tbar = ""
+ 66. 
+. local x_ibar = ""
+ 67. 
+. local x_t_diff = ""
+ 68. 
+. local x_i_diff = ""
+ 69. 
+. 
+. 
+. * run MAIN regression *
+. 
+. keep if e(sample)==1
+ 70. 
+. 
+. 
+. * generate time- and unit-weights: 
+. 
+. if ("`o'" == "n_stops") | ("`o'" == "n_stops") | ("`o'" == "n_stops") | ("`o'
+> " == "n_stops") | ("`o'" == "n_stops") | ("`o'" == "n_stops") {
+ 71. 
+. * denominator for either weight: 
+. 
+. egen weight_denom = sum(`o')
+ 72. 
+. 
+. 
+. * numerator + tweight: 
+. 
+. bysort year_mo: egen tweight_num = sum(`o')
+ 73. 
+. gen tweight = tweight_num / weight_denom
+ 74. 
+. 
+. 
+. * numerator + iweight: 
+. 
+. bysort num_dept: egen iweight_num = sum(`o')
+ 75. 
+. gen iweight = iweight_num / weight_denom
+ 76. 
+. }
+ 77. 
+. 
+. 
+. else {
+ 78. 
+. gen tweight = 1
+ 79. 
+. gen iweight = 1
+ 80. 
+. }
+ 81. 
+. 
+. 
+. * generating overall averages: 
+. 
+. foreach x of local xit {
+ 82. 
+. egen `x'_bar = mean(`x')
+ 83. 
+. }
+ 84. 
+. 
+. 
+. * generating time-averages + (time-averages - overall-averages): 
+. 
+. foreach x of local xit {
+ 85. 
+. bysort year_mo: egen temp_`x'_tbar = mean(`x')
+ 86. 
+. gen `x'_tbar = temp_`x'_tbar * t_weight
+ 87. 
+. gen `x'_t_diff = `x'_tbar - `x'_bar
+ 88. 
+. local x_tbar = "`x_tbar'`x'_tbar "
+ 89. 
+. local x_t_diff = "`x_t_diff'`x'_t_diff "
+ 90. 
+. }
+ 91. 
+. 
+. 
+. * generating unit-averages + (unit-averages - overall-averages): 
+. 
+. foreach x of local xit {
+ 92. 
+. bysort num_dept: egen temp_`x'_ibar = mean(`x')
+ 93. 
+. gen `x'_ibar = temp_`x'_ibar * i_weight
+ 94. 
+. gen `x'_i_diff = `x'_ibar - `x'_bar
+ 95. 
+. local x_ibar = "`x_ibar'`x'_ibar "
+ 96. 
+. local x_i_diff = "`x_i_diff'`x'_i_diff "
+ 97. 
+. }
+ 98. 
+. 
+. 
+. drop (tweight iweight *_bar)
+ 99. 
+. 
+. 
+. xtset num_dept date
+100. 
+. * Y on 1 xit xt_bar xi_bar post0#()
+. 
+. xtreg `o' `xit' `x_tbar' `x_ibar' post0#(`x_t_diff') post0#(`x_i_diff') `weig
+> ht', fe vce(cl num_dept)
+101. 
+. }
+
+
+*********************************************************************
+Eq1: DiD, outcome=bstop_share: Black Share of Stops
+*********************************************************************
+       panel variable:  num_dept (unbalanced)
+        time variable:  date, 01jan2011 to 24mar2019, but with gaps
+                delta:  1 day
+
+0. Main Specification: bstop_share
+(dropped 5 singleton observations)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =  1,645,724
+Absorbing 11 HDFE groups                          F(   1,   1848) =       3.90
+Statistics robust to heteroskedasticity           Prob > F        =     0.0485
+                                                  R-squared       =     0.7975
+                                                  Adj R-squared   =     0.7965
+                                                  Within R-sq.    =     0.0000
+Number of clusters (num_dept) =      1,849        Root MSE        =     0.0731
+
+                           (Std. Err. adjusted for 1,849 clusters in num_dept)
+------------------------------------------------------------------------------
+             |               Robust
+ bstop_share |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       post0 |
+          0  |          0  (base)
+          1  |  -.0019491   .0009871    -1.97   0.048    -.0038852   -.0000131
+             |
+       _cons |   .1726261   .0001728   999.19   0.000     .1722873     .172965
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+------------------------------------------------------+
+  Absorbed FE | Categories  - Redundant  = Num. Coefs |
+--------------+---------------------------------------|
+    dept_year |      8256        8256           0    *|
+      year_mo |        99           1          98     |
+     memorial |         2           1           1     |
+        labor |         2           1           1    ?|
+       fourth |         2           1           1    ?|
+           tg |         2           1           1    ?|
+         xmas |         2           1           1    ?|
+          nye |         2           1           1    ?|
+ NOLA_Bourbon |         2           1           1    ?|
+   Philly_DNC |         1           1           0    ?|
+  WA_mar_2017 |         2           1           1    ?|
+------------------------------------------------------+
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+file 4000_outputs/14_days/eq1/bstop_share/DiD_main_wbal.ster saved
+(5 observations deleted)
+t_weight not found
+r(111);
+
+. 
+. keep if (post0==0 & treat==1)
+(1,635,915 observations deleted)
+
+. 
+. save "2000_data/500_working/`k'_days/eq1_esamples`suffix'.dta", replace
+file 2000_data/500_working/14_days/eq1_esamples_wbal.dta saved
+
+. 
+. *}
+
+. 
+. 
+. 
+. log close
+      name:  <unnamed>
+       log:  /bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/3000_code
+> /05_regs/05_SMCL_logs/05a_DiD.smcl
+  log type:  smcl
+ closed on:  11 Sep 2025, 11:45:38
+-------------------------------------------------------------------------------
+
+. 
+. 

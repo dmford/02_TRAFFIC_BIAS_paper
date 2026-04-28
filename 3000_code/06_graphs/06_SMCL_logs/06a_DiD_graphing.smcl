@@ -1,0 +1,459 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}C:\Users\david\coding\02_TRAFFIC_BIAS_paper\3000_code/06_graphs/06_SMCL_logs/06a_DiD_graphing.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}20 Oct 2025, 16:03:18
+{txt}
+{com}. 
+. * Variant Key: 
+. * A00   : Full, Unbalanced 
+. * main  : Department-Event-Year FEs 
+. * A01   : Department-Event FEs 
+. * A02   : Day-of-Week FEs 
+. * A03   : Log Outcomes 
+. * A04   : Strongly Balanced
+. * A05   : Single-Event Departments 
+. * A06   : Multi-Event Departments 
+. * A07   : Only Statewide 
+. * A08   : Without Statewide 
+. * TWM   : Heterogeneity Check 
+. 
+. about 
+
+{txt}StataNow/SE 18.5 for Windows (64-bit x86-64)
+Revision 26 Feb 2025
+Copyright 1985-2023 StataCorp LLC
+
+Total physical memory:     {res}  32.00 GB
+{txt}Available physical memory: {res}  13.72 GB
+
+{txt}Stata license: {res}Unlimited-user network, expiring 31 Aug 2026
+{txt}Serial number: {res}401909334209
+  {txt}Licensed to: {res}DMF
+               UCR
+{txt}
+{com}. 
+. set maxvar 32767
+
+{txt}
+{com}. 
+. set varabbrev off
+{txt}
+{com}. 
+. * bin-size: 
+. local k=14
+{txt}
+{com}. 
+. 
+. * suffix: 
+. local suffix = "_full"
+{txt}
+{com}. 
+. 
+. 
+. 
+. foreach variant in A00 main A01 A02 A03 A04 A05 A06 A07 A08 TWM {c -(}
+{txt}  2{com}.         display ""
+{txt}  3{com}. 
+.         * generating subtitles: 
+.         if ("`variant'" ==  "A00") local subtitle =  "A00, Full Sample, Unbalanced"
+{txt}  4{com}.         if ("`variant'" == "main") local subtitle = "Main, Department-Event-Year FEs, Balanced"
+{txt}  5{com}.         if ("`variant'" ==  "A01") local subtitle =  "A01, Department-Event FEs, Balanced"
+{txt}  6{com}.         if ("`variant'" ==  "A02") local subtitle =  "A02, Day-of-Week FEs, Balanced"
+{txt}  7{com}.         if ("`variant'" ==  "A03") local subtitle =  "A03, Log Outcomes, Balanced"
+{txt}  8{com}.         if ("`variant'" ==  "A04") local subtitle =  "A04, Strongly Balanced"
+{txt}  9{com}.         if ("`variant'" ==  "A05") local subtitle =  "A05, Single-Event Departments, Balanced"
+{txt} 10{com}.         if ("`variant'" ==  "A06") local subtitle =  "A06, Multi-Event Deaprtments, Balanced"
+{txt} 11{com}.         if ("`variant'" ==  "A07") local subtitle =  "A07, Only Statewide Departments, Balanced"
+{txt} 12{com}.         if ("`variant'" ==  "A08") local subtitle =  "A08, Without Statewide Departments, Balanced"
+{txt} 13{com}.         if ("`variant'" ==  "TWM") local subtitle =  "TWM, Heterogeneity Check, Balanced"
+{txt} 14{com}.         
+.         *set graphics off
+.         
+.         **************************************************
+.         *** DiD_1 Graphs: 
+.         **************************************************
+.         if ("`variant'" != "A03") {c -(}
+{txt} 15{com}.                 foreach o in bstop_share bsearch_share bhit_share bsearch_rate bhit_rate bhit_bstop_ratio {c -(}
+{txt} 16{com}.                         display "`o'"
+{txt} 17{com}.                         estimates use "4000_outputs/`k'_days/eq1/`o'/DiD_`variant'`suffix'.ster"
+{txt} 18{com}.                         estimate
+{txt} 19{com}.                         estimates store `o'
+{txt} 20{com}.                 {c )-}
+{txt} 21{com}.                 
+.                 * plotting DiD_1 estimates: 
+.                 coefplot bstop_share bsearch_share bhit_share bsearch_rate bhit_rate bhit_bstop_ratio, ///
+>                         keep(post0) transform(*=@/@se) xline(0) ///
+>                         name("DiD_r_`variant'`suffix'") title("Eq1: All Events") ytitle("") xtitle("T-Statistic") ylabel(, nolabels) ///
+>                         legend(cols(3) order(2 "Share of Stops" 4 "Share of Searches" 6 "Share of Hits" 8 "Search Rate" 10 "Hit Rate" 12 "Hits to Stops Ratio")) ///
+>                         saving("5000_figures/`k'_days/DiD_r_`variant'`suffix'.gph", replace) 
+{txt} 22{com}.         {c )-}
+{txt} 23{com}. STOP
+{txt} 24{com}.         **************************************************
+.         *** DiD_2 Graphs: 
+.         **************************************************
+.         foreach o in n_stops n_bstops n_searches n_bsearches n_hits n_bhits {c -(}
+{txt} 25{com}.                 display "`o'"
+{txt} 26{com}.                 estimates use "4000_outputs/`k'_days/eq1/`o'/DiD_`variant'`suffix'.ster"
+{txt} 27{com}.                 estimate
+{txt} 28{com}.                 estimates store `o'
+{txt} 29{com}.         {c )-}
+{txt} 30{com}. 
+.         * plotting DiD_2 estimates: 
+.         coefplot n_stops n_bstops n_searches n_bsearches n_hits n_bhits, ///
+>                 keep(post0) transform(*=@/@se) xline(0) ///
+>                 name("DiD_v_`variant'`suffix'") title("Eq1: All Events") ytitle("") xtitle("T-Statistic") ylabel(, nolabels) ///
+>                 legend(cols(3) order(2 "Stop Volume" 4 "Black Stop Volume" 6 "Search Volume " 8 "Black Search Volume" 10 "Hit Volume" 12 "Black Hit Volume")) ///
+>                 saving("5000_figures/`k'_days/DiD_v_`variant'`suffix'.gph", replace) 
+{txt} 31{com}. 
+.         **************************************************
+.         *** DiDiD_1 Graphs: 
+.         **************************************************
+.         if ("`variant'" != "A03") {c -(}
+{txt} 32{com}.                 foreach o in bstop_share bsearch_share bhit_share bsearch_rate bhit_rate bhit_bstop_ratio {c -(}
+{txt} 33{com}.                         estimates use "4000_outputs/`k'_days/eq3/`o'/DiDiD_`variant'`suffix'.ster"
+{txt} 34{com}.                         estimate
+{txt} 35{com}.                         estimates store `o'1
+{txt} 36{com}.                         
+.                         estimates use "4000_outputs/`k'_days/eq3/`o'/DiDiD_`variant'`suffix'.ster"
+{txt} 37{com}.                         estimate
+{txt} 38{com}.                         estimates store `o'2
+{txt} 39{com}.                 {c )-}
+{txt} 40{com}. 
+.                 * plotting DiDiD_1_lo estimates: 
+.                 coefplot bstop_share1 bsearch_share1 bhit_share1 bsearch_rate1 bhit_rate1 bhit_bstop_ratio1, ///
+>                         keep(post1) transform(*=@/@se) xline(0) ///
+>                         name("DiDiD_`variant'_r_lo`suffix'") title("Eq3: Low Scrutiny") ytitle("") xtitle("T-Statistic") ylabel(, nolabels) ///
+>                         legend(off) ///
+>                         saving("5000_figures/`k'_days/DiDiD_`variant'_r_lo`suffix'.gph", replace) 
+{txt} 41{com}.                 
+.                 * plotting DiDiD_1_hi estimates: 
+.                 coefplot bstop_share2 bsearch_share2 bhit_share2 bsearch_rate2 bhit_rate2 bhit_bstop_ratio2, ///
+>                         keep(post2) transform(*=@/@se) xline(0) ///
+>                         name("DiDiD_`variant'_r_hi`suffix'") title("Eq3: High Scrutiny") ytitle("") xtitle("T-Statistic") ylabel(, nolabels) ///
+>                         legend(off) ///
+>                         saving("5000_figures/`k'_days/DiDiD_`variant'_r_hi`suffix'.gph", replace) 
+{txt} 42{com}.         {c )-}
+{txt} 43{com}. 
+.         **************************************************
+.         *** DiDiD_2 Graphs: 
+.         **************************************************
+.         foreach o in n_stops n_bstops n_searches n_bsearches n_hits n_bhits {c -(}
+{txt} 44{com}.                 estimates use "4000_outputs/`k'_days/eq3/`o'/DiDiD_`variant'`suffix'.ster"
+{txt} 45{com}.                 estimate
+{txt} 46{com}.                 estimates store `o'1
+{txt} 47{com}. 
+.                 estimates use "4000_outputs/`k'_days/eq3/`o'/DiDiD_`variant'`suffix'.ster"
+{txt} 48{com}.                 estimate
+{txt} 49{com}.                 estimates store `o'2
+{txt} 50{com}.         {c )-}
+{txt} 51{com}. 
+.         * plotting DiDiD_2_lo estimates: 
+.         coefplot n_stops1 n_bstops1 n_searches1 n_bsearches1 n_hits1 n_bhits1, ///
+>                 keep(post1) transform(*=@/@se) xline(0) ///
+>                 name("DiDiD_`variant'_v_lo`suffix'") title("Eq3: Low Scrutiny") ytitle("") xtitle("T-Statistic") ylabel(, nolabels) ///
+>                 legend(off) ///
+>                 saving("5000_figures/`k'_days/DiDiD_`variant'_v_lo`suffix'.gph", replace) 
+{txt} 52{com}. 
+.         * plotting DiDiD_2_hi estimates: 
+.         coefplot n_stops2 n_bstops2 n_searches2 n_bsearches2 n_hits2 n_bhits2, ///
+>                 keep(post2) transform(*=@/@se) xline(0) ///
+>                 name("DiDiD_`variant'_v_hi`suffix'") title("Eq3: High Scrutiny") ytitle("") xtitle("T-Statistic") ylabel(, nolabels) ///
+>                 legend(off) ///
+>                 saving("5000_figures/`k'_days/DiDiD_`variant'_v_hi`suffix'.gph", replace) 
+{txt} 53{com}. 
+. 
+.                 
+.         **************************************************
+.         *** Combining Graphs: 
+.         **************************************************
+.         set graphics on
+{txt} 54{com}. 
+.         if ("`variant'" != "A03") {c -(}
+{txt} 55{com}.                 grc1leg "5000_figures/`k'_days/DiD_r_`variant'`suffix'" "5000_figures/`k'_days/DiDiD_`variant'_r_lo`suffix'" "5000_figures/`k'_days/DiDiD_`variant'_r_hi`suffix'", col(3) name("grc_DiD_r_`variant'`suffix'", replace) title("Diff-in-Diff Rate Estimates") subtitle("`subtitle'") 
+{txt} 56{com}. *               graph export "5000_figures/`k'_days/DiD_graphs/DiD_r_`variant'`suffix'.pdf", replace
+.                 graph export "6000_LaTeX/figures/DiD_r_`variant'`suffix'.eps", replace
+{txt} 57{com}.                 graph export "6000_LaTeX/figures/DiD_r_`variant'`suffix'.pdf", replace
+{txt} 58{com}.         {c )-}
+{txt} 59{com}. 
+.         grc1leg "5000_figures/`k'_days/DiD_v_`variant'`suffix'" "5000_figures/`k'_days/DiDiD_`variant'_v_lo`suffix'" "5000_figures/`k'_days/DiDiD_`variant'_v_hi`suffix'", col(3) name("grc_DiD_v_`variant'`suffix'", replace) title("Diff-in-Diff Volume Estimates") subtitle("`subtitle'") 
+{txt} 60{com}. *       graph export "5000_figures/`k'_days/DiD_graphs/DiD_v_`variant'`suffix'.pdf", replace
+.         graph export "6000_LaTeX/figures/DiD_v_`variant'`suffix'.eps", replace
+{txt} 61{com}.         graph export "6000_LaTeX/figures/DiD_v_`variant'`suffix'.pdf", replace
+{txt} 62{com}. {c )-}
+
+bstop_share
+{res}
+{txt}{hline}
+{p 0 8}active results{p_end}
+{hline}
+
+HDFE Linear regression{col 51}Number of obs{col 67}= {res} 1,662,125
+{txt}Absorbing 11 HDFE groups{col 51}F({res}   1{txt},{res}   1867{txt}){col 67}= {res}      7.31
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.0069
+{txt}{col 51}R-squared{col 67}= {res}    0.8246
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.8237
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0001
+{txt}{col 1}Number of clusters ({res}num_dept{txt}) {col 30}= {res}     1,868{txt}{col 51}Root MSE{col 67}= {res}    0.0711
+
+{txt}{ralign 78:(Std. err. adjusted for {res:1,868} clusters in {res:num_dept})}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1} bstop_share{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 7}post0 {c |}{col 14}{res}{space 2}-.0029053{col 26}{space 2} .0010743{col 37}{space 1}   -2.70{col 46}{space 3}0.007{col 54}{space 4}-.0050122{col 67}{space 3}-.0007983
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} .1836716{col 26}{space 2} .0002122{col 37}{space 1}  865.53{col 46}{space 3}0.000{col 54}{space 4} .1832554{col 67}{space 3} .1840878
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 14}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text}  Absorbed FE{col 15}{c |} Categories{col 28} - Redundant{col 40}  = Num. Coefs{col 55}{c |}
+{res}{col 1}{text}{hline 14}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}  pseudo_year{col 15}{c |}{space 1}     8356{col 28}{space 1}     8356{col 40}{result}{space 1}        0{col 54}{text}*{col 55}{c |}
+{res}{col 1}{text}      year_mo{col 15}{c |}{space 1}       99{col 28}{space 1}        1{col 40}{result}{space 1}       98{col 54}{text} {col 55}{c |}
+{res}{col 1}{text}     memorial{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text} {col 55}{c |}
+{res}{col 1}{text}        labor{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}       fourth{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}           tg{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}         xmas{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}          nye{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text} NOLA_Bourbon{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}   Philly_DNC{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}  WA_mar_2017{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}{hline 14}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+{res}bsearch_share
+
+{txt}{hline}
+{p 0 8}active results{p_end}
+{hline}
+
+HDFE Linear regression{col 51}Number of obs{col 67}= {res}   300,936
+{txt}Absorbing 11 HDFE groups{col 51}F({res}   1{txt},{res}   1238{txt}){col 67}= {res}      1.74
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.1868
+{txt}{col 51}R-squared{col 67}= {res}    0.6388
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.6328
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0000
+{txt}{col 1}Number of clusters ({res}num_dept{txt}) {col 30}= {res}     1,239{txt}{col 51}Root MSE{col 67}= {res}    0.1617
+
+{txt}{ralign 78:(Std. err. adjusted for {res:1,239} clusters in {res:num_dept})}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}bsearch_sh~e{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 7}post0 {c |}{col 14}{res}{space 2}-.0056197{col 26}{space 2} .0042542{col 37}{space 1}   -1.32{col 46}{space 3}0.187{col 54}{space 4} -.013966{col 67}{space 3} .0027265
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} .2782338{col 26}{space 2}   .00085{col 37}{space 1}  327.34{col 46}{space 3}0.000{col 54}{space 4} .2765662{col 67}{space 3} .2799013
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 14}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text}  Absorbed FE{col 15}{c |} Categories{col 28} - Redundant{col 40}  = Num. Coefs{col 55}{c |}
+{res}{col 1}{text}{hline 14}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}  pseudo_year{col 15}{c |}{space 1}     4775{col 28}{space 1}     4775{col 40}{result}{space 1}        0{col 54}{text}*{col 55}{c |}
+{res}{col 1}{text}      year_mo{col 15}{c |}{space 1}       99{col 28}{space 1}        1{col 40}{result}{space 1}       98{col 54}{text} {col 55}{c |}
+{res}{col 1}{text}     memorial{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text} {col 55}{c |}
+{res}{col 1}{text}        labor{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}       fourth{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}           tg{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}         xmas{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}          nye{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text} NOLA_Bourbon{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}   Philly_DNC{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}  WA_mar_2017{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}{hline 14}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+{res}bhit_share
+
+{txt}{hline}
+{p 0 8}active results{p_end}
+{hline}
+
+HDFE Linear regression{col 51}Number of obs{col 67}= {res}   116,133
+{txt}Absorbing 11 HDFE groups{col 51}F({res}   1{txt},{res}    950{txt}){col 67}= {res}      2.70
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.1007
+{txt}{col 51}R-squared{col 67}= {res}    0.4872
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.4694
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0001
+{txt}{col 1}Number of clusters ({res}num_dept{txt}) {col 30}= {res}       951{txt}{col 51}Root MSE{col 67}= {res}    0.2204
+
+{txt}{ralign 78:(Std. err. adjusted for {res:951} clusters in {res:num_dept})}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}  bhit_share{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 7}post0 {c |}{col 14}{res}{space 2} -.008668{col 26}{space 2}  .005276{col 37}{space 1}   -1.64{col 46}{space 3}0.101{col 54}{space 4}-.0190221{col 67}{space 3}  .001686
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} .2993956{col 26}{space 2} .0011431{col 37}{space 1}  261.92{col 46}{space 3}0.000{col 54}{space 4} .2971524{col 67}{space 3} .3016389
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 14}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text}  Absorbed FE{col 15}{c |} Categories{col 28} - Redundant{col 40}  = Num. Coefs{col 55}{c |}
+{res}{col 1}{text}{hline 14}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}  pseudo_year{col 15}{c |}{space 1}     3779{col 28}{space 1}     3779{col 40}{result}{space 1}        0{col 54}{text}*{col 55}{c |}
+{res}{col 1}{text}      year_mo{col 15}{c |}{space 1}       99{col 28}{space 1}        1{col 40}{result}{space 1}       98{col 54}{text} {col 55}{c |}
+{res}{col 1}{text}     memorial{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text} {col 55}{c |}
+{res}{col 1}{text}        labor{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}       fourth{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}           tg{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}         xmas{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}          nye{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text} NOLA_Bourbon{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}   Philly_DNC{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}  WA_mar_2017{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}{hline 14}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+{res}bsearch_rate
+
+{txt}{hline}
+{p 0 8}active results{p_end}
+{hline}
+
+HDFE Linear regression{col 51}Number of obs{col 67}= {res}   696,571
+{txt}Absorbing 11 HDFE groups{col 51}F({res}   1{txt},{res}   1318{txt}){col 67}= {res}      0.48
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.4879
+{txt}{col 51}R-squared{col 67}= {res}    0.3948
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.3898
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0000
+{txt}{col 1}Number of clusters ({res}num_dept{txt}) {col 30}= {res}     1,319{txt}{col 51}Root MSE{col 67}= {res}    0.0620
+
+{txt}{ralign 78:(Std. err. adjusted for {res:1,319} clusters in {res:num_dept})}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}bsearch_rate{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 7}post0 {c |}{col 14}{res}{space 2} .0008323{col 26}{space 2} .0011994{col 37}{space 1}    0.69{col 46}{space 3}0.488{col 54}{space 4}-.0015207{col 67}{space 3} .0031852
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} .0427775{col 26}{space 2} .0001942{col 37}{space 1}  220.28{col 46}{space 3}0.000{col 54}{space 4} .0423965{col 67}{space 3} .0431584
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 14}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text}  Absorbed FE{col 15}{c |} Categories{col 28} - Redundant{col 40}  = Num. Coefs{col 55}{c |}
+{res}{col 1}{text}{hline 14}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}  pseudo_year{col 15}{c |}{space 1}     5519{col 28}{space 1}     5519{col 40}{result}{space 1}        0{col 54}{text}*{col 55}{c |}
+{res}{col 1}{text}      year_mo{col 15}{c |}{space 1}       99{col 28}{space 1}        1{col 40}{result}{space 1}       98{col 54}{text} {col 55}{c |}
+{res}{col 1}{text}     memorial{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text} {col 55}{c |}
+{res}{col 1}{text}        labor{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}       fourth{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}           tg{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}         xmas{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}          nye{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text} NOLA_Bourbon{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}   Philly_DNC{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}  WA_mar_2017{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}{hline 14}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+{res}bhit_rate
+
+{txt}{hline}
+{p 0 8}active results{p_end}
+{hline}
+
+HDFE Linear regression{col 51}Number of obs{col 67}= {res}   126,991
+{txt}Absorbing 11 HDFE groups{col 51}F({res}   1{txt},{res}    830{txt}){col 67}= {res}      3.34
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.0678
+{txt}{col 51}R-squared{col 67}= {res}    0.3355
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.3175
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0000
+{txt}{col 1}Number of clusters ({res}num_dept{txt}) {col 30}= {res}       831{txt}{col 51}Root MSE{col 67}= {res}    0.2104
+
+{txt}{ralign 78:(Std. err. adjusted for {res:831} clusters in {res:num_dept})}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}   bhit_rate{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 7}post0 {c |}{col 14}{res}{space 2}-.0063381{col 26}{space 2} .0034664{col 37}{space 1}   -1.83{col 46}{space 3}0.068{col 54}{space 4} -.013142{col 67}{space 3} .0004658
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} .2363601{col 26}{space 2} .0006974{col 37}{space 1}  338.90{col 46}{space 3}0.000{col 54}{space 4} .2349911{col 67}{space 3}  .237729
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 14}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text}  Absorbed FE{col 15}{c |} Categories{col 28} - Redundant{col 40}  = Num. Coefs{col 55}{c |}
+{res}{col 1}{text}{hline 14}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}  pseudo_year{col 15}{c |}{space 1}     3251{col 28}{space 1}     3251{col 40}{result}{space 1}        0{col 54}{text}*{col 55}{c |}
+{res}{col 1}{text}      year_mo{col 15}{c |}{space 1}       99{col 28}{space 1}        1{col 40}{result}{space 1}       98{col 54}{text} {col 55}{c |}
+{res}{col 1}{text}     memorial{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text} {col 55}{c |}
+{res}{col 1}{text}        labor{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}       fourth{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}           tg{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}         xmas{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}          nye{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text} NOLA_Bourbon{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}   Philly_DNC{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}  WA_mar_2017{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}{hline 14}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+{res}bhit_bstop_ratio
+
+{txt}{hline}
+{p 0 8}active results{p_end}
+{hline}
+
+HDFE Linear regression{col 51}Number of obs{col 67}= {res}   662,487
+{txt}Absorbing 11 HDFE groups{col 51}F({res}   1{txt},{res}   1085{txt}){col 67}= {res}      0.07
+{txt}Statistics robust to heteroskedasticity{col 51}Prob > F{col 67}= {res}    0.7959
+{txt}{col 51}R-squared{col 67}= {res}    0.1111
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.1041
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0000
+{txt}{col 1}Number of clusters ({res}num_dept{txt}) {col 30}= {res}     1,086{txt}{col 51}Root MSE{col 67}= {res}    0.0334
+
+{txt}{ralign 78:(Std. err. adjusted for {res:1,086} clusters in {res:num_dept})}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}bhit_bstop~o{col 14}{c |} Coefficient{col 26}  std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 7}post0 {c |}{col 14}{res}{space 2}-.0000986{col 26}{space 2} .0003814{col 37}{space 1}   -0.26{col 46}{space 3}0.796{col 54}{space 4}-.0008469{col 67}{space 3} .0006496
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} .0106674{col 26}{space 2} .0000621{col 37}{space 1}  171.74{col 46}{space 3}0.000{col 54}{space 4} .0105455{col 67}{space 3} .0107892
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{res}{col 1}{text}{hline 14}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text}  Absorbed FE{col 15}{c |} Categories{col 28} - Redundant{col 40}  = Num. Coefs{col 55}{c |}
+{res}{col 1}{text}{hline 14}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}  pseudo_year{col 15}{c |}{space 1}     5061{col 28}{space 1}     5061{col 40}{result}{space 1}        0{col 54}{text}*{col 55}{c |}
+{res}{col 1}{text}      year_mo{col 15}{c |}{space 1}       99{col 28}{space 1}        1{col 40}{result}{space 1}       98{col 54}{text} {col 55}{c |}
+{res}{col 1}{text}     memorial{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text} {col 55}{c |}
+{res}{col 1}{text}        labor{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}       fourth{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}           tg{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}         xmas{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}          nye{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text} NOLA_Bourbon{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}   Philly_DNC{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}  WA_mar_2017{col 15}{c |}{space 1}        2{col 28}{space 1}        1{col 40}{result}{space 1}        1{col 54}{text}?{col 55}{c |}
+{res}{col 1}{text}{hline 14}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+? = number of redundant parameters may be higher
+* = FE nested within cluster; treated as redundant for DoF computation
+{res}{txt}file {bf:5000_figures/14_days/DiD_r_A00_full.gph} saved
+{err}command {bf}STOP{sf} is unrecognized
+{txt}{search r(199), local:r(199);}
+
+end of do-file
+
+{search r(199), local:r(199);}
+
+{com}. doedit "~\coding\02_TRAFFIC_BIAS_paper\3000_code\07_figures\07b_DiD_tables.do" 
+
+. do "C:\Users\david\coding\02_TRAFFIC_BIAS_paper\3000_code\07_figures\07b_DiD_tables.do"
+{txt}
+{com}. * 07b_DiD_tables.do
+. 
+. clear all
+{res}{txt}
+{com}. 
+. * (1) HPCC cluster, and (2) personal machine: 
+. *cd "/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper"
+. cd "~\coding\02_TRAFFIC_BIAS_paper\"
+{res}C:\Users\david\coding\02_TRAFFIC_BIAS_paper
+{txt}
+{com}. 
+. ********************************************************************************
+. 
+. capture log close
+{smcl}
+{com}{sf}{ul off}

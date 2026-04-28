@@ -1,0 +1,2932 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/1000_notes/200_smcl_logs/01_prepping/01a_converting.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}19 Nov 2024, 23:20:33
+
+{com}. 
+. 
+. 
+. * this ugly piece is used to reduce data-crunching: 
+
+. 
+. local my_sopp_vars = "state locale date subject_race subject_age subject_sex department_name county_name search_conducted officer_race officer_age officer_sex contraband_found search_basis search_vehicle search_person contraband_alcohol contraband_drugs contraband_weapons contraband_other type reason_for_search department_id type"
+
+. 
+. 
+. 
+. * pulling list of 88 SOPP CSVs, generating vector of filepaths to convert
+
+. 
+. filelist, dir("2000_data/100_original/20_SOPP_CSVs") pat("*.csv") maxdeep(1)
+{res}{txt}Number of files found = {res}88
+
+{com}. 
+. gen csv_path = dirname + "/" + filename
+
+. 
+. qui levelsof csv_path, local(toconvert)
+
+. 
+. 
+. 
+. local j = 1
+
+. 
+. local k = _N
+
+. 
+. foreach file of local toconvert {c -(}
+{txt}  2{com}. 
+. display ""
+{txt}  3{com}. 
+. display "#`j'/`k' | $S_TIME: `file'" 
+{txt}  4{com}. 
+. local ++j
+{txt}  5{com}. 
+. import delimited "`file'", varnames(1) bindquote(strict) maxquotedrows(80) clear 
+{txt}  6{com}. 
+. display "string variables:"
+{txt}  7{com}. 
+. ds, has(type string) var(32)
+{txt}  8{com}. 
+. display ""
+{txt}  9{com}. 
+. display "non-string variables:"
+{txt} 10{com}. 
+. ds, not(type string) var(32)
+{txt} 11{com}. 
+. display ""
+{txt} 12{com}. 
+. gen state=upper(substr("`file'", 37, 2))
+{txt} 13{com}. 
+. gen locale=upper(substr("`file'", 40, .))
+{txt} 14{com}. 
+. replace locale=subinstr(locale,".CSV","",.)
+{txt} 15{com}. 
+. gen state_locale = state + "_" + locale
+{txt} 16{com}. 
+. order state locale state_locale
+{txt} 17{com}. 
+. local save1 = subinstr("`file'", "100_original/20_SOPP_CSVs", "200_raw/20_SOPP_DTAs", .)
+{txt} 18{com}. 
+. local save2 = subinstr("`save1'", ".csv", "", .)
+{txt} 19{com}. 
+. drop raw_row_number
+{txt} 20{com}. 
+. foreach var of local my_sopp_vars {c -(}
+{txt} 21{com}. 
+. capture confirm variable `var'
+{txt} 22{com}. 
+. if !_rc {c -(}
+{txt} 23{com}. 
+. {c )-}
+{txt} 24{com}. 
+. else {c -(}
+{txt} 25{com}. 
+. gen `var' = ""
+{txt} 26{com}. 
+. {c )-}
+{txt} 27{com}. 
+. {c )-}
+{txt} 28{com}. 
+. save "`save2'", replace
+{txt} 29{com}. 
+. display ""
+{txt} 30{com}. 
+. {c )-}
+
+#1/88 | 23:20:33: 2000_data/100_original/20_SOPP_CSVs/ar_little_rock.csv
+{res}{text}(13 vars, 13,641 obs)
+string variables:
+{col 1}raw_row_number{col 21}lng{col 41}type{col 61}raw_defendant_race
+{col 1}date{col 21}subject_age{col 41}citation_issued
+{col 1}time{col 21}subject_race{col 41}outcome
+{col 1}lat{col 21}subject_sex{col 41}vehicle_type
+
+non-string variables:
+
+(13,641 real changes made)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ar_little_rock.dta saved
+
+
+#2/88 | 23:20:34: 2000_data/100_original/20_SOPP_CSVs/az_gilbert.csv
+{res}{text}(12 vars, 480,599 obs)
+string variables:
+{col 1}raw_row_number{col 18}location{col 35}officer_id_hash{col 52}vehicle_make
+{col 1}date{col 18}lat{col 35}type{col 52}vehicle_model
+{col 1}time{col 18}lng{col 35}vehicle_color{col 52}vehicle_year
+
+non-string variables:
+
+(480,599 real changes made)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/az_gilbert.dta saved
+
+
+#3/88 | 23:20:42: 2000_data/100_original/20_SOPP_CSVs/az_mesa.csv
+{res}{text}(19 vars, 96,621 obs)
+string variables:
+{col 1}date{col 22}subject_race{col 43}citation_issued
+{col 1}time{col 22}subject_sex{col 43}warning_issued
+{col 1}location{col 22}officer_id_hash{col 43}outcome
+{col 1}lat{col 22}type{col 43}raw_race_fixed
+{col 1}lng{col 22}violation{col 43}raw_ethnicity_fixed
+{col 1}subject_age{col 22}arrest_made{col 43}raw_charge
+
+non-string variables:
+{col 1}raw_row_number
+
+(96,621 real changes made)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/az_mesa.dta saved
+
+
+#4/88 | 23:20:44: 2000_data/100_original/20_SOPP_CSVs/az_statewide.csv
+{res}{text}(29 vars, 3,498,159 obs)
+string variables:
+{col 1}date{col 25}citation_issued{col 49}reason_for_stop
+{col 1}time{col 25}warning_issued{col 49}vehicle_type
+{col 1}location{col 25}outcome{col 49}vehicle_year
+{col 1}county_name{col 25}contraband_found{col 49}raw_ethnicity
+{col 1}subject_race{col 25}contraband_drugs{col 49}raw_outcomeofstop
+{col 1}subject_sex{col 25}contraband_other{col 49}raw_reasonforstop
+{col 1}officer_id_hash{col 25}search_conducted{col 49}raw_typeofsearch
+{col 1}type{col 25}search_person{col 49}raw_violationsobserved
+{col 1}violation{col 25}search_vehicle
+{col 1}arrest_made{col 25}search_basis
+
+non-string variables:
+{col 1}raw_row_number
+
+(3,498,159 real changes made)
+(3,498,159 missing values generated)
+(3,498,159 missing values generated)
+(3,498,159 missing values generated)
+(3,498,159 missing values generated)
+(3,498,159 missing values generated)
+(3,498,159 missing values generated)
+(3,498,159 missing values generated)
+(3,498,159 missing values generated)
+(3,498,159 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/az_statewide.dta saved
+
+
+#5/88 | 23:22:23: 2000_data/100_original/20_SOPP_CSVs/ca_anaheim.csv
+{res}{text}(4 vars, 87,876 obs)
+string variables:
+{col 1}date{col 18}type{col 35}reason_for_stop
+
+non-string variables:
+{col 1}raw_row_number
+
+(87,876 real changes made)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_anaheim.dta saved
+
+
+#6/88 | 23:22:23: 2000_data/100_original/20_SOPP_CSVs/ca_bakersfield.csv
+{res}{text}(18 vars, 189,685 obs)
+string variables:
+{col 1}raw_row_number{col 22}beat{col 43}citation_issued
+{col 1}date{col 22}subject_age{col 43}outcome
+{col 1}time{col 22}subject_race{col 43}raw_ethnicity
+{col 1}location{col 22}subject_sex{col 43}raw_statute_name
+{col 1}lat{col 22}officer_id_hash{col 43}raw_statute_section
+{col 1}lng{col 22}type{col 43}raw_race
+
+non-string variables:
+
+(189,685 real changes made)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_bakersfield.dta saved
+
+
+#7/88 | 23:22:30: 2000_data/100_original/20_SOPP_CSVs/ca_long_beach.csv
+{res}{text}(27 vars, 365,924 obs)
+string variables:
+{col 1}raw_row_number{col 29}officer_age
+{col 1}date{col 29}officer_race
+{col 1}location{col 29}officer_sex
+{col 1}lat{col 29}type
+{col 1}lng{col 29}violation
+{col 1}beat{col 29}citation_issued
+{col 1}district{col 29}outcome
+{col 1}subdistrict{col 29}vehicle_make
+{col 1}division{col 29}vehicle_registration_state
+{col 1}subject_age{col 29}vehicle_year
+{col 1}subject_race{col 29}raw_race
+{col 1}subject_sex{col 29}raw_sex
+{col 1}officer_id_hash{col 29}raw_officer_race
+
+non-string variables:
+{col 1}officer_years_of_service
+
+(365,924 real changes made)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_long_beach.dta saved
+
+
+#8/88 | 23:22:44: 2000_data/100_original/20_SOPP_CSVs/ca_los_angeles.csv
+{res}{text}(10 vars, 5,418,402 obs)
+string variables:
+{col 1}raw_row_number{col 26}region{col 51}type
+{col 1}date{col 26}subject_race{col 51}raw_descent_description
+{col 1}time{col 26}subject_sex
+{col 1}district{col 26}officer_id_hash
+
+non-string variables:
+
+(5,418,402 real changes made)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_los_angeles.dta saved
+
+
+#9/88 | 23:24:04: 2000_data/100_original/20_SOPP_CSVs/ca_oakland.csv
+{res}{text}(28 vars, 133,407 obs)
+string variables:
+{col 1}raw_row_number{col 32}warning_issued
+{col 1}date{col 32}outcome
+{col 1}time{col 32}contraband_found
+{col 1}location{col 32}contraband_drugs
+{col 1}lat{col 32}contraband_weapons
+{col 1}lng{col 32}search_conducted
+{col 1}beat{col 32}search_basis
+{col 1}subject_age{col 32}reason_for_stop
+{col 1}subject_race{col 32}use_of_force_description
+{col 1}subject_sex{col 32}raw_subject_sdrace
+{col 1}officer_assignment{col 32}raw_subject_resultofencounter
+{col 1}type{col 32}raw_subject_searchconducted
+{col 1}arrest_made{col 32}raw_subject_typeofsearch
+{col 1}citation_issued{col 32}raw_subject_resultofsearch
+
+non-string variables:
+
+(133,407 real changes made)
+(133,407 missing values generated)
+(133,407 missing values generated)
+(133,407 missing values generated)
+(133,407 missing values generated)
+(133,407 missing values generated)
+(133,407 missing values generated)
+(133,407 missing values generated)
+(133,407 missing values generated)
+(133,407 missing values generated)
+(133,407 missing values generated)
+(133,407 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_oakland.dta saved
+
+
+#10/88 | 23:24:08: 2000_data/100_original/20_SOPP_CSVs/ca_san_bernardino.csv
+{res}{text}(12 vars, 90,523 obs)
+string variables:
+{col 1}raw_row_number{col 18}location{col 35}type{col 52}citation_issued
+{col 1}date{col 18}lat{col 35}disposition{col 52}outcome
+{col 1}time{col 18}lng{col 35}arrest_made{col 52}raw_calltype
+
+non-string variables:
+
+(90,523 real changes made)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_san_bernardino.dta saved
+
+
+#11/88 | 23:24:09: 2000_data/100_original/20_SOPP_CSVs/ca_san_diego.csv
+{res}{text}(21 vars, 383,027 obs)
+string variables:
+{col 1}raw_row_number{col 31}outcome
+{col 1}date{col 31}contraband_found
+{col 1}time{col 31}search_conducted
+{col 1}service_area{col 31}search_person
+{col 1}subject_age{col 31}search_vehicle
+{col 1}subject_race{col 31}search_basis
+{col 1}subject_sex{col 31}reason_for_search
+{col 1}type{col 31}reason_for_stop
+{col 1}arrest_made{col 31}raw_action_taken
+{col 1}citation_issued{col 31}raw_subject_race_description
+{col 1}warning_issued
+
+non-string variables:
+
+(383,027 real changes made)
+(383,027 missing values generated)
+(383,027 missing values generated)
+(383,027 missing values generated)
+(383,027 missing values generated)
+(383,027 missing values generated)
+(383,027 missing values generated)
+(383,027 missing values generated)
+(383,027 missing values generated)
+(383,027 missing values generated)
+(383,027 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_san_diego.dta saved
+
+
+#12/88 | 23:24:19: 2000_data/100_original/20_SOPP_CSVs/ca_san_francisco.csv
+{res}{text}(22 vars, 905,070 obs)
+string variables:
+{col 1}raw_row_number{col 35}arrest_made
+{col 1}date{col 35}citation_issued
+{col 1}time{col 35}warning_issued
+{col 1}location{col 35}outcome
+{col 1}lat{col 35}contraband_found
+{col 1}lng{col 35}search_conducted
+{col 1}district{col 35}search_vehicle
+{col 1}subject_age{col 35}search_basis
+{col 1}subject_race{col 35}reason_for_stop
+{col 1}subject_sex{col 35}raw_search_vehicle_description
+{col 1}type{col 35}raw_result_of_contact_descriptio
+
+non-string variables:
+
+(905,070 real changes made)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_san_francisco.dta saved
+
+
+#13/88 | 23:24:40: 2000_data/100_original/20_SOPP_CSVs/ca_san_jose.csv
+{res}{text}(20 vars, 152,834 obs)
+string variables:
+{col 1}raw_row_number{col 27}type{col 53}use_of_force_description
+{col 1}date{col 27}arrest_made{col 53}use_of_force_reason
+{col 1}time{col 27}citation_issued{col 53}raw_search
+{col 1}location{col 27}outcome{col 53}raw_call_desc
+{col 1}lat{col 27}contraband_found{col 53}raw_race
+{col 1}lng{col 27}search_conducted{col 53}raw_event_desc
+{col 1}subject_race{col 27}reason_for_stop
+
+non-string variables:
+
+(152,834 real changes made)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_san_jose.dta saved
+
+
+#14/88 | 23:24:44: 2000_data/100_original/20_SOPP_CSVs/ca_santa_ana.csv
+{res}{text}(15 vars, 46,268 obs)
+string variables:
+{col 1}date{col 18}district{col 35}officer_id_hash{col 52}outcome
+{col 1}location{col 18}region{col 35}type{col 52}raw_race
+{col 1}lat{col 18}subject_race{col 35}violation
+{col 1}lng{col 18}subject_sex{col 35}citation_issued
+
+non-string variables:
+{col 1}raw_row_number
+
+(46,268 real changes made)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_santa_ana.dta saved
+
+
+#15/88 | 23:24:46: 2000_data/100_original/20_SOPP_CSVs/ca_statewide.csv
+{res}{text}(21 vars, 31,778,515 obs)
+string variables:
+{col 1}date{col 19}department_name{col 37}warning_issued{col 55}search_person
+{col 1}county_name{col 19}type{col 37}outcome{col 55}search_basis
+{col 1}district{col 19}violation{col 37}contraband_found{col 55}reason_for_stop
+{col 1}subject_race{col 19}arrest_made{col 37}frisk_performed{col 55}raw_race
+{col 1}subject_sex{col 19}citation_issued{col 37}search_conducted{col 55}raw_search_basis
+
+non-string variables:
+{col 1}raw_row_number
+
+(31,778,515 real changes made)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_statewide.dta saved
+
+
+#16/88 | 23:35:38: 2000_data/100_original/20_SOPP_CSVs/ca_stockton.csv
+{res}{text}(17 vars, 41,629 obs)
+string variables:
+{col 1}date{col 19}subject_sex{col 37}citation_issued{col 55}search_basis
+{col 1}division{col 19}officer_id_hash{col 37}warning_issued{col 55}reason_for_stop
+{col 1}subject_age{col 19}type{col 37}outcome{col 55}raw_result
+{col 1}subject_race{col 19}arrest_made{col 37}search_conducted{col 55}raw_search
+
+non-string variables:
+{col 1}raw_row_number
+
+(41,629 real changes made)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_stockton.dta saved
+
+
+#17/88 | 23:35:38: 2000_data/100_original/20_SOPP_CSVs/co_aurora.csv
+{res}{text}(16 vars, 172,929 obs)
+string variables:
+{col 1}raw_row_number{col 18}lat{col 35}subject_race{col 52}citation_issued
+{col 1}date{col 18}lng{col 35}subject_sex{col 52}outcome
+{col 1}time{col 18}district{col 35}type{col 52}raw_ethnicity
+{col 1}location{col 18}subject_age{col 35}violation{col 52}raw_race
+
+non-string variables:
+
+(172,929 real changes made)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/co_aurora.dta saved
+
+
+#18/88 | 23:35:41: 2000_data/100_original/20_SOPP_CSVs/co_denver.csv
+{res}{text}(14 vars, 1,870,731 obs)
+string variables:
+{col 1}date{col 18}district{col 35}disposition{col 52}warning_issued
+{col 1}time{col 18}precinct{col 35}arrest_made{col 52}outcome
+{col 1}location{col 18}type{col 35}citation_issued
+
+non-string variables:
+{col 1}raw_row_number{col 17}lat{col 33}lng
+
+(1,870,731 real changes made)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/co_denver.dta saved
+
+
+#19/88 | 23:36:07: 2000_data/100_original/20_SOPP_CSVs/co_statewide.csv
+{res}{text}(20 vars, 3,112,853 obs)
+string variables:
+{col 1}raw_row_number{col 19}subject_age{col 37}type{col 55}outcome
+{col 1}date{col 19}subject_race{col 37}violation{col 55}contraband_found
+{col 1}time{col 19}subject_sex{col 37}arrest_made{col 55}search_conducted
+{col 1}location{col 19}officer_id_hash{col 37}citation_issued{col 55}search_basis
+{col 1}county_name{col 19}officer_sex{col 37}warning_issued{col 55}raw_ethnicity
+
+non-string variables:
+
+(3,112,853 real changes made)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/co_statewide.dta saved
+
+
+#20/88 | 23:37:14: 2000_data/100_original/20_SOPP_CSVs/ct_hartford.csv
+{res}{text}(26 vars, 18,439 obs)
+string variables:
+{col 1}raw_row_number{col 35}arrest_made
+{col 1}date{col 35}citation_issued
+{col 1}time{col 35}warning_issued
+{col 1}location{col 35}outcome
+{col 1}lat{col 35}contraband_found
+{col 1}lng{col 35}search_conducted
+{col 1}district{col 35}search_vehicle
+{col 1}subject_age{col 35}search_basis
+{col 1}subject_race{col 35}reason_for_stop
+{col 1}subject_sex{col 35}raw_subject_race_code
+{col 1}officer_id_hash{col 35}raw_subject_ethnicity_code
+{col 1}department_name{col 35}raw_search_authorization_code
+{col 1}type{col 35}raw_intervention_disposition_cod
+
+non-string variables:
+
+(18,439 real changes made)
+(18,439 missing values generated)
+(18,439 missing values generated)
+(18,439 missing values generated)
+(18,439 missing values generated)
+(18,439 missing values generated)
+(18,439 missing values generated)
+(18,439 missing values generated)
+(18,439 missing values generated)
+(18,439 missing values generated)
+(18,439 missing values generated)
+(18,439 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ct_hartford.dta saved
+
+
+#21/88 | 23:37:16: 2000_data/100_original/20_SOPP_CSVs/ct_statewide.csv
+{res}{text}(26 vars, 1,175,339 obs)
+string variables:
+{col 1}raw_row_number{col 30}violation
+{col 1}date{col 30}arrest_made
+{col 1}time{col 30}citation_issued
+{col 1}location{col 30}warning_issued
+{col 1}lat{col 30}outcome
+{col 1}lng{col 30}contraband_found
+{col 1}county_name{col 30}search_conducted
+{col 1}subject_age{col 30}search_vehicle
+{col 1}subject_race{col 30}search_basis
+{col 1}subject_sex{col 30}reason_for_stop
+{col 1}officer_id_hash{col 30}raw_subjectracecode
+{col 1}department_name{col 30}raw_subjectethnicitycode
+{col 1}type{col 30}raw_searchauthorizationcode
+
+non-string variables:
+
+(1,175,339 real changes made)
+(1,175,339 missing values generated)
+(1,175,339 missing values generated)
+(1,175,339 missing values generated)
+(1,175,339 missing values generated)
+(1,175,339 missing values generated)
+(1,175,339 missing values generated)
+(1,175,339 missing values generated)
+(1,175,339 missing values generated)
+(1,175,339 missing values generated)
+(1,175,339 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ct_statewide.dta saved
+
+
+#22/88 | 23:37:45: 2000_data/100_original/20_SOPP_CSVs/fl_saint_petersburg.csv
+{res}{text}(9 vars, 16,383 obs)
+string variables:
+{col 1}date{col 18}location{col 35}lng{col 52}officer_id_hash
+{col 1}time{col 18}lat{col 35}district{col 52}type
+
+non-string variables:
+{col 1}raw_row_number
+
+(16,383 real changes made)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/fl_saint_petersburg.dta saved
+
+
+#23/88 | 23:37:45: 2000_data/100_original/20_SOPP_CSVs/fl_statewide.csv
+{res}{text}(34 vars, 7,297,538 obs)
+string variables:
+{col 1}raw_row_number{col 29}arrest_made
+{col 1}date{col 29}citation_issued
+{col 1}time{col 29}warning_issued
+{col 1}location{col 29}outcome
+{col 1}county_name{col 29}frisk_performed
+{col 1}subject_age{col 29}search_conducted
+{col 1}subject_race{col 29}search_basis
+{col 1}subject_sex{col 29}reason_for_search
+{col 1}officer_id_hash{col 29}reason_for_stop
+{col 1}officer_age{col 29}vehicle_registration_state
+{col 1}officer_race{col 29}notes
+{col 1}officer_sex{col 29}raw_row_number_old
+{col 1}officer_years_of_service{col 29}raw_race
+{col 1}department_name{col 29}raw_ethnicity
+{col 1}unit{col 29}raw_row_number_new
+{col 1}type{col 29}raw_searchtype
+{col 1}violation{col 29}raw_enforcementaction
+
+non-string variables:
+
+(7,297,538 real changes made)
+(7,297,538 missing values generated)
+(7,297,538 missing values generated)
+(7,297,538 missing values generated)
+(7,297,538 missing values generated)
+(7,297,538 missing values generated)
+(7,297,538 missing values generated)
+(7,297,538 missing values generated)
+(7,297,538 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/fl_statewide.dta saved
+
+
+#24/88 | 23:42:48: 2000_data/100_original/20_SOPP_CSVs/fl_tampa.csv
+{res}{text}(12 vars, 2,818,240 obs)
+string variables:
+{col 1}raw_row_number{col 29}type
+{col 1}date{col 29}violation
+{col 1}subject_age{col 29}citation_issued
+{col 1}subject_race{col 29}outcome
+{col 1}subject_sex{col 29}vehicle_registration_state
+{col 1}department_name{col 29}raw_race
+
+non-string variables:
+
+(2,818,240 real changes made)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/fl_tampa.dta saved
+
+
+#25/88 | 23:44:00: 2000_data/100_original/20_SOPP_CSVs/ga_statewide.csv
+{res}{text}(19 vars, 1,906,772 obs)
+string variables:
+{col 1}raw_row_number{col 18}lng{col 35}department_name{col 52}vehicle_make
+{col 1}date{col 18}county_name{col 35}type{col 52}vehicle_model
+{col 1}time{col 18}subject_race{col 35}violation{col 52}vehicle_year
+{col 1}location{col 18}subject_sex{col 35}outcome{col 52}raw_race
+{col 1}lat{col 18}officer_id_hash{col 35}vehicle_color
+
+non-string variables:
+
+(1,906,772 real changes made)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ga_statewide.dta saved
+
+
+#26/88 | 23:44:46: 2000_data/100_original/20_SOPP_CSVs/ia_statewide.csv
+{res}{text}(20 vars, 2,441,335 obs)
+string variables:
+{col 1}raw_row_number{col 29}type
+{col 1}date{col 29}violation
+{col 1}time{col 29}citation_issued
+{col 1}location{col 29}warning_issued
+{col 1}county_name{col 29}outcome
+{col 1}subject_age{col 29}vehicle_color
+{col 1}subject_race{col 29}vehicle_make
+{col 1}subject_sex{col 29}vehicle_model
+{col 1}officer_id_hash{col 29}vehicle_registration_state
+{col 1}department_name{col 29}vehicle_year
+
+non-string variables:
+
+(2,441,335 real changes made)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ia_statewide.dta saved
+
+
+#27/88 | 23:45:44: 2000_data/100_original/20_SOPP_CSVs/id_idaho_falls.csv
+{res}{text}(13 vars, 104,814 obs)
+string variables:
+{col 1}date{col 18}lat{col 35}division{col 52}type
+{col 1}time{col 18}lng{col 35}zone{col 52}disposition
+{col 1}location{col 18}neighborhood{col 35}officer_id_hash
+
+non-string variables:
+{col 1}raw_row_number{col 17}subdivision
+
+(104,814 real changes made)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/id_idaho_falls.dta saved
+
+
+#28/88 | 23:45:47: 2000_data/100_original/20_SOPP_CSVs/il_chicago.csv
+{res}{text}(21 vars, 846,456 obs)
+string variables:
+{col 1}date{col 27}subject_sex{col 53}violation
+{col 1}time{col 27}officer_id_hash{col 53}arrest_made
+{col 1}location{col 27}officer_age{col 53}citation_issued
+{col 1}lat{col 27}officer_race{col 53}outcome
+{col 1}lng{col 27}officer_sex{col 53}raw_race
+{col 1}subject_age{col 27}officer_years_of_service{col 53}raw_driver_race
+{col 1}subject_race{col 27}type
+
+non-string variables:
+{col 1}raw_row_number
+
+(846,456 real changes made)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/il_chicago.dta saved
+
+
+#29/88 | 23:46:02: 2000_data/100_original/20_SOPP_CSVs/il_statewide.csv
+{res}{text}(29 vars, 12,748,173 obs)
+string variables:
+{col 1}date{col 21}subject_sex{col 41}outcome{col 61}search_vehicle
+{col 1}time{col 21}department_name{col 41}contraband_found{col 61}search_basis
+{col 1}location{col 21}type{col 41}contraband_drugs{col 61}reason_for_stop
+{col 1}beat{col 21}violation{col 41}contraband_weapons{col 61}vehicle_make
+{col 1}subject_age{col 21}citation_issued{col 41}search_conducted{col 61}vehicle_year
+{col 1}subject_race{col 21}warning_issued{col 41}search_person
+
+non-string variables:
+{col 1}raw_row_number{col 28}raw_reasonforstop
+{col 1}department_id{col 28}raw_typeofmovingviolation
+{col 1}raw_driverrace{col 28}raw_resultofstop
+
+(12,748,173 real changes made)
+(12,748,173 missing values generated)
+(12,748,173 missing values generated)
+(12,748,173 missing values generated)
+(12,748,173 missing values generated)
+(12,748,173 missing values generated)
+(12,748,173 missing values generated)
+(12,748,173 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/il_statewide.dta saved
+
+
+#30/88 | 23:52:33: 2000_data/100_original/20_SOPP_CSVs/in_fort_wayne.csv
+{res}{text}(12 vars, 265,019 obs)
+string variables:
+{col 1}date{col 18}lat{col 35}disposition{col 52}warning_issued
+{col 1}time{col 18}lng{col 35}arrest_made{col 52}outcome
+{col 1}location{col 18}type{col 35}citation_issued
+
+non-string variables:
+{col 1}raw_row_number
+
+(265,019 real changes made)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/in_fort_wayne.dta saved
+
+
+#31/88 | 23:52:37: 2000_data/100_original/20_SOPP_CSVs/ks_wichita.csv
+{res}{text}(21 vars, 929,716 obs)
+string variables:
+{col 1}raw_row_number{col 26}subject_race{col 51}posted_speed
+{col 1}date{col 26}subject_sex{col 51}vehicle_color
+{col 1}time{col 26}type{col 51}vehicle_make
+{col 1}location{col 26}disposition{col 51}vehicle_model
+{col 1}lat{col 26}violation{col 51}vehicle_year
+{col 1}lng{col 26}citation_issued{col 51}raw_defendant_race
+{col 1}subject_age{col 26}outcome{col 51}raw_defendant_ethnicity
+
+non-string variables:
+
+(929,716 real changes made)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ks_wichita.dta saved
+
+
+#32/88 | 23:53:02: 2000_data/100_original/20_SOPP_CSVs/ky_louisville.csv
+{res}{text}(32 vars, 110,960 obs)
+string variables:
+{col 1}raw_row_number{col 27}officer_race{col 53}raw_activity_division
+{col 1}date{col 27}officer_sex{col 53}raw_division
+{col 1}time{col 27}type{col 53}raw_activity_beat
+{col 1}location{col 27}violation{col 53}raw_beat
+{col 1}lat{col 27}citation_issued{col 53}raw_driver_race
+{col 1}lng{col 27}warning_issued{col 53}raw_persons_race
+{col 1}beat{col 27}outcome{col 53}raw_persons_ethnicity
+{col 1}division{col 27}frisk_performed{col 53}raw_driver_age_range
+{col 1}subject_age{col 27}search_conducted{col 53}raw_was_vehcile_searched
+{col 1}subject_race{col 27}search_basis{col 53}raw_citation_location
+{col 1}subject_sex{col 27}reason_for_search
+
+non-string variables:
+
+(110,960 real changes made)
+(110,960 missing values generated)
+(110,960 missing values generated)
+(110,960 missing values generated)
+(110,960 missing values generated)
+(110,960 missing values generated)
+(110,960 missing values generated)
+(110,960 missing values generated)
+(110,960 missing values generated)
+(110,960 missing values generated)
+(110,960 missing values generated)
+(110,960 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ky_louisville.dta saved
+
+
+#33/88 | 23:53:06: 2000_data/100_original/20_SOPP_CSVs/ky_owensboro.csv
+{res}{text}(18 vars, 6,921 obs)
+string variables:
+{col 1}date{col 29}officer_id_hash
+{col 1}time{col 29}type
+{col 1}location{col 29}violation
+{col 1}lng{col 29}arrest_made
+{col 1}sector{col 29}citation_issued
+{col 1}subject_age{col 29}outcome
+{col 1}subject_race{col 29}vehicle_registration_state
+{col 1}subject_sex{col 29}raw_race
+
+non-string variables:
+{col 1}raw_row_number{col 17}lat
+
+(6,921 real changes made)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ky_owensboro.dta saved
+
+
+#34/88 | 23:53:06: 2000_data/100_original/20_SOPP_CSVs/la_new_orleans.csv
+{res}{text}(32 vars, 512,092 obs)
+string variables:
+{col 1}raw_row_number{col 21}subject_age{col 41}outcome{col 61}search_basis
+{col 1}date{col 21}subject_race{col 41}contraband_found{col 61}reason_for_stop
+{col 1}time{col 21}subject_sex{col 41}contraband_drugs{col 61}vehicle_color
+{col 1}location{col 21}officer_assignment{col 41}contraband_weapons{col 61}vehicle_make
+{col 1}lat{col 21}type{col 41}frisk_performed{col 61}vehicle_model
+{col 1}lng{col 21}arrest_made{col 41}search_conducted{col 61}vehicle_year
+{col 1}district{col 21}citation_issued{col 41}search_person{col 61}raw_actions_taken
+{col 1}zone{col 21}warning_issued{col 41}search_vehicle{col 61}raw_subject_race
+
+non-string variables:
+
+(512,092 real changes made)
+(512,092 missing values generated)
+(512,092 missing values generated)
+(512,092 missing values generated)
+(512,092 missing values generated)
+(512,092 missing values generated)
+(512,092 missing values generated)
+(512,092 missing values generated)
+(512,092 missing values generated)
+(512,092 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/la_new_orleans.dta saved
+
+
+#35/88 | 23:53:28: 2000_data/100_original/20_SOPP_CSVs/ma_statewide.csv
+{res}{text}(24 vars, 3,416,238 obs)
+string variables:
+{col 1}date{col 29}contraband_drugs
+{col 1}location{col 29}contraband_weapons
+{col 1}county_name{col 29}contraband_alcohol
+{col 1}subject_age{col 29}contraband_other
+{col 1}subject_race{col 29}frisk_performed
+{col 1}subject_sex{col 29}search_conducted
+{col 1}type{col 29}search_basis
+{col 1}arrest_made{col 29}reason_for_stop
+{col 1}citation_issued{col 29}vehicle_type
+{col 1}warning_issued{col 29}vehicle_registration_state
+{col 1}outcome{col 29}raw_race
+{col 1}contraband_found
+
+non-string variables:
+{col 1}raw_row_number
+
+(3,416,238 real changes made)
+(3,416,238 missing values generated)
+(3,416,238 missing values generated)
+(3,416,238 missing values generated)
+(3,416,238 missing values generated)
+(3,416,238 missing values generated)
+(3,416,238 missing values generated)
+(3,416,238 missing values generated)
+(3,416,238 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ma_statewide.dta saved
+
+
+#36/88 | 23:54:30: 2000_data/100_original/20_SOPP_CSVs/md_baltimore.csv
+{res}{text}(9 vars, 854,759 obs)
+string variables:
+{col 1}raw_row_number{col 18}beat{col 35}type
+{col 1}date{col 18}district{col 35}citation_issued
+{col 1}time{col 18}officer_id_hash{col 35}outcome
+
+non-string variables:
+
+(854,759 real changes made)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/md_baltimore.dta saved
+
+
+#37/88 | 23:54:41: 2000_data/100_original/20_SOPP_CSVs/md_statewide.csv
+{res}{text}(28 vars, 3,669,665 obs)
+string variables:
+{col 1}date{col 21}type{col 41}contraband_found{col 61}reason_for_arrest
+{col 1}time{col 21}disposition{col 41}contraband_drugs{col 61}reason_for_search
+{col 1}location{col 21}violation{col 41}contraband_weapons{col 61}reason_for_stop
+{col 1}subject_age{col 21}arrest_made{col 41}search_conducted{col 61}raw_race
+{col 1}subject_race{col 21}citation_issued{col 41}search_person{col 61}raw_outcome
+{col 1}subject_sex{col 21}warning_issued{col 41}search_vehicle{col 61}raw_arrest_made
+{col 1}department_name{col 21}outcome{col 41}search_basis
+
+non-string variables:
+{col 1}raw_row_number
+
+(3,669,665 real changes made)
+(3,669,665 missing values generated)
+(3,669,665 missing values generated)
+(3,669,665 missing values generated)
+(3,669,665 missing values generated)
+(3,669,665 missing values generated)
+(3,669,665 missing values generated)
+(3,669,665 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/md_statewide.dta saved
+
+
+#38/88 | 23:56:39: 2000_data/100_original/20_SOPP_CSVs/mi_statewide.csv
+{res}{text}(20 vars, 800,302 obs)
+string variables:
+{col 1}raw_row_number{col 18}subject_race{col 35}violation{col 52}reason_for_stop
+{col 1}date{col 18}officer_id_hash{col 35}arrest_made{col 52}speed
+{col 1}time{col 18}department_id{col 35}citation_issued{col 52}posted_speed
+{col 1}location{col 18}department_name{col 35}warning_issued{col 52}charged_speed
+{col 1}county_name{col 18}type{col 35}outcome{col 52}raw_race
+
+non-string variables:
+
+(800,302 real changes made)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/mi_statewide.dta saved
+
+
+#39/88 | 23:56:56: 2000_data/100_original/20_SOPP_CSVs/mn_saint_paul.csv
+{res}{text}(16 vars, 675,156 obs)
+string variables:
+{col 1}raw_row_number{col 21}lng{col 41}type{col 61}search_conducted
+{col 1}date{col 21}subject_age{col 41}citation_issued{col 61}search_vehicle
+{col 1}time{col 21}subject_race{col 41}outcome{col 61}raw_race_of_driver
+{col 1}lat{col 21}subject_sex{col 41}frisk_performed
+
+non-string variables:
+{col 1}police_grid_number
+
+(675,156 real changes made)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/mn_saint_paul.dta saved
+
+
+#40/88 | 23:57:10: 2000_data/100_original/20_SOPP_CSVs/mo_statewide.csv
+{res}{text}(9 vars, 10,038,706 obs)
+string variables:
+{col 1}date{col 19}subject_race{col 37}type{col 55}search_conducted
+{col 1}location{col 19}department_name{col 37}contraband_found{col 55}raw_race
+
+non-string variables:
+{col 1}raw_row_number
+
+(10,038,706 real changes made)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/mo_statewide.dta saved
+
+
+#41/88 | 23:58:53: 2000_data/100_original/20_SOPP_CSVs/ms_statewide.csv
+{res}{text}(13 vars, 758,412 obs)
+string variables:
+{col 1}date{col 18}subject_race{col 35}type{col 52}posted_speed
+{col 1}county_name{col 18}subject_sex{col 35}violation{col 52}raw_race
+{col 1}subject_age{col 18}department_name{col 35}speed
+
+non-string variables:
+{col 1}raw_row_number{col 17}department_id
+
+(758,412 real changes made)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ms_statewide.dta saved
+
+
+#42/88 | 23:59:02: 2000_data/100_original/20_SOPP_CSVs/mt_statewide.csv
+{res}{text}(29 vars, 825,118 obs)
+string variables:
+{col 1}date{col 29}warning_issued
+{col 1}time{col 29}outcome
+{col 1}location{col 29}frisk_performed
+{col 1}lat{col 29}search_conducted
+{col 1}lng{col 29}search_basis
+{col 1}county_name{col 29}reason_for_stop
+{col 1}subject_age{col 29}vehicle_make
+{col 1}subject_race{col 29}vehicle_model
+{col 1}subject_sex{col 29}vehicle_type
+{col 1}department_name{col 29}vehicle_registration_state
+{col 1}type{col 29}vehicle_year
+{col 1}violation{col 29}raw_race
+{col 1}arrest_made{col 29}raw_ethnicity
+{col 1}citation_issued{col 29}raw_searchtype
+
+non-string variables:
+{col 1}raw_row_number
+
+(825,118 real changes made)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/mt_statewide.dta saved
+
+
+#43/88 | 23:59:28: 2000_data/100_original/20_SOPP_CSVs/nc_charlotte.csv
+{res}{text}(29 vars, 1,598,453 obs)
+string variables:
+{col 1}date{col 25}arrest_made{col 49}search_vehicle
+{col 1}time{col 25}citation_issued{col 49}search_basis
+{col 1}location{col 25}warning_issued{col 49}reason_for_frisk
+{col 1}county_name{col 25}outcome{col 49}reason_for_search
+{col 1}subject_age{col 25}contraband_found{col 49}reason_for_stop
+{col 1}subject_race{col 25}contraband_drugs{col 49}raw_ethnicity
+{col 1}subject_sex{col 25}contraband_weapons{col 49}raw_race
+{col 1}officer_id_hash{col 25}frisk_performed{col 49}raw_action_description
+{col 1}department_name{col 25}search_conducted
+{col 1}type{col 25}search_person
+
+non-string variables:
+{col 1}raw_row_number
+
+(1,598,453 real changes made)
+(1,598,453 missing values generated)
+(1,598,453 missing values generated)
+(1,598,453 missing values generated)
+(1,598,453 missing values generated)
+(1,598,453 missing values generated)
+(1,598,453 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nc_charlotte.dta saved
+
+
+#44/88 | 00:00:42: 2000_data/100_original/20_SOPP_CSVs/nc_durham.csv
+{res}{text}(29 vars, 326,024 obs)
+string variables:
+{col 1}date{col 25}arrest_made{col 49}search_vehicle
+{col 1}time{col 25}citation_issued{col 49}search_basis
+{col 1}location{col 25}warning_issued{col 49}reason_for_frisk
+{col 1}county_name{col 25}outcome{col 49}reason_for_search
+{col 1}subject_age{col 25}contraband_found{col 49}reason_for_stop
+{col 1}subject_race{col 25}contraband_drugs{col 49}raw_ethnicity
+{col 1}subject_sex{col 25}contraband_weapons{col 49}raw_race
+{col 1}officer_id_hash{col 25}frisk_performed{col 49}raw_action_description
+{col 1}department_name{col 25}search_conducted
+{col 1}type{col 25}search_person
+
+non-string variables:
+{col 1}raw_row_number
+
+(326,024 real changes made)
+(326,024 missing values generated)
+(326,024 missing values generated)
+(326,024 missing values generated)
+(326,024 missing values generated)
+(326,024 missing values generated)
+(326,024 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nc_durham.dta saved
+
+
+#45/88 | 00:00:55: 2000_data/100_original/20_SOPP_CSVs/nc_fayetteville.csv
+{res}{text}(29 vars, 486,998 obs)
+string variables:
+{col 1}date{col 25}arrest_made{col 49}search_vehicle
+{col 1}time{col 25}citation_issued{col 49}search_basis
+{col 1}location{col 25}warning_issued{col 49}reason_for_frisk
+{col 1}county_name{col 25}outcome{col 49}reason_for_search
+{col 1}subject_age{col 25}contraband_found{col 49}reason_for_stop
+{col 1}subject_race{col 25}contraband_drugs{col 49}raw_ethnicity
+{col 1}subject_sex{col 25}contraband_weapons{col 49}raw_race
+{col 1}officer_id_hash{col 25}frisk_performed{col 49}raw_action_description
+{col 1}department_name{col 25}search_conducted
+{col 1}type{col 25}search_person
+
+non-string variables:
+{col 1}raw_row_number
+
+(486,998 real changes made)
+(486,998 missing values generated)
+(486,998 missing values generated)
+(486,998 missing values generated)
+(486,998 missing values generated)
+(486,998 missing values generated)
+(486,998 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nc_fayetteville.dta saved
+
+
+#46/88 | 00:01:16: 2000_data/100_original/20_SOPP_CSVs/nc_greensboro.csv
+{res}{text}(29 vars, 600,031 obs)
+string variables:
+{col 1}date{col 25}arrest_made{col 49}search_vehicle
+{col 1}time{col 25}citation_issued{col 49}search_basis
+{col 1}location{col 25}warning_issued{col 49}reason_for_frisk
+{col 1}county_name{col 25}outcome{col 49}reason_for_search
+{col 1}subject_age{col 25}contraband_found{col 49}reason_for_stop
+{col 1}subject_race{col 25}contraband_drugs{col 49}raw_ethnicity
+{col 1}subject_sex{col 25}contraband_weapons{col 49}raw_race
+{col 1}officer_id_hash{col 25}frisk_performed{col 49}raw_action_description
+{col 1}department_name{col 25}search_conducted
+{col 1}type{col 25}search_person
+
+non-string variables:
+{col 1}raw_row_number
+
+(600,031 real changes made)
+(600,031 missing values generated)
+(600,031 missing values generated)
+(600,031 missing values generated)
+(600,031 missing values generated)
+(600,031 missing values generated)
+(600,031 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nc_greensboro.dta saved
+
+
+#47/88 | 00:01:37: 2000_data/100_original/20_SOPP_CSVs/nc_raleigh.csv
+{res}{text}(29 vars, 856,400 obs)
+string variables:
+{col 1}date{col 25}arrest_made{col 49}search_person
+{col 1}time{col 25}citation_issued{col 49}search_vehicle
+{col 1}location{col 25}warning_issued{col 49}search_basis
+{col 1}county_name{col 25}outcome{col 49}reason_for_frisk
+{col 1}subject_race{col 25}contraband_found{col 49}reason_for_search
+{col 1}subject_sex{col 25}contraband_drugs{col 49}reason_for_stop
+{col 1}officer_id_hash{col 25}contraband_weapons{col 49}raw_ethnicity
+{col 1}department_name{col 25}frisk_performed{col 49}raw_race
+{col 1}type{col 25}search_conducted{col 49}raw_action_description
+
+non-string variables:
+{col 1}raw_row_number{col 17}subject_age
+
+(856,400 real changes made)
+(856,400 missing values generated)
+(856,400 missing values generated)
+(856,400 missing values generated)
+(856,400 missing values generated)
+(856,400 missing values generated)
+(856,400 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nc_raleigh.dta saved
+
+
+#48/88 | 00:01:58: 2000_data/100_original/20_SOPP_CSVs/nc_statewide.csv
+{res}{text}(29 vars, 20,286,645 obs)
+string variables:
+{col 1}date{col 25}arrest_made{col 49}search_vehicle
+{col 1}time{col 25}citation_issued{col 49}search_basis
+{col 1}location{col 25}warning_issued{col 49}reason_for_frisk
+{col 1}county_name{col 25}outcome{col 49}reason_for_search
+{col 1}subject_age{col 25}contraband_found{col 49}reason_for_stop
+{col 1}subject_race{col 25}contraband_drugs{col 49}raw_ethnicity
+{col 1}subject_sex{col 25}contraband_weapons{col 49}raw_race
+{col 1}officer_id_hash{col 25}frisk_performed{col 49}raw_action_description
+{col 1}department_name{col 25}search_conducted
+{col 1}type{col 25}search_person
+
+non-string variables:
+{col 1}raw_row_number
+
+(20,286,645 real changes made)
+(20,286,645 missing values generated)
+(20,286,645 missing values generated)
+(20,286,645 missing values generated)
+(20,286,645 missing values generated)
+(20,286,645 missing values generated)
+(20,286,645 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nc_statewide.dta saved
+
+
+#49/88 | 00:13:46: 2000_data/100_original/20_SOPP_CSVs/nc_winston-salem.csv
+{res}{text}(29 vars, 452,560 obs)
+string variables:
+{col 1}date{col 25}arrest_made{col 49}search_vehicle
+{col 1}time{col 25}citation_issued{col 49}search_basis
+{col 1}location{col 25}warning_issued{col 49}reason_for_frisk
+{col 1}county_name{col 25}outcome{col 49}reason_for_search
+{col 1}subject_age{col 25}contraband_found{col 49}reason_for_stop
+{col 1}subject_race{col 25}contraband_drugs{col 49}raw_ethnicity
+{col 1}subject_sex{col 25}contraband_weapons{col 49}raw_race
+{col 1}officer_id_hash{col 25}frisk_performed{col 49}raw_action_description
+{col 1}department_name{col 25}search_conducted
+{col 1}type{col 25}search_person
+
+non-string variables:
+{col 1}raw_row_number
+
+(452,560 real changes made)
+(452,560 missing values generated)
+(452,560 missing values generated)
+(452,560 missing values generated)
+(452,560 missing values generated)
+(452,560 missing values generated)
+(452,560 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nc_winston-salem.dta saved
+
+
+#50/88 | 00:14:18: 2000_data/100_original/20_SOPP_CSVs/nd_grand_forks.csv
+{res}{text}(14 vars, 82,535 obs)
+string variables:
+{col 1}raw_row_number{col 18}lat{col 35}type{col 52}reason_for_stop
+{col 1}date{col 18}lng{col 35}citation_issued{col 52}raw_race
+{col 1}time{col 18}subject_race{col 35}warning_issued
+{col 1}location{col 18}subject_sex{col 35}outcome
+
+non-string variables:
+
+(82,535 real changes made)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nd_grand_forks.dta saved
+
+
+#51/88 | 00:14:19: 2000_data/100_original/20_SOPP_CSVs/nd_statewide.csv
+{res}{text}(12 vars, 330,132 obs)
+string variables:
+{col 1}raw_row_number{col 17}location{col 33}subject_race{col 49}violation
+{col 1}date{col 17}county_name{col 33}subject_sex{col 49}outcome
+{col 1}time{col 17}subject_age{col 33}type{col 49}raw_race
+
+non-string variables:
+
+(330,132 real changes made)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nd_statewide.dta saved
+
+
+#52/88 | 00:14:30: 2000_data/100_original/20_SOPP_CSVs/ne_statewide.csv
+{res}{text}(10 vars, 9,031,494 obs)
+string variables:
+{col 1}date{col 19}department_name{col 37}raw_dept_lvl
+{col 1}county_name{col 19}type{col 37}raw_dept
+{col 1}subject_race{col 19}search_conducted{col 37}raw_race
+
+non-string variables:
+{col 1}raw_row_number
+
+(9,031,494 real changes made)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ne_statewide.dta saved
+
+
+#53/88 | 00:16:14: 2000_data/100_original/20_SOPP_CSVs/nh_statewide.csv
+{res}{text}(17 vars, 259,822 obs)
+string variables:
+{col 1}raw_row_number{col 28}subject_sex
+{col 1}date{col 28}type
+{col 1}time{col 28}violation
+{col 1}location{col 28}citation_issued
+{col 1}lat{col 28}warning_issued
+{col 1}lng{col 28}outcome
+{col 1}county_name{col 28}raw_race_cde
+{col 1}subject_age{col 28}raw_citation_response_dsc
+{col 1}subject_race
+
+non-string variables:
+
+(259,822 real changes made)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nh_statewide.dta saved
+
+
+#54/88 | 00:16:18: 2000_data/100_original/20_SOPP_CSVs/nj_camden.csv
+{res}{text}(23 vars, 195,298 obs)
+string variables:
+{col 1}raw_row_number{col 29}arrest_made
+{col 1}date{col 29}citation_issued
+{col 1}time{col 29}warning_issued
+{col 1}location{col 29}outcome
+{col 1}lat{col 29}vehicle_color
+{col 1}lng{col 29}vehicle_make
+{col 1}subject_age{col 29}vehicle_model
+{col 1}subject_race{col 29}vehicle_registration_state
+{col 1}subject_sex{col 29}vehicle_year
+{col 1}unit{col 29}raw_race
+{col 1}type{col 29}raw_ethnicity
+{col 1}disposition
+
+non-string variables:
+
+(195,298 real changes made)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nj_camden.dta saved
+
+
+#55/88 | 00:16:24: 2000_data/100_original/20_SOPP_CSVs/nj_statewide.csv
+{res}{text}(24 vars, 3,845,334 obs)
+string variables:
+{col 1}date{col 29}outcome
+{col 1}time{col 29}contraband_found
+{col 1}location{col 29}frisk_performed
+{col 1}subject_race{col 29}search_conducted
+{col 1}subject_sex{col 29}vehicle_color
+{col 1}officer_id_hash{col 29}vehicle_make
+{col 1}department_id{col 29}vehicle_model
+{col 1}type{col 29}vehicle_registration_state
+{col 1}violation{col 29}raw_township
+{col 1}arrest_made{col 29}raw_race
+{col 1}citation_issued{col 29}raw_ethnicity
+{col 1}warning_issued
+
+non-string variables:
+{col 1}raw_row_number
+
+(3,845,334 real changes made)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nj_statewide.dta saved
+
+
+#56/88 | 00:17:52: 2000_data/100_original/20_SOPP_CSVs/nv_henderson.csv
+{res}{text}(19 vars, 111,090 obs)
+string variables:
+{col 1}raw_row_number{col 29}type
+{col 1}date{col 29}violation
+{col 1}time{col 29}citation_issued
+{col 1}location{col 29}outcome
+{col 1}lat{col 29}vehicle_color
+{col 1}lng{col 29}vehicle_make
+{col 1}subject_age{col 29}vehicle_type
+{col 1}subject_race{col 29}vehicle_registration_state
+{col 1}subject_sex{col 29}raw_race
+{col 1}officer_id_hash
+
+non-string variables:
+
+(111,090 real changes made)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nv_henderson.dta saved
+
+
+#57/88 | 00:17:54: 2000_data/100_original/20_SOPP_CSVs/nv_statewide.csv
+{res}{text}(11 vars, 737,285 obs)
+string variables:
+{col 1}date{col 18}type{col 35}citation_issued{col 52}raw_race
+{col 1}subject_age{col 18}violation{col 35}warning_issued
+{col 1}subject_race{col 18}arrest_made{col 35}outcome
+
+non-string variables:
+{col 1}raw_row_number
+
+(737,285 real changes made)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nv_statewide.dta saved
+
+
+#58/88 | 00:18:04: 2000_data/100_original/20_SOPP_CSVs/ny_albany.csv
+{res}{text}(16 vars, 74,093 obs)
+string variables:
+{col 1}raw_row_number{col 29}subject_sex
+{col 1}date{col 29}type
+{col 1}time{col 29}violation
+{col 1}location{col 29}vehicle_color
+{col 1}lat{col 29}vehicle_make
+{col 1}lng{col 29}vehicle_registration_state
+{col 1}subject_age{col 29}vehicle_year
+{col 1}subject_race{col 29}raw_race
+
+non-string variables:
+
+(74,093 real changes made)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ny_albany.dta saved
+
+
+#59/88 | 00:18:05: 2000_data/100_original/20_SOPP_CSVs/ny_statewide.csv
+{res}{text}(19 vars, 7,962,169 obs)
+string variables:
+{col 1}date{col 29}speed
+{col 1}time{col 29}posted_speed
+{col 1}location{col 29}vehicle_color
+{col 1}county_name{col 29}vehicle_make
+{col 1}subject_age{col 29}vehicle_model
+{col 1}subject_race{col 29}vehicle_type
+{col 1}subject_sex{col 29}vehicle_registration_state
+{col 1}type{col 29}vehicle_year
+{col 1}violation{col 29}raw_race
+
+non-string variables:
+{col 1}raw_row_number
+
+(7,962,169 real changes made)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ny_statewide.dta saved
+
+
+#60/88 | 00:20:35: 2000_data/100_original/20_SOPP_CSVs/oh_cincinnati.csv
+{res}{text}(25 vars, 315,281 obs)
+string variables:
+{col 1}raw_row_number{col 29}arrest_made
+{col 1}date{col 29}citation_issued
+{col 1}time{col 29}warning_issued
+{col 1}location{col 29}outcome
+{col 1}lat{col 29}reason_for_stop
+{col 1}lng{col 29}vehicle_make
+{col 1}neighborhood{col 29}vehicle_model
+{col 1}beat{col 29}vehicle_registration_state
+{col 1}subject_race{col 29}vehicle_year
+{col 1}subject_sex{col 29}raw_race
+{col 1}officer_assignment{col 29}raw_action_taken_cid
+{col 1}type{col 29}raw_field_subject_cid
+{col 1}disposition
+
+non-string variables:
+
+(315,281 real changes made)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/oh_cincinnati.dta saved
+
+
+#61/88 | 00:20:43: 2000_data/100_original/20_SOPP_CSVs/oh_columbus.csv
+{res}{text}(18 vars, 128,157 obs)
+string variables:
+{col 1}raw_row_number{col 24}precinct{col 47}citation_issued
+{col 1}date{col 24}zone{col 47}warning_issued
+{col 1}time{col 24}subject_race{col 47}outcome
+{col 1}location{col 24}subject_sex{col 47}search_conducted
+{col 1}lat{col 24}type{col 47}reason_for_stop
+{col 1}lng{col 24}arrest_made{col 47}raw_enforcement_taken
+
+non-string variables:
+
+(128,157 real changes made)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/oh_columbus.dta saved
+
+
+#62/88 | 00:20:46: 2000_data/100_original/20_SOPP_CSVs/oh_statewide.csv
+{res}{text}(24 vars, 7,225,577 obs)
+string variables:
+{col 1}date{col 19}subject_race{col 37}arrest_made{col 55}search_basis
+{col 1}time{col 19}subject_sex{col 37}warning_issued{col 55}raw_disp_string
+{col 1}location{col 19}officer_id_hash{col 37}outcome{col 55}raw_orc_string
+{col 1}lat{col 19}department_name{col 37}contraband_found{col 55}raw_dispositions
+{col 1}lng{col 19}type{col 37}contraband_drugs{col 55}raw_race
+{col 1}county_name{col 19}violation{col 37}search_conducted
+
+non-string variables:
+{col 1}raw_row_number
+
+(7,225,577 real changes made)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/oh_statewide.dta saved
+
+
+#63/88 | 00:27:47: 2000_data/100_original/20_SOPP_CSVs/ok_oklahoma_city.csv
+{res}{text}(25 vars, 726,433 obs)
+string variables:
+{col 1}raw_row_number{col 29}type
+{col 1}date{col 29}violation
+{col 1}time{col 29}citation_issued
+{col 1}location{col 29}outcome
+{col 1}lat{col 29}speed
+{col 1}lng{col 29}posted_speed
+{col 1}beat{col 29}vehicle_color
+{col 1}division{col 29}vehicle_make
+{col 1}sector{col 29}vehicle_model
+{col 1}subject_age{col 29}vehicle_registration_state
+{col 1}subject_race{col 29}vehicle_year
+{col 1}subject_sex{col 29}raw_dfnd_race
+{col 1}officer_id_hash
+
+non-string variables:
+
+(726,433 real changes made)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ok_oklahoma_city.dta saved
+
+
+#64/88 | 00:28:12: 2000_data/100_original/20_SOPP_CSVs/ok_tulsa.csv
+{res}{text}(19 vars, 438,248 obs)
+string variables:
+{col 1}raw_row_number{col 29}violation
+{col 1}date{col 29}speed
+{col 1}time{col 29}posted_speed
+{col 1}location{col 29}vehicle_color
+{col 1}lat{col 29}vehicle_make
+{col 1}lng{col 29}vehicle_model
+{col 1}division{col 29}vehicle_registration_state
+{col 1}subject_race{col 29}vehicle_year
+{col 1}subject_sex{col 29}raw_race
+{col 1}type
+
+non-string variables:
+
+(438,248 real changes made)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ok_tulsa.dta saved
+
+
+#65/88 | 00:28:21: 2000_data/100_original/20_SOPP_CSVs/or_statewide.csv
+{res}{text}(5 vars, 1,143,017 obs)
+string variables:
+{col 1}date{col 15}subject_race{col 29}type{col 43}raw_race
+
+non-string variables:
+{col 1}raw_row_number
+
+(1,143,017 real changes made)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/or_statewide.dta saved
+
+
+#66/88 | 00:28:30: 2000_data/100_original/20_SOPP_CSVs/pa_philadelphia.csv
+{res}{text}(22 vars, 1,865,096 obs)
+string variables:
+{col 1}raw_row_number{col 28}type
+{col 1}date{col 28}arrest_made
+{col 1}time{col 28}outcome
+{col 1}location{col 28}contraband_found
+{col 1}lat{col 28}frisk_performed
+{col 1}lng{col 28}search_conducted
+{col 1}district{col 28}search_person
+{col 1}service_area{col 28}search_vehicle
+{col 1}subject_age{col 28}raw_race
+{col 1}subject_race{col 28}raw_individual_contraband
+{col 1}subject_sex{col 28}raw_vehicle_contraband
+
+non-string variables:
+
+(1,865,096 real changes made)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/pa_philadelphia.dta saved
+
+
+#67/88 | 00:29:27: 2000_data/100_original/20_SOPP_CSVs/ri_statewide.csv
+{res}{text}(31 vars, 509,681 obs)
+string variables:
+{col 1}date{col 24}outcome{col 47}reason_for_stop
+{col 1}time{col 24}contraband_found{col 47}vehicle_make
+{col 1}zone{col 24}contraband_drugs{col 47}vehicle_model
+{col 1}subject_race{col 24}contraband_weapons{col 47}raw_basisforstop
+{col 1}subject_sex{col 24}contraband_alcohol{col 47}raw_operatorrace
+{col 1}department_id{col 24}contraband_other{col 47}raw_operatorsex
+{col 1}type{col 24}frisk_performed{col 47}raw_resultofstop
+{col 1}arrest_made{col 24}search_conducted{col 47}raw_searchresultone
+{col 1}citation_issued{col 24}search_basis{col 47}raw_searchresulttwo
+{col 1}warning_issued{col 24}reason_for_search{col 47}raw_searchresultthree
+
+non-string variables:
+{col 1}raw_row_number
+
+(509,681 real changes made)
+(509,681 missing values generated)
+(509,681 missing values generated)
+(509,681 missing values generated)
+(509,681 missing values generated)
+(509,681 missing values generated)
+(509,681 missing values generated)
+(509,681 missing values generated)
+(509,681 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ri_statewide.dta saved
+
+
+#68/88 | 00:29:43: 2000_data/100_original/20_SOPP_CSVs/sc_statewide.csv
+{res}{text}(34 vars, 8,983,810 obs)
+string variables:
+{col 1}date{col 21}officer_age{col 41}contraband_drugs{col 61}raw_sex
+{col 1}location{col 21}officer_race{col 41}contraband_weapons{col 61}raw_race
+{col 1}lat{col 21}department_id{col 41}contraband_alcohol{col 61}raw_sectionnum
+{col 1}lng{col 21}type{col 41}contraband_other{col 61}raw_offensecode
+{col 1}county_name{col 21}violation{col 41}search_conducted{col 61}raw_contrabanddesc
+{col 1}subject_age{col 21}arrest_made{col 41}search_person{col 61}raw_officer_race
+{col 1}subject_race{col 21}citation_issued{col 41}search_vehicle
+{col 1}subject_sex{col 21}outcome{col 41}reason_for_stop
+{col 1}officer_id_hash{col 21}contraband_found{col 41}raw_contact_type
+
+non-string variables:
+{col 1}raw_row_number
+
+(8,983,810 real changes made)
+(8,983,810 missing values generated)
+(8,983,810 missing values generated)
+(8,983,810 missing values generated)
+(8,983,810 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/sc_statewide.dta saved
+
+
+#69/88 | 00:34:12: 2000_data/100_original/20_SOPP_CSVs/sd_statewide.csv
+{res}{text}(16 vars, 435,895 obs)
+string variables:
+{col 1}date{col 29}warning_issued
+{col 1}time{col 29}outcome
+{col 1}location{col 29}vehicle_color
+{col 1}county_name{col 29}vehicle_make
+{col 1}subject_sex{col 29}vehicle_model
+{col 1}type{col 29}vehicle_registration_state
+{col 1}violation{col 29}vehicle_year
+{col 1}citation_issued
+
+non-string variables:
+{col 1}raw_row_number
+
+(435,895 real changes made)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/sd_statewide.dta saved
+
+
+#70/88 | 00:34:23: 2000_data/100_original/20_SOPP_CSVs/tn_nashville.csv
+{res}{text}(42 vars, 3,092,351 obs)
+string variables:
+{col 1}raw_row_number{col 33}contraband_weapons
+{col 1}date{col 33}frisk_performed
+{col 1}time{col 33}search_conducted
+{col 1}location{col 33}search_person
+{col 1}lat{col 33}search_vehicle
+{col 1}lng{col 33}search_basis
+{col 1}precinct{col 33}reason_for_stop
+{col 1}reporting_area{col 33}vehicle_registration_state
+{col 1}zone{col 33}notes
+{col 1}subject_age{col 33}raw_verbal_warning_issued
+{col 1}subject_race{col 33}raw_written_warning_issued
+{col 1}subject_sex{col 33}raw_traffic_citation_issued
+{col 1}officer_id_hash{col 33}raw_misd_state_citation_issued
+{col 1}type{col 33}raw_suspect_ethnicity
+{col 1}violation{col 33}raw_driver_searched
+{col 1}arrest_made{col 33}raw_passenger_searched
+{col 1}citation_issued{col 33}raw_search_consent
+{col 1}warning_issued{col 33}raw_search_arrest
+{col 1}outcome{col 33}raw_search_warrant
+{col 1}contraband_found{col 33}raw_search_inventory
+{col 1}contraband_drugs{col 33}raw_search_plain_view
+
+non-string variables:
+
+(3,092,351 real changes made)
+(3,092,351 missing values generated)
+(3,092,351 missing values generated)
+(3,092,351 missing values generated)
+(3,092,351 missing values generated)
+(3,092,351 missing values generated)
+(3,092,351 missing values generated)
+(3,092,351 missing values generated)
+(3,092,351 missing values generated)
+(3,092,351 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tn_nashville.dta saved
+
+
+#71/88 | 00:36:12: 2000_data/100_original/20_SOPP_CSVs/tn_statewide.csv
+{res}{text}(20 vars, 3,829,082 obs)
+string variables:
+{col 1}date{col 25}department_name{col 49}vehicle_year
+{col 1}time{col 25}type{col 49}raw_orig_trfc_viol_cde
+{col 1}location{col 25}violation{col 49}raw_cnty_nbr
+{col 1}county_name{col 25}citation_issued{col 49}raw_race_ind
+{col 1}subject_race{col 25}outcome{col 49}raw_sex_ind
+{col 1}subject_sex{col 25}vehicle_make
+{col 1}department_id{col 25}vehicle_model
+
+non-string variables:
+{col 1}raw_row_number
+
+(3,829,082 real changes made)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tn_statewide.dta saved
+
+
+#72/88 | 00:37:22: 2000_data/100_original/20_SOPP_CSVs/tx_arlington.csv
+{res}{text}(19 vars, 112,526 obs)
+string variables:
+{col 1}date{col 31}subject_sex
+{col 1}time{col 31}officer_id_hash
+{col 1}location{col 31}type
+{col 1}lat{col 31}outcome
+{col 1}lng{col 31}search_conducted
+{col 1}beat{col 31}reason_for_stop
+{col 1}district{col 31}raw_1st_digit_race
+{col 1}sector{col 31}raw_4th_digit_final_outcome
+{col 1}subject_race{col 31}raw_6th_digit_search_outcome
+
+non-string variables:
+{col 1}raw_row_number
+
+(112,526 real changes made)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tx_arlington.dta saved
+
+
+#73/88 | 00:37:24: 2000_data/100_original/20_SOPP_CSVs/tx_austin.csv
+{res}{text}(29 vars, 483,255 obs)
+string variables:
+{col 1}raw_row_number{col 35}reason_for_stop
+{col 1}date{col 35}vehicle_make
+{col 1}subject_age{col 35}vehicle_model
+{col 1}subject_race{col 35}vehicle_registration_state
+{col 1}subject_sex{col 35}vehicle_year
+{col 1}officer_id_hash{col 35}raw_ethnicity
+{col 1}type{col 35}raw_person_search_search_based_o
+{col 1}contraband_found{col 35}raw_person_search_search_discove
+{col 1}contraband_drugs{col 35}raw_person_searched
+{col 1}contraband_weapons{col 35}raw_vehicle_search_search_based_
+{col 1}frisk_performed{col 35}raw_vehicle_search_search_discov
+{col 1}search_conducted{col 35}raw_vehicle_searched
+{col 1}search_person{col 35}raw_race_description
+{col 1}search_vehicle{col 35}raw_street_check_description
+{col 1}search_basis
+
+non-string variables:
+
+(483,255 real changes made)
+(483,255 missing values generated)
+(483,255 missing values generated)
+(483,255 missing values generated)
+(483,255 missing values generated)
+(483,255 missing values generated)
+(483,255 missing values generated)
+(483,255 missing values generated)
+(483,255 missing values generated)
+(483,255 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tx_austin.dta saved
+
+
+#74/88 | 00:37:37: 2000_data/100_original/20_SOPP_CSVs/tx_garland.csv
+{res}{text}(23 vars, 159,845 obs)
+string variables:
+{col 1}raw_row_number{col 29}citation_issued
+{col 1}date{col 29}outcome
+{col 1}time{col 29}speed
+{col 1}location{col 29}posted_speed
+{col 1}subject_race{col 29}vehicle_color
+{col 1}subject_sex{col 29}vehicle_make
+{col 1}officer_id_hash{col 29}vehicle_registration_state
+{col 1}officer_race{col 29}vehicle_year
+{col 1}officer_sex{col 29}raw_race
+{col 1}type{col 29}raw_alleged_speed
+{col 1}disposition{col 29}raw_posted_speed
+{col 1}violation
+
+non-string variables:
+
+(159,845 real changes made)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tx_garland.dta saved
+
+
+#75/88 | 00:37:41: 2000_data/100_original/20_SOPP_CSVs/tx_houston.csv
+{res}{text}(19 vars, 1,375,920 obs)
+string variables:
+{col 1}raw_row_number{col 18}beat{col 35}violation{col 52}vehicle_color
+{col 1}date{col 18}district{col 35}citation_issued{col 52}vehicle_make
+{col 1}location{col 18}subject_race{col 35}outcome{col 52}vehicle_model
+{col 1}lat{col 18}subject_sex{col 35}speed{col 52}raw_race
+{col 1}lng{col 18}type{col 35}posted_speed
+
+non-string variables:
+
+(1,375,920 real changes made)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tx_houston.dta saved
+
+
+#76/88 | 00:38:17: 2000_data/100_original/20_SOPP_CSVs/tx_lubbock.csv
+{res}{text}(10 vars, 546,101 obs)
+string variables:
+{col 1}date{col 18}lng{col 35}citation_issued
+{col 1}location{col 18}type{col 35}warning_issued
+{col 1}lat{col 18}disposition{col 35}outcome
+
+non-string variables:
+{col 1}raw_row_number
+
+(546,101 real changes made)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tx_lubbock.dta saved
+
+
+#77/88 | 00:38:24: 2000_data/100_original/20_SOPP_CSVs/tx_plano.csv
+{res}{text}(36 vars, 249,043 obs)
+string variables:
+{col 1}raw_row_number{col 23}unit{col 45}speed
+{col 1}date{col 23}type{col 45}posted_speed
+{col 1}time{col 23}violation{col 45}vehicle_color
+{col 1}location{col 23}arrest_made{col 45}vehicle_make
+{col 1}lat{col 23}citation_issued{col 45}vehicle_model
+{col 1}lng{col 23}warning_issued{col 45}vehicle_type
+{col 1}beat{col 23}outcome{col 45}notes
+{col 1}sector{col 23}contraband_found{col 45}raw_race
+{col 1}subject_age{col 23}contraband_drugs{col 45}raw_contraband
+{col 1}subject_race{col 23}contraband_weapons{col 45}raw_contraband_found
+{col 1}subject_sex{col 23}search_conducted{col 45}raw_results
+{col 1}officer_id_hash{col 23}search_basis{col 45}raw_ethnicity
+
+non-string variables:
+
+(249,043 real changes made)
+(249,043 missing values generated)
+(249,043 missing values generated)
+(249,043 missing values generated)
+(249,043 missing values generated)
+(249,043 missing values generated)
+(249,043 missing values generated)
+(249,043 missing values generated)
+(249,043 missing values generated)
+(249,043 missing values generated)
+(249,043 missing values generated)
+(249,043 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tx_plano.dta saved
+
+
+#78/88 | 00:38:35: 2000_data/100_original/20_SOPP_CSVs/tx_san_antonio.csv
+{res}{text}(32 vars, 1,040,428 obs)
+string variables:
+{col 1}raw_row_number{col 29}contraband_found
+{col 1}date{col 29}search_conducted
+{col 1}time{col 29}search_basis
+{col 1}location{col 29}speed
+{col 1}lat{col 29}posted_speed
+{col 1}lng{col 29}vehicle_color
+{col 1}district{col 29}vehicle_make
+{col 1}substation{col 29}vehicle_model
+{col 1}subject_age{col 29}vehicle_registration_state
+{col 1}subject_race{col 29}vehicle_year
+{col 1}subject_sex{col 29}raw_race
+{col 1}type{col 29}raw_posted_speed
+{col 1}violation{col 29}raw_actual_speed
+{col 1}arrest_made{col 29}raw_search_reason
+{col 1}citation_issued{col 29}raw_contraband_or_evidence
+{col 1}outcome{col 29}raw_custodial_arrest_made
+
+non-string variables:
+
+(1,040,428 real changes made)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tx_san_antonio.dta saved
+
+
+#79/88 | 00:39:05: 2000_data/100_original/20_SOPP_CSVs/tx_statewide.csv
+{res}{text}(34 vars, 27,426,840 obs)
+string variables:
+{col 1}date{col 32}contraband_found
+{col 1}time{col 32}contraband_drugs
+{col 1}location{col 32}contraband_weapons
+{col 1}lat{col 32}search_conducted
+{col 1}lng{col 32}search_vehicle
+{col 1}county_name{col 32}search_basis
+{col 1}district{col 32}vehicle_color
+{col 1}precinct{col 32}vehicle_make
+{col 1}region{col 32}vehicle_model
+{col 1}subject_race{col 32}vehicle_type
+{col 1}subject_sex{col 32}vehicle_year
+{col 1}officer_id_hash{col 32}raw_ha_race_sex
+{col 1}type{col 32}raw_ha_search_pc_boolean
+{col 1}violation{col 32}raw_ha_search_concent_boolean
+{col 1}citation_issued{col 32}raw_ha_incidto_arrest_boolean
+{col 1}warning_issued{col 32}raw_ha_vehicle_invent_boolean
+{col 1}outcome
+
+non-string variables:
+{col 1}raw_row_number
+
+(27,426,840 real changes made)
+(27,426,840 missing values generated)
+(27,426,840 missing values generated)
+(27,426,840 missing values generated)
+(27,426,840 missing values generated)
+(27,426,840 missing values generated)
+(27,426,840 missing values generated)
+(27,426,840 missing values generated)
+(27,426,840 missing values generated)
+(27,426,840 missing values generated)
+(27,426,840 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tx_statewide.dta saved
+
+
+#80/88 | 01:07:36: 2000_data/100_original/20_SOPP_CSVs/va_statewide.csv
+{res}{text}(11 vars, 5,006,847 obs)
+string variables:
+{col 1}date{col 19}subject_race{col 37}type{col 55}raw_race
+{col 1}location{col 19}officer_id_hash{col 37}search_conducted
+{col 1}county_name{col 19}officer_race{col 37}raw_officer_race
+
+non-string variables:
+{col 1}raw_row_number
+
+(5,006,847 real changes made)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/va_statewide.dta saved
+
+
+#81/88 | 01:08:40: 2000_data/100_original/20_SOPP_CSVs/vt_burlington.csv
+{res}{text}(26 vars, 31,510 obs)
+string variables:
+{col 1}raw_row_number{col 29}citation_issued
+{col 1}date{col 29}warning_issued
+{col 1}time{col 29}outcome
+{col 1}location{col 29}contraband_found
+{col 1}lat{col 29}search_conducted
+{col 1}lng{col 29}search_basis
+{col 1}subject_age{col 29}reason_for_search
+{col 1}subject_race{col 29}reason_for_stop
+{col 1}subject_sex{col 29}vehicle_registration_state
+{col 1}department_name{col 29}raw_race
+{col 1}type{col 29}raw_gender
+{col 1}violation{col 29}raw_contraband_evidence
+{col 1}arrest_made{col 29}raw_outcome_of_stop
+
+non-string variables:
+
+(31,510 real changes made)
+(31,510 missing values generated)
+(31,510 missing values generated)
+(31,510 missing values generated)
+(31,510 missing values generated)
+(31,510 missing values generated)
+(31,510 missing values generated)
+(31,510 missing values generated)
+(31,510 missing values generated)
+(31,510 missing values generated)
+(31,510 missing values generated)
+(31,510 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/vt_burlington.dta saved
+
+
+#82/88 | 01:08:41: 2000_data/100_original/20_SOPP_CSVs/vt_statewide.csv
+{res}{text}(25 vars, 283,285 obs)
+string variables:
+{col 1}date{col 31}citation_issued
+{col 1}time{col 31}warning_issued
+{col 1}location{col 31}outcome
+{col 1}lat{col 31}contraband_found
+{col 1}lng{col 31}search_conducted
+{col 1}subject_age{col 31}search_basis
+{col 1}subject_race{col 31}raw_stop_city
+{col 1}subject_sex{col 31}raw_stop_reason_description
+{col 1}officer_id_hash{col 31}raw_stop_search_description
+{col 1}department_name{col 31}raw_stop_outcome_description
+{col 1}type{col 31}raw_driver_gender
+{col 1}arrest_made{col 31}raw_driver_race
+
+non-string variables:
+{col 1}raw_row_number
+
+(283,285 real changes made)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/vt_statewide.dta saved
+
+
+#83/88 | 01:08:48: 2000_data/100_original/20_SOPP_CSVs/wa_seattle.csv
+{res}{text}(27 vars, 319,959 obs)
+string variables:
+{col 1}date{col 29}disposition
+{col 1}time{col 29}violation
+{col 1}location{col 29}arrest_made
+{col 1}lat{col 29}citation_issued
+{col 1}lng{col 29}warning_issued
+{col 1}beat{col 29}outcome
+{col 1}precinct{col 29}vehicle_color
+{col 1}sector{col 29}vehicle_make
+{col 1}subject_age{col 29}vehicle_model
+{col 1}subject_race{col 29}vehicle_registration_state
+{col 1}subject_sex{col 29}vehicle_year
+{col 1}officer_id_hash{col 29}raw_type_description
+{col 1}type{col 29}raw_vehicle_description
+
+non-string variables:
+{col 1}raw_row_number
+
+(319,959 real changes made)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/wa_seattle.dta saved
+
+
+#84/88 | 01:08:57: 2000_data/100_original/20_SOPP_CSVs/wa_statewide.csv
+{res}{text}(30 vars, 11,333,425 obs)
+string variables:
+{col 1}date{col 21}subject_sex{col 41}warning_issued{col 61}raw_contact_type
+{col 1}time{col 21}officer_race{col 41}outcome{col 61}raw_driver_race
+{col 1}location{col 21}officer_sex{col 41}contraband_found{col 61}raw_driver_gender
+{col 1}lat{col 21}department_name{col 41}frisk_performed{col 61}raw_search_type
+{col 1}lng{col 21}type{col 41}search_conducted{col 61}raw_enforcements
+{col 1}county_name{col 21}violation{col 41}search_basis
+{col 1}subject_age{col 21}arrest_made{col 41}raw_officer_race
+{col 1}subject_race{col 21}citation_issued{col 41}raw_officer_gender
+
+non-string variables:
+{col 1}raw_row_number
+
+(11,333,425 real changes made)
+(11,333,425 missing values generated)
+(11,333,425 missing values generated)
+(11,333,425 missing values generated)
+(11,333,425 missing values generated)
+(11,333,425 missing values generated)
+(11,333,425 missing values generated)
+(11,333,425 missing values generated)
+(11,333,425 missing values generated)
+(11,333,425 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/wa_statewide.dta saved
+
+
+#85/88 | 01:13:17: 2000_data/100_original/20_SOPP_CSVs/wa_tacoma.csv
+{res}{text}(15 vars, 271,912 obs)
+string variables:
+{col 1}date{col 18}lng{col 35}type{col 52}warning_issued
+{col 1}time{col 18}sector{col 35}disposition{col 52}outcome
+{col 1}location{col 18}subsector{col 35}arrest_made
+{col 1}lat{col 18}officer_id_hash{col 35}citation_issued
+
+non-string variables:
+{col 1}raw_row_number
+
+(271,912 real changes made)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/wa_tacoma.dta saved
+
+
+#86/88 | 01:13:21: 2000_data/100_original/20_SOPP_CSVs/wi_madison.csv
+{res}{text}(23 vars, 277,924 obs)
+string variables:
+{col 1}raw_row_number{col 29}citation_issued
+{col 1}date{col 29}warning_issued
+{col 1}time{col 29}outcome
+{col 1}location{col 29}speed
+{col 1}lat{col 29}posted_speed
+{col 1}lng{col 29}vehicle_color
+{col 1}district{col 29}vehicle_make
+{col 1}sector{col 29}vehicle_model
+{col 1}subject_race{col 29}vehicle_registration_state
+{col 1}subject_sex{col 29}vehicle_year
+{col 1}type{col 29}raw_race
+{col 1}violation
+
+non-string variables:
+
+(277,924 real changes made)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/wi_madison.dta saved
+
+
+#87/88 | 01:13:28: 2000_data/100_original/20_SOPP_CSVs/wi_statewide.csv
+{res}{text}(44 vars, 1,058,902 obs)
+string variables:
+{col 1}raw_row_number{col 32}search_conducted
+{col 1}date{col 32}search_person
+{col 1}time{col 32}search_vehicle
+{col 1}location{col 32}search_basis
+{col 1}lat{col 32}vehicle_color
+{col 1}lng{col 32}vehicle_make
+{col 1}county_name{col 32}vehicle_model
+{col 1}subject_race{col 32}vehicle_type
+{col 1}subject_sex{col 32}vehicle_registration_state
+{col 1}department_id{col 32}vehicle_year
+{col 1}department_name{col 32}raw_onhighwaydirection
+{col 1}type{col 32}raw_onhighwayname
+{col 1}violation{col 32}raw_fromatstreetname
+{col 1}arrest_made{col 32}raw_race
+{col 1}citation_issued{col 32}raw_sex
+{col 1}warning_issued{col 32}raw_individualsearchconducted
+{col 1}outcome{col 32}raw_vehiclesearchconducted
+{col 1}contraband_found{col 32}raw_individualcontraband
+{col 1}contraband_drugs{col 32}raw_vehiclecontraband
+{col 1}contraband_weapons{col 32}raw_summaryoutcome
+{col 1}contraband_alcohol{col 32}raw_individualsearchbasis
+{col 1}contraband_other{col 32}raw_vehiclesearchbasis
+
+non-string variables:
+
+(1,058,902 real changes made)
+(1,058,902 missing values generated)
+(1,058,902 missing values generated)
+(1,058,902 missing values generated)
+(1,058,902 missing values generated)
+(1,058,902 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/wi_statewide.dta saved
+
+
+#88/88 | 01:14:07: 2000_data/100_original/20_SOPP_CSVs/wy_statewide.csv
+{res}{text}(16 vars, 173,311 obs)
+string variables:
+{col 1}raw_row_number{col 18}county_name{col 35}officer_id_hash{col 52}raw_race
+{col 1}date{col 18}subject_age{col 35}department_id{col 52}raw_sex
+{col 1}time{col 18}subject_race{col 35}type{col 52}raw_streetnbr
+{col 1}location{col 18}subject_sex{col 35}outcome{col 52}raw_street
+
+non-string variables:
+
+(173,311 real changes made)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/wy_statewide.dta saved
+
+
+{com}. 
+. 
+. 
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/1000_notes/200_smcl_logs/01_prepping/01a_converting.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}20 Nov 2024, 01:14:10
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

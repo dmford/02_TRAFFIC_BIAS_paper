@@ -1,0 +1,584 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}C:\Users\david\coding\02_TRAFFIC_BIAS_paper\3000_code/03_cleaning/03_SMCL_logs/03b_FE_cleaning.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}26 Mar 2025, 11:16:06
+{txt}
+{com}. 
+. import delimited "2000_data/100_original/10_FE_CSVs/FE_rough_clean.csv", clear
+{res}{txt}(encoding automatically selected: ISO-8859-1)
+{text}(20 vars, 31,497 obs)
+
+{com}. 
+. * (2017 MS John Doe ---> identified later as Michael Len West)
+. replace fe_subject_name = "Michael Len West" if (fe_subject_name == "John Doe") & (fe_id == 23315)
+{txt}(1 real change made)
+
+{com}. 
+. display "string variables:"
+{res}string variables:
+{txt}
+{com}. ds, has(type string) var(32)
+{txt}{col 1}fe_subject_name{col 30}fe_date{col 59}fe_highest_force
+{col 1}fe_subject_age{col 30}state{col 59}fe_armed
+{col 1}fe_subject_gender{col 30}city{col 59}fe_alleged_weapon
+{col 1}fe_subject_race{col 30}county_name{col 59}fe_aggressive_movement
+{col 1}fe_subject_race_imputations{col 30}fe_lat{col 59}fe_fleeing
+{col 1}fe_imputation_prob{col 30}dept_name
+
+{com}. display ""
+{res}
+{txt}
+{com}. display "non-string variables:"
+{res}non-string variables:
+{txt}
+{com}. ds, not(type string) var(32)
+{txt}{col 1}fe_id{col 10}zip{col 19}fe_long
+
+{com}. 
+. * dropping a handful of unusable event-observations 
+. drop if state == ""
+{txt}(0 observations deleted)
+
+{com}. drop if dept_name == ""
+{txt}(77 observations deleted)
+
+{com}. drop if substr(fe_armed,1,9) == "Duplicate"
+{txt}(3 observations deleted)
+
+{com}. 
+. * problem: dept = "A, B, C, D, ..." for some event-obs 
+.         * solution: split into separate depts, stack (now repeating events)
+. split dept_name, parse(,)
+{res}variables created as string: 
+{txt}{col 1}dept_name1{col 13}dept_name2{col 25}dept_name3{col 37}dept_name4{col 49}dept_name5{col 61}dept_name6{col 73}dept_name7{col 85}dept_name8
+
+{com}. drop dept_name
+{txt}
+{com}. 
+. order state city zip dept_name*
+{txt}
+{com}. 
+. sort state city dept_name1 dept_name2 dept_name3 dept_name4 dept_name5 dept_name6 
+{txt}
+{com}. 
+. foreach dept of varlist dept_name* {c -(}
+{txt}  2{com}.         qui replace `dept' = "georgia state patrol" if `dept' == "georgia state police"
+{txt}  3{com}. 
+.         qui replace `dept' = "macoupin county sheriff's office" if `dept' == "macoupin county county sheriff's office"
+{txt}  4{com}. 
+.         qui replace `dept' = "peoria police department" if `dept' == "peoria police police department"
+{txt}  5{com}. 
+.         qui replace `dept' = "vermilion county sheriff's office" if `dept' == "vermillion county sheriff's office"
+{txt}  6{com}. 
+.         qui replace `dept' = "louisville metro police department" if `dept' == "louisville metropolitan police department"
+{txt}  7{com}. 
+.         qui replace `dept' = "baltimore police department" if `dept' == "baltimore city police department"
+{txt}  8{com}. 
+.         qui replace `dept' = "montgomery county police department" if `dept' == "montgomery county department of police"
+{txt}  9{com}.         qui replace `dept' = "maryland transportation authority police" if `dept' == "maryland transportation police authority" 
+{txt} 10{com}.         qui replace `dept' = "st. mary's county sheriff's office" if `dept' == "saint mary's county sheriff's office"
+{txt} 11{com}.         qui replace `dept' = "st. louis county police department" if `dept' == "`st. louis county police department"
+{txt} 12{com}.         qui replace `dept' = "kansas city (mo) police department" if `dept' == "kansas city police department (mo)"
+{txt} 13{com}.         qui replace `dept' = "missouri state highway patrol" if `dept' == "missouri highway patrol"
+{txt} 14{com}. 
+.         qui replace `dept' = "mississippi highway patrol" if `dept' == "mississippi highway safety patrol"
+{txt} 15{com}. 
+.         qui replace `dept' = "charlotte-mecklenburg police department" if `dept' == "charlotte police department" & state == "NC"
+{txt} 16{com}.         qui replace `dept' = "charlotte-mecklenburg police department" if `dept' == "charlotte-mecklenburg" & state == "NC"
+{txt} 17{com}.         qui replace `dept' = "hertford county sheriff's office" if `dept' == "hertford county chief deputy will liverman"
+{txt} 18{com}.         qui replace `dept' = "north carolina state highway patrol" if `dept' == "north carolina highway patrol" | dept_name1 == "north carolina state patrol"
+{txt} 19{com}. 
+.         qui replace `dept' = "lincoln county sheriff's office" if `dept' == "lincoln county sheriff's department" & state == "NE"
+{txt} 20{com}.         qui replace `dept' = "omaha police department" if `dept' == "omaha police department'" & state == "NE"
+{txt} 21{com}. 
+.         qui replace `dept' = "columbus division of police" if `dept' == "columbus police department" & state == "OH"
+{txt} 22{com}.         qui replace `dept' = "ohio state highway patrol" if `dept' == "ohio highway patrol" | dept_name1 == "ohio state patrol"
+{txt} 23{com}. 
+.         qui replace `dept' = "oklahoma city police department" if `dept' == "oklahoma police department"
+{txt} 24{com}. 
+.         qui replace `dept' = "south carolina highway patrol" if `dept' == "south carolina state highway patrol"
+{txt} 25{com}. 
+.         qui replace `dept' = "metro nashville police department" if `dept' == "metropolitan nashville police department" 
+{txt} 26{com}. {c )-}
+{txt}
+{com}. 
+. save "2000_data/200_raw/10_FE_DTAs/FE_raw_0", replace
+{txt}{p 0 4 2}
+(file {bf}
+2000_data/200_raw/10_FE_DTAs/FE_raw_0.dta{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+2000_data/200_raw/10_FE_DTAs/FE_raw_0.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. ****************************************************************************************************
+. 
+. * stacking split dept_name variables, making dataset longer
+.         * this will attribute some events to multiple departments
+.         * (emailed Brian from FE - he says no rhyme or reason to listed dept orders)
+. use "2000_data/200_raw/10_FE_DTAs/FE_raw_0", replace
+{txt}
+{com}. drop if dept_name1 == ""
+{txt}(0 observations deleted)
+
+{com}. drop dept_name2 dept_name3 dept_name4 dept_name5 dept_name6 dept_name7 dept_name8
+{txt}
+{com}. rename dept_name1 dept_name
+{res}{txt}
+{com}. gen fe_dept_order = 1
+{txt}
+{com}. save "2000_data/200_raw/10_FE_DTAs/FE_raw_1", replace
+{txt}{p 0 4 2}
+(file {bf}
+2000_data/200_raw/10_FE_DTAs/FE_raw_1.dta{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+2000_data/200_raw/10_FE_DTAs/FE_raw_1.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. use "2000_data/200_raw/10_FE_DTAs/FE_raw_0", replace
+{txt}
+{com}. drop if dept_name2 == ""
+{txt}(28,961 observations deleted)
+
+{com}. drop dept_name1 dept_name3 dept_name4 dept_name5 dept_name6 dept_name7 dept_name8
+{txt}
+{com}. rename dept_name2 dept_name
+{res}{txt}
+{com}. gen fe_dept_order = 2
+{txt}
+{com}. save "2000_data/200_raw/10_FE_DTAs/FE_raw_2", replace
+{txt}{p 0 4 2}
+(file {bf}
+2000_data/200_raw/10_FE_DTAs/FE_raw_2.dta{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+2000_data/200_raw/10_FE_DTAs/FE_raw_2.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. use "2000_data/200_raw/10_FE_DTAs/FE_raw_0", replace
+{txt}
+{com}. drop if dept_name3 == ""
+{txt}(30,915 observations deleted)
+
+{com}. drop dept_name1 dept_name2 dept_name4 dept_name5 dept_name6 dept_name7 dept_name8
+{txt}
+{com}. rename dept_name3 dept_name
+{res}{txt}
+{com}. gen fe_dept_order = 3
+{txt}
+{com}. save "2000_data/200_raw/10_FE_DTAs/FE_raw_3", replace
+{txt}{p 0 4 2}
+(file {bf}
+2000_data/200_raw/10_FE_DTAs/FE_raw_3.dta{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+2000_data/200_raw/10_FE_DTAs/FE_raw_3.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. use "2000_data/200_raw/10_FE_DTAs/FE_raw_0", replace
+{txt}
+{com}. drop if dept_name4 == ""
+{txt}(31,273 observations deleted)
+
+{com}. drop dept_name1 dept_name2 dept_name3 dept_name5 dept_name6 dept_name7 dept_name8
+{txt}
+{com}. rename dept_name4 dept_name
+{res}{txt}
+{com}. gen fe_dept_order = 4
+{txt}
+{com}. save "2000_data/200_raw/10_FE_DTAs/FE_raw_4", replace
+{txt}{p 0 4 2}
+(file {bf}
+2000_data/200_raw/10_FE_DTAs/FE_raw_4.dta{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+2000_data/200_raw/10_FE_DTAs/FE_raw_4.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. use "2000_data/200_raw/10_FE_DTAs/FE_raw_0", replace
+{txt}
+{com}. drop if dept_name5 == ""
+{txt}(31,364 observations deleted)
+
+{com}. drop dept_name1 dept_name2 dept_name3 dept_name4 dept_name6 dept_name7 dept_name8
+{txt}
+{com}. rename dept_name5 dept_name
+{res}{txt}
+{com}. gen fe_dept_order = 5
+{txt}
+{com}. save "2000_data/200_raw/10_FE_DTAs/FE_raw_5", replace
+{txt}{p 0 4 2}
+(file {bf}
+2000_data/200_raw/10_FE_DTAs/FE_raw_5.dta{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+2000_data/200_raw/10_FE_DTAs/FE_raw_5.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. use "2000_data/200_raw/10_FE_DTAs/FE_raw_0", replace
+{txt}
+{com}. drop if dept_name6 == ""
+{txt}(31,391 observations deleted)
+
+{com}. drop dept_name1 dept_name2 dept_name3 dept_name4 dept_name5 dept_name7 dept_name8
+{txt}
+{com}. rename dept_name6 dept_name
+{res}{txt}
+{com}. gen fe_dept_order = 6
+{txt}
+{com}. save "2000_data/200_raw/10_FE_DTAs/FE_raw_6", replace
+{txt}{p 0 4 2}
+(file {bf}
+2000_data/200_raw/10_FE_DTAs/FE_raw_6.dta{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+2000_data/200_raw/10_FE_DTAs/FE_raw_6.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. use "2000_data/200_raw/10_FE_DTAs/FE_raw_0", replace
+{txt}
+{com}. drop if dept_name7 == ""
+{txt}(31,407 observations deleted)
+
+{com}. drop dept_name1 dept_name2 dept_name3 dept_name4 dept_name5 dept_name6 dept_name8
+{txt}
+{com}. rename dept_name7 dept_name
+{res}{txt}
+{com}. gen fe_dept_order = 7
+{txt}
+{com}. save "2000_data/200_raw/10_FE_DTAs/FE_raw_7", replace
+{txt}{p 0 4 2}
+(file {bf}
+2000_data/200_raw/10_FE_DTAs/FE_raw_7.dta{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+2000_data/200_raw/10_FE_DTAs/FE_raw_7.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. use "2000_data/200_raw/10_FE_DTAs/FE_raw_0", replace
+{txt}
+{com}. drop if dept_name8 == ""
+{txt}(31,413 observations deleted)
+
+{com}. drop dept_name1 dept_name2 dept_name3 dept_name4 dept_name5 dept_name6 dept_name7 
+{txt}
+{com}. rename dept_name8 dept_name
+{res}{txt}
+{com}. gen fe_dept_order = 8
+{txt}
+{com}. save "2000_data/200_raw/10_FE_DTAs/FE_raw_8", replace
+{txt}{p 0 4 2}
+(file {bf}
+2000_data/200_raw/10_FE_DTAs/FE_raw_8.dta{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+2000_data/200_raw/10_FE_DTAs/FE_raw_8.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. ****************************************************************************************************
+. 
+. * appending the split-dept datasets back together 
+. use "2000_data/200_raw/10_FE_DTAs/FE_raw_1", replace
+{txt}
+{com}. append using "2000_data/200_raw/10_FE_DTAs/FE_raw_2"
+{txt}
+{com}. append using "2000_data/200_raw/10_FE_DTAs/FE_raw_3"
+{txt}
+{com}. append using "2000_data/200_raw/10_FE_DTAs/FE_raw_4"
+{txt}
+{com}. append using "2000_data/200_raw/10_FE_DTAs/FE_raw_5"
+{txt}
+{com}. append using "2000_data/200_raw/10_FE_DTAs/FE_raw_6"
+{txt}
+{com}. append using "2000_data/200_raw/10_FE_DTAs/FE_raw_7"
+{txt}
+{com}. append using "2000_data/200_raw/10_FE_DTAs/FE_raw_8"
+{txt}
+{com}. 
+. ****************************************************************************************************
+. 
+. * renaming things ahead of merge
+. rename dept_name department_name
+{res}{txt}
+{com}. replace department_name = strtrim(department_name)
+{txt}(3,194 real changes made)
+
+{com}. replace department_name = stritrim(department_name)
+{txt}(0 real changes made)
+
+{com}. rename city fe_city
+{res}{txt}
+{com}. rename county_name fe_county_name
+{res}{txt}
+{com}. 
+. * FE dates --> shooting_date
+. gen shooting_date = date(fe_date, "MDY")
+{txt}
+{com}. drop fe_date
+{txt}
+{com}. format %td shooting_date
+{txt}
+{com}. 
+. * generating dept, state-specific unique department names: = state + _ + dept
+. gen st_dept = state + "_" + department_name
+{txt}
+{com}. 
+. * re-framing FE's fe_subject_race variable: 
+. rename fe_subject_race orig_fe_subject_race
+{res}{txt}
+{com}. gen fe_subject_race = 1 if inlist(orig_fe_subject_race, "European-American/White", "European-American/European-American/White", "european-American/White", "Christopher Anthony Alexander")
+{txt}(22,627 missing values generated)
+
+{com}. replace fe_subject_race = 2 if inlist(orig_fe_subject_race, "African-American/Black", "African-American/Black African-American/Black Not imputed")
+{txt}(7,442 real changes made)
+
+{com}. replace fe_subject_race = 3 if inlist(orig_fe_subject_race, "Hispanic/Latino")
+{txt}(4,446 real changes made)
+
+{com}. replace fe_subject_race = 4 if inlist(orig_fe_subject_race, "Asian/Pacific Islander")
+{txt}(511 real changes made)
+
+{com}. replace fe_subject_race = 5 if inlist(orig_fe_subject_race, "Native American/Alaskan")
+{txt}(352 real changes made)
+
+{com}. replace fe_subject_race = 6 if inlist(orig_fe_subject_race, "Middle Eastern")
+{txt}(61 real changes made)
+
+{com}. replace fe_subject_race = 8 if inlist(orig_fe_subject_race, "Race unspecified")
+{txt}(9,815 real changes made)
+
+{com}. gen fe_subject_race_flag = (fe_subject_race == 8 | fe_subject_race == 9)
+{txt}
+{com}. label values fe_subject_race races
+{txt}
+{com}. drop orig_fe_subject_race
+{txt}
+{com}. 
+. * re-framing fe_highest_force variable: 
+. label define force_levels 1 "Gunshot" 2 "Vehicle" 3 "Tasered" 4 "Medical emergency" 5 "Asphyxiated/Restrained" 6 "Drowned" 7 "Beaten/Bludgeoned with instrument" 8 "Drug overdose" 9 "Fell from a height" 10 "Stabbed" 11 "Burned/Smoke inhalation" 12 "Chemical agent/Pepper spray" 13 "Less-than-lethal force" 14 "Other" 99 "Undetermined"
+{txt}
+{com}. replace fe_highest_force = "Asphyxiated/Restrained" if fe_highest_force == "Asphyxiation/Restrain" | fe_highest_force == "Asphyxiation/Restrained" | fe_highest_force == "Restrain/Asphyxiation"
+{txt}(4 real changes made)
+
+{com}. rename fe_highest_force orig_fe_highest_force
+{res}{txt}
+{com}. gen fe_highest_force = .
+{txt}(34,612 missing values generated)
+
+{com}. replace fe_highest_force = 1 if orig_fe_highest_force == "Gunshot"
+{txt}(24,696 real changes made)
+
+{com}. replace fe_highest_force = 2 if orig_fe_highest_force == "Vehicle"
+{txt}(7,047 real changes made)
+
+{com}. replace fe_highest_force = 3 if orig_fe_highest_force == "Tasered"
+{txt}(1,000 real changes made)
+
+{com}. replace fe_highest_force = 4 if orig_fe_highest_force == "Medical emergency"
+{txt}(418 real changes made)
+
+{com}. replace fe_highest_force = 5 if orig_fe_highest_force == "Asphyxiated/Restrained"
+{txt}(383 real changes made)
+
+{com}. replace fe_highest_force = 6 if orig_fe_highest_force == "Drowned"
+{txt}(230 real changes made)
+
+{com}. replace fe_highest_force = 7 if orig_fe_highest_force == "Beaten/Bludgeoned with instrument"
+{txt}(197 real changes made)
+
+{com}. replace fe_highest_force = 8 if orig_fe_highest_force == "Drug overdose"
+{txt}(190 real changes made)
+
+{com}. replace fe_highest_force = 9 if orig_fe_highest_force == "Fell from a height"
+{txt}(100 real changes made)
+
+{com}. replace fe_highest_force = 10 if orig_fe_highest_force == "Stabbed"
+{txt}(64 real changes made)
+
+{com}. replace fe_highest_force = 11 if orig_fe_highest_force == "Burned/Smoke inhalation"
+{txt}(49 real changes made)
+
+{com}. replace fe_highest_force = 12 if orig_fe_highest_force == "Chemical agent/Pepper spray"
+{txt}(37 real changes made)
+
+{com}. replace fe_highest_force = 13 if orig_fe_highest_force == "Less-than-lethal force"
+{txt}(1 real change made)
+
+{com}. replace fe_highest_force = 14 if orig_fe_highest_force == "Other"
+{txt}(91 real changes made)
+
+{com}. replace fe_highest_force = 99 if orig_fe_highest_force == "Undetermined"
+{txt}(106 real changes made)
+
+{com}. label values fe_highest_force force_levels
+{txt}
+{com}. drop orig_fe_highest_force
+{txt}
+{com}. 
+. * re-framing FE's fe_armed variable: 
+. rename fe_armed orig_fe_armed
+{res}{txt}
+{com}. gen fe_armed = .
+{txt}(34,612 missing values generated)
+
+{com}. replace fe_armed = 0 if inlist(orig_fe_armed, "Unarmed", "None")
+{txt}(6,468 real changes made)
+
+{com}. replace fe_armed = 1 if inlist(orig_fe_armed, "Armed", "Arrmed")
+{txt}(11,770 real changes made)
+
+{com}. replace fe_armed = 8 if orig_fe_armed == "Uncertain"
+{txt}(432 real changes made)
+
+{com}. label values fe_armed false_true_unk_na
+{txt}
+{com}. drop orig_fe_armed
+{txt}
+{com}. 
+. * re-framing FE's fe_subject_age variable: 
+. * NOTE: assuming dist'n of 18-25 y/o's is uniform, replacing with 21.5, the median. 
+. gen fe_subject_age_18_25 = (fe_subject_age == "18-25")
+{txt}
+{com}. replace fe_subject_age = "21.5" if fe_subject_age == "18-25"
+{txt}(2 real changes made)
+
+{com}. replace fe_subject_age = "999" if fe_subject_age == "NA"
+{txt}(0 real changes made)
+
+{com}. destring fe_subject_age, replace
+{txt}fe_subject_age: all characters numeric; {res}replaced {txt}as {res}double
+{txt}(1336 missing values generated)
+{res}{txt}
+{com}. gen fe_subject_age_nines = (fe_subject_age == 999)
+{txt}
+{com}. egen temp_age = max(fe_subject_age_nines) 
+{txt}
+{com}. if temp_age == 0 drop fe_subject_age_nines
+{txt}
+{com}. drop temp_age
+{txt}
+{com}. 
+. * re-framing FE's fe_subject_sex variable: (1=male, 2=female, 3=trans, 9=NA)
+. rename fe_subject_gender fe_subject_sex
+{res}{txt}
+{com}. label define sex 1 "male" 2 "female" 3 "transgender" 9 "NA"
+{txt}
+{com}. replace fe_subject_sex = "1" if fe_subject_sex == "Male"
+{txt}(31,165 real changes made)
+
+{com}. replace fe_subject_sex = "2" if fe_subject_sex == "Female"
+{txt}(3,286 real changes made)
+
+{com}. replace fe_subject_sex = "3" if fe_subject_sex == "Transgender"
+{txt}(25 real changes made)
+
+{com}. destring fe_subject_sex, replace
+{txt}fe_subject_sex: all characters numeric; {res}replaced {txt}as {res}byte
+{txt}(136 missing values generated)
+{res}{txt}
+{com}. label values fe_subject_sex sex
+{txt}
+{com}. gen fe_subject_sex_flag = (fe_subject_sex == 9)
+{txt}
+{com}. 
+. save "FE_histogramming", replace
+{txt}{p 0 4 2}
+(file {bf}
+FE_histogramming.dta{rm}
+not found)
+{p_end}
+{p 0 4 2}
+file {bf}
+FE_histogramming.dta{rm}
+saved
+{p_end}
+
+{com}. 
+. STOP
+{err}command {bf}STOP{sf} is unrecognized
+{txt}{search r(199), local:r(199);}
+
+end of do-file
+
+{search r(199), local:r(199);}
+
+{com}. do "C:\Users\david\AppData\Local\Temp\STD5258_000000.tmp"
+{txt}
+{com}. * testing_code1.do
+. 
+. clear all
+{res}{txt}
+{com}. 
+. * (1) HPCC cluster, and (2) personal machine: 
+. *cd "/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper"
+. cd "~\coding\02_TRAFFIC_BIAS_paper\"
+{res}C:\Users\david\coding\02_TRAFFIC_BIAS_paper
+{txt}
+{com}. 
+. ********************************************************************************
+. 
+. log using "3000_code/00a_testing_code1", smcl replace
+{err}log file already open
+{txt}{search r(604), local:r(604);}
+
+end of do-file
+
+{search r(604), local:r(604);}
+
+{com}. do "C:\Users\david\coding\02_TRAFFIC_BIAS_paper\3000_code\00a_testing_code1.do"
+{txt}
+{com}. * testing_code1.do
+. 
+. clear all
+{res}{txt}
+{com}. 
+. * (1) HPCC cluster, and (2) personal machine: 
+. *cd "/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper"
+. cd "~\coding\02_TRAFFIC_BIAS_paper\"
+{res}C:\Users\david\coding\02_TRAFFIC_BIAS_paper
+{txt}
+{com}. 
+. ********************************************************************************
+. 
+. capture log close
+{smcl}
+{com}{sf}{ul off}

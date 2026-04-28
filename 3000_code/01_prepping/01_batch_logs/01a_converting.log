@@ -1,0 +1,3010 @@
+
+  ___  ____  ____  ____  ____ (R)
+ /__    /   ____/   /   ____/
+___/   /   /___/   /   /___/   16.1   Copyright 1985-2019 StataCorp LLC
+  Statistics/Data analysis            StataCorp
+                                      4905 Lakeway Drive
+                                      College Station, Texas 77845 USA
+                                      800-STATA-PC        https://www.stata.com
+                                      979-696-4600        stata@stata.com
+                                      979-696-4601 (fax)
+
+Stata license: 4-user network perpetual
+Serial number: 501606358866
+  Licensed to: Michael Bates
+               University of California, Riverside
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. New update available; type -update all-
+
+. * 01a_converting
+
+. 
+. 
+. 
+. clear all
+
+. 
+. 
+. 
+. * (1) HPCC cluster, and (2) personal machine: 
+
+. 
+. cd "/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper"
+/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper
+
+. 
+. *cd "~\coding\02_TRAFFIC_BIAS_paper\"
+
+. 
+. 
+. 
+. *****************************************************************************
+> ***
+
+. 
+. 
+. 
+. * non-standard packages needed: 
+
+. 
+. *ssc install _gwtmean 
+
+. 
+. *ssc install egenmore
+
+. 
+. *ssc install unique
+
+. 
+. *ssc install filelist
+
+. 
+. *ssc install coefplot
+
+. 
+. 
+. 
+. log using "1000_notes/200_smcl_logs/01_prepping/01a_converting"
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  /bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/1000_note
+> s/200_smcl_logs/01_prepping/01a_converting.smcl
+  log type:  smcl
+ opened on:  19 Nov 2024, 23:20:33
+
+. 
+. 
+. 
+. * this ugly piece is used to reduce data-crunching: 
+
+. 
+. local my_sopp_vars = "state locale date subject_race subject_age subject_sex 
+> department_name county_name search_conducted officer_race officer_age officer
+> _sex contraband_found search_basis search_vehicle search_person contraband_al
+> cohol contraband_drugs contraband_weapons contraband_other type reason_for_se
+> arch department_id type"
+
+. 
+. 
+. 
+. * pulling list of 88 SOPP CSVs, generating vector of filepaths to convert
+
+. 
+. filelist, dir("2000_data/100_original/20_SOPP_CSVs") pat("*.csv") maxdeep(1)
+Number of files found = 88
+
+. 
+. gen csv_path = dirname + "/" + filename
+
+. 
+. qui levelsof csv_path, local(toconvert)
+
+. 
+. 
+. 
+. local j = 1
+
+. 
+. local k = _N
+
+. 
+. foreach file of local toconvert {
+  2. 
+. display ""
+  3. 
+. display "#`j'/`k' | $S_TIME: `file'" 
+  4. 
+. local ++j
+  5. 
+. import delimited "`file'", varnames(1) bindquote(strict) maxquotedrows(80) cl
+> ear 
+  6. 
+. display "string variables:"
+  7. 
+. ds, has(type string) var(32)
+  8. 
+. display ""
+  9. 
+. display "non-string variables:"
+ 10. 
+. ds, not(type string) var(32)
+ 11. 
+. display ""
+ 12. 
+. gen state=upper(substr("`file'", 37, 2))
+ 13. 
+. gen locale=upper(substr("`file'", 40, .))
+ 14. 
+. replace locale=subinstr(locale,".CSV","",.)
+ 15. 
+. gen state_locale = state + "_" + locale
+ 16. 
+. order state locale state_locale
+ 17. 
+. local save1 = subinstr("`file'", "100_original/20_SOPP_CSVs", "200_raw/20_SOP
+> P_DTAs", .)
+ 18. 
+. local save2 = subinstr("`save1'", ".csv", "", .)
+ 19. 
+. drop raw_row_number
+ 20. 
+. foreach var of local my_sopp_vars {
+ 21. 
+. capture confirm variable `var'
+ 22. 
+. if !_rc {
+ 23. 
+. }
+ 24. 
+. else {
+ 25. 
+. gen `var' = ""
+ 26. 
+. }
+ 27. 
+. }
+ 28. 
+. save "`save2'", replace
+ 29. 
+. display ""
+ 30. 
+. }
+
+#1/88 | 23:20:33: 2000_data/100_original/20_SOPP_CSVs/ar_little_rock.csv
+(13 vars, 13,641 obs)
+string variables:
+raw_row_number      lng                 type                raw_defendant_race
+date                subject_age         citation_issued
+time                subject_race        outcome
+lat                 subject_sex         vehicle_type
+
+non-string variables:
+
+(13,641 real changes made)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+(13,641 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ar_little_rock.dta saved
+
+
+#2/88 | 23:20:34: 2000_data/100_original/20_SOPP_CSVs/az_gilbert.csv
+(12 vars, 480,599 obs)
+string variables:
+raw_row_number   location         officer_id_hash  vehicle_make
+date             lat              type             vehicle_model
+time             lng              vehicle_color    vehicle_year
+
+non-string variables:
+
+(480,599 real changes made)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+(480,599 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/az_gilbert.dta saved
+
+
+#3/88 | 23:20:42: 2000_data/100_original/20_SOPP_CSVs/az_mesa.csv
+(19 vars, 96,621 obs)
+string variables:
+date                 subject_race         citation_issued
+time                 subject_sex          warning_issued
+location             officer_id_hash      outcome
+lat                  type                 raw_race_fixed
+lng                  violation            raw_ethnicity_fixed
+subject_age          arrest_made          raw_charge
+
+non-string variables:
+raw_row_number
+
+(96,621 real changes made)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+(96,621 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/az_mesa.dta saved
+
+
+#4/88 | 23:20:44: 2000_data/100_original/20_SOPP_CSVs/az_statewide.csv
+(29 vars, 3,498,159 obs)
+string variables:
+date                    citation_issued         reason_for_stop
+time                    warning_issued          vehicle_type
+location                outcome                 vehicle_year
+county_name             contraband_found        raw_ethnicity
+subject_race            contraband_drugs        raw_outcomeofstop
+subject_sex             contraband_other        raw_reasonforstop
+officer_id_hash         search_conducted        raw_typeofsearch
+type                    search_person           raw_violationsobserved
+violation               search_vehicle
+arrest_made             search_basis
+
+non-string variables:
+raw_row_number
+
+(3,498,159 real changes made)
+(3,498,159 missing values generated)
+(3,498,159 missing values generated)
+(3,498,159 missing values generated)
+(3,498,159 missing values generated)
+(3,498,159 missing values generated)
+(3,498,159 missing values generated)
+(3,498,159 missing values generated)
+(3,498,159 missing values generated)
+(3,498,159 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/az_statewide.dta saved
+
+
+#5/88 | 23:22:23: 2000_data/100_original/20_SOPP_CSVs/ca_anaheim.csv
+(4 vars, 87,876 obs)
+string variables:
+date             type             reason_for_stop
+
+non-string variables:
+raw_row_number
+
+(87,876 real changes made)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+(87,876 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_anaheim.dta saved
+
+
+#6/88 | 23:22:23: 2000_data/100_original/20_SOPP_CSVs/ca_bakersfield.csv
+(18 vars, 189,685 obs)
+string variables:
+raw_row_number       beat                 citation_issued
+date                 subject_age          outcome
+time                 subject_race         raw_ethnicity
+location             subject_sex          raw_statute_name
+lat                  officer_id_hash      raw_statute_section
+lng                  type                 raw_race
+
+non-string variables:
+
+(189,685 real changes made)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+(189,685 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_bakersfield.dta saved
+
+
+#7/88 | 23:22:30: 2000_data/100_original/20_SOPP_CSVs/ca_long_beach.csv
+(27 vars, 365,924 obs)
+string variables:
+raw_row_number              officer_age
+date                        officer_race
+location                    officer_sex
+lat                         type
+lng                         violation
+beat                        citation_issued
+district                    outcome
+subdistrict                 vehicle_make
+division                    vehicle_registration_state
+subject_age                 vehicle_year
+subject_race                raw_race
+subject_sex                 raw_sex
+officer_id_hash             raw_officer_race
+
+non-string variables:
+officer_years_of_service
+
+(365,924 real changes made)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+(365,924 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_long_beach.dta saved
+
+
+#8/88 | 23:22:44: 2000_data/100_original/20_SOPP_CSVs/ca_los_angeles.csv
+(10 vars, 5,418,402 obs)
+string variables:
+raw_row_number           region                   type
+date                     subject_race             raw_descent_description
+time                     subject_sex
+district                 officer_id_hash
+
+non-string variables:
+
+(5,418,402 real changes made)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+(5,418,402 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_los_angeles.dta saved
+
+
+#9/88 | 23:24:04: 2000_data/100_original/20_SOPP_CSVs/ca_oakland.csv
+(28 vars, 133,407 obs)
+string variables:
+raw_row_number                 warning_issued
+date                           outcome
+time                           contraband_found
+location                       contraband_drugs
+lat                            contraband_weapons
+lng                            search_conducted
+beat                           search_basis
+subject_age                    reason_for_stop
+subject_race                   use_of_force_description
+subject_sex                    raw_subject_sdrace
+officer_assignment             raw_subject_resultofencounter
+type                           raw_subject_searchconducted
+arrest_made                    raw_subject_typeofsearch
+citation_issued                raw_subject_resultofsearch
+
+non-string variables:
+
+(133,407 real changes made)
+(133,407 missing values generated)
+(133,407 missing values generated)
+(133,407 missing values generated)
+(133,407 missing values generated)
+(133,407 missing values generated)
+(133,407 missing values generated)
+(133,407 missing values generated)
+(133,407 missing values generated)
+(133,407 missing values generated)
+(133,407 missing values generated)
+(133,407 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_oakland.dta saved
+
+
+#10/88 | 23:24:08: 2000_data/100_original/20_SOPP_CSVs/ca_san_bernardino.csv
+(12 vars, 90,523 obs)
+string variables:
+raw_row_number   location         type             citation_issued
+date             lat              disposition      outcome
+time             lng              arrest_made      raw_calltype
+
+non-string variables:
+
+(90,523 real changes made)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+(90,523 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_san_bernardino.dta saved
+
+
+#11/88 | 23:24:09: 2000_data/100_original/20_SOPP_CSVs/ca_san_diego.csv
+(21 vars, 383,027 obs)
+string variables:
+raw_row_number                outcome
+date                          contraband_found
+time                          search_conducted
+service_area                  search_person
+subject_age                   search_vehicle
+subject_race                  search_basis
+subject_sex                   reason_for_search
+type                          reason_for_stop
+arrest_made                   raw_action_taken
+citation_issued               raw_subject_race_description
+warning_issued
+
+non-string variables:
+
+(383,027 real changes made)
+(383,027 missing values generated)
+(383,027 missing values generated)
+(383,027 missing values generated)
+(383,027 missing values generated)
+(383,027 missing values generated)
+(383,027 missing values generated)
+(383,027 missing values generated)
+(383,027 missing values generated)
+(383,027 missing values generated)
+(383,027 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_san_diego.dta saved
+
+
+#12/88 | 23:24:19: 2000_data/100_original/20_SOPP_CSVs/ca_san_francisco.csv
+(22 vars, 905,070 obs)
+string variables:
+raw_row_number                    arrest_made
+date                              citation_issued
+time                              warning_issued
+location                          outcome
+lat                               contraband_found
+lng                               search_conducted
+district                          search_vehicle
+subject_age                       search_basis
+subject_race                      reason_for_stop
+subject_sex                       raw_search_vehicle_description
+type                              raw_result_of_contact_descriptio
+
+non-string variables:
+
+(905,070 real changes made)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+(905,070 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_san_francisco.dta saved
+
+
+#13/88 | 23:24:40: 2000_data/100_original/20_SOPP_CSVs/ca_san_jose.csv
+(20 vars, 152,834 obs)
+string variables:
+raw_row_number            type                      use_of_force_description
+date                      arrest_made               use_of_force_reason
+time                      citation_issued           raw_search
+location                  outcome                   raw_call_desc
+lat                       contraband_found          raw_race
+lng                       search_conducted          raw_event_desc
+subject_race              reason_for_stop
+
+non-string variables:
+
+(152,834 real changes made)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+(152,834 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_san_jose.dta saved
+
+
+#14/88 | 23:24:44: 2000_data/100_original/20_SOPP_CSVs/ca_santa_ana.csv
+(15 vars, 46,268 obs)
+string variables:
+date             district         officer_id_hash  outcome
+location         region           type             raw_race
+lat              subject_race     violation
+lng              subject_sex      citation_issued
+
+non-string variables:
+raw_row_number
+
+(46,268 real changes made)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+(46,268 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_santa_ana.dta saved
+
+
+#15/88 | 23:24:46: 2000_data/100_original/20_SOPP_CSVs/ca_statewide.csv
+(21 vars, 31,778,515 obs)
+string variables:
+date              department_name   warning_issued    search_person
+county_name       type              outcome           search_basis
+district          violation         contraband_found  reason_for_stop
+subject_race      arrest_made       frisk_performed   raw_race
+subject_sex       citation_issued   search_conducted  raw_search_basis
+
+non-string variables:
+raw_row_number
+
+(31,778,515 real changes made)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+(31,778,515 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_statewide.dta saved
+
+
+#16/88 | 23:35:38: 2000_data/100_original/20_SOPP_CSVs/ca_stockton.csv
+(17 vars, 41,629 obs)
+string variables:
+date              subject_sex       citation_issued   search_basis
+division          officer_id_hash   warning_issued    reason_for_stop
+subject_age       type              outcome           raw_result
+subject_race      arrest_made       search_conducted  raw_search
+
+non-string variables:
+raw_row_number
+
+(41,629 real changes made)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+(41,629 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ca_stockton.dta saved
+
+
+#17/88 | 23:35:38: 2000_data/100_original/20_SOPP_CSVs/co_aurora.csv
+(16 vars, 172,929 obs)
+string variables:
+raw_row_number   lat              subject_race     citation_issued
+date             lng              subject_sex      outcome
+time             district         type             raw_ethnicity
+location         subject_age      violation        raw_race
+
+non-string variables:
+
+(172,929 real changes made)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+(172,929 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/co_aurora.dta saved
+
+
+#18/88 | 23:35:41: 2000_data/100_original/20_SOPP_CSVs/co_denver.csv
+(14 vars, 1,870,731 obs)
+string variables:
+date             district         disposition      warning_issued
+time             precinct         arrest_made      outcome
+location         type             citation_issued
+
+non-string variables:
+raw_row_number  lat             lng
+
+(1,870,731 real changes made)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+(1,870,731 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/co_denver.dta saved
+
+
+#19/88 | 23:36:07: 2000_data/100_original/20_SOPP_CSVs/co_statewide.csv
+(20 vars, 3,112,853 obs)
+string variables:
+raw_row_number    subject_age       type              outcome
+date              subject_race      violation         contraband_found
+time              subject_sex       arrest_made       search_conducted
+location          officer_id_hash   citation_issued   search_basis
+county_name       officer_sex       warning_issued    raw_ethnicity
+
+non-string variables:
+
+(3,112,853 real changes made)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+(3,112,853 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/co_statewide.dta saved
+
+
+#20/88 | 23:37:14: 2000_data/100_original/20_SOPP_CSVs/ct_hartford.csv
+(26 vars, 18,439 obs)
+string variables:
+raw_row_number                    arrest_made
+date                              citation_issued
+time                              warning_issued
+location                          outcome
+lat                               contraband_found
+lng                               search_conducted
+district                          search_vehicle
+subject_age                       search_basis
+subject_race                      reason_for_stop
+subject_sex                       raw_subject_race_code
+officer_id_hash                   raw_subject_ethnicity_code
+department_name                   raw_search_authorization_code
+type                              raw_intervention_disposition_cod
+
+non-string variables:
+
+(18,439 real changes made)
+(18,439 missing values generated)
+(18,439 missing values generated)
+(18,439 missing values generated)
+(18,439 missing values generated)
+(18,439 missing values generated)
+(18,439 missing values generated)
+(18,439 missing values generated)
+(18,439 missing values generated)
+(18,439 missing values generated)
+(18,439 missing values generated)
+(18,439 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ct_hartford.dta saved
+
+
+#21/88 | 23:37:16: 2000_data/100_original/20_SOPP_CSVs/ct_statewide.csv
+(26 vars, 1,175,339 obs)
+string variables:
+raw_row_number               violation
+date                         arrest_made
+time                         citation_issued
+location                     warning_issued
+lat                          outcome
+lng                          contraband_found
+county_name                  search_conducted
+subject_age                  search_vehicle
+subject_race                 search_basis
+subject_sex                  reason_for_stop
+officer_id_hash              raw_subjectracecode
+department_name              raw_subjectethnicitycode
+type                         raw_searchauthorizationcode
+
+non-string variables:
+
+(1,175,339 real changes made)
+(1,175,339 missing values generated)
+(1,175,339 missing values generated)
+(1,175,339 missing values generated)
+(1,175,339 missing values generated)
+(1,175,339 missing values generated)
+(1,175,339 missing values generated)
+(1,175,339 missing values generated)
+(1,175,339 missing values generated)
+(1,175,339 missing values generated)
+(1,175,339 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ct_statewide.dta saved
+
+
+#22/88 | 23:37:45: 2000_data/100_original/20_SOPP_CSVs/fl_saint_petersburg.csv
+(9 vars, 16,383 obs)
+string variables:
+date             location         lng              officer_id_hash
+time             lat              district         type
+
+non-string variables:
+raw_row_number
+
+(16,383 real changes made)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+(16,383 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/fl_saint_petersburg.dta saved
+
+
+#23/88 | 23:37:45: 2000_data/100_original/20_SOPP_CSVs/fl_statewide.csv
+(34 vars, 7,297,538 obs)
+string variables:
+raw_row_number              arrest_made
+date                        citation_issued
+time                        warning_issued
+location                    outcome
+county_name                 frisk_performed
+subject_age                 search_conducted
+subject_race                search_basis
+subject_sex                 reason_for_search
+officer_id_hash             reason_for_stop
+officer_age                 vehicle_registration_state
+officer_race                notes
+officer_sex                 raw_row_number_old
+officer_years_of_service    raw_race
+department_name             raw_ethnicity
+unit                        raw_row_number_new
+type                        raw_searchtype
+violation                   raw_enforcementaction
+
+non-string variables:
+
+(7,297,538 real changes made)
+(7,297,538 missing values generated)
+(7,297,538 missing values generated)
+(7,297,538 missing values generated)
+(7,297,538 missing values generated)
+(7,297,538 missing values generated)
+(7,297,538 missing values generated)
+(7,297,538 missing values generated)
+(7,297,538 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/fl_statewide.dta saved
+
+
+#24/88 | 23:42:48: 2000_data/100_original/20_SOPP_CSVs/fl_tampa.csv
+(12 vars, 2,818,240 obs)
+string variables:
+raw_row_number              type
+date                        violation
+subject_age                 citation_issued
+subject_race                outcome
+subject_sex                 vehicle_registration_state
+department_name             raw_race
+
+non-string variables:
+
+(2,818,240 real changes made)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+(2,818,240 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/fl_tampa.dta saved
+
+
+#25/88 | 23:44:00: 2000_data/100_original/20_SOPP_CSVs/ga_statewide.csv
+(19 vars, 1,906,772 obs)
+string variables:
+raw_row_number   lng              department_name  vehicle_make
+date             county_name      type             vehicle_model
+time             subject_race     violation        vehicle_year
+location         subject_sex      outcome          raw_race
+lat              officer_id_hash  vehicle_color
+
+non-string variables:
+
+(1,906,772 real changes made)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+(1,906,772 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ga_statewide.dta saved
+
+
+#26/88 | 23:44:46: 2000_data/100_original/20_SOPP_CSVs/ia_statewide.csv
+(20 vars, 2,441,335 obs)
+string variables:
+raw_row_number              type
+date                        violation
+time                        citation_issued
+location                    warning_issued
+county_name                 outcome
+subject_age                 vehicle_color
+subject_race                vehicle_make
+subject_sex                 vehicle_model
+officer_id_hash             vehicle_registration_state
+department_name             vehicle_year
+
+non-string variables:
+
+(2,441,335 real changes made)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+(2,441,335 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ia_statewide.dta saved
+
+
+#27/88 | 23:45:44: 2000_data/100_original/20_SOPP_CSVs/id_idaho_falls.csv
+(13 vars, 104,814 obs)
+string variables:
+date             lat              division         type
+time             lng              zone             disposition
+location         neighborhood     officer_id_hash
+
+non-string variables:
+raw_row_number  subdivision
+
+(104,814 real changes made)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+(104,814 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/id_idaho_falls.dta saved
+
+
+#28/88 | 23:45:47: 2000_data/100_original/20_SOPP_CSVs/il_chicago.csv
+(21 vars, 846,456 obs)
+string variables:
+date                      subject_sex               violation
+time                      officer_id_hash           arrest_made
+location                  officer_age               citation_issued
+lat                       officer_race              outcome
+lng                       officer_sex               raw_race
+subject_age               officer_years_of_service  raw_driver_race
+subject_race              type
+
+non-string variables:
+raw_row_number
+
+(846,456 real changes made)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+(846,456 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/il_chicago.dta saved
+
+
+#29/88 | 23:46:02: 2000_data/100_original/20_SOPP_CSVs/il_statewide.csv
+(29 vars, 12,748,173 obs)
+string variables:
+date                subject_sex         outcome             search_vehicle
+time                department_name     contraband_found    search_basis
+location            type                contraband_drugs    reason_for_stop
+beat                violation           contraband_weapons  vehicle_make
+subject_age         citation_issued     search_conducted    vehicle_year
+subject_race        warning_issued      search_person
+
+non-string variables:
+raw_row_number             raw_reasonforstop
+department_id              raw_typeofmovingviolation
+raw_driverrace             raw_resultofstop
+
+(12,748,173 real changes made)
+(12,748,173 missing values generated)
+(12,748,173 missing values generated)
+(12,748,173 missing values generated)
+(12,748,173 missing values generated)
+(12,748,173 missing values generated)
+(12,748,173 missing values generated)
+(12,748,173 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/il_statewide.dta saved
+
+
+#30/88 | 23:52:33: 2000_data/100_original/20_SOPP_CSVs/in_fort_wayne.csv
+(12 vars, 265,019 obs)
+string variables:
+date             lat              disposition      warning_issued
+time             lng              arrest_made      outcome
+location         type             citation_issued
+
+non-string variables:
+raw_row_number
+
+(265,019 real changes made)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+(265,019 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/in_fort_wayne.dta saved
+
+
+#31/88 | 23:52:37: 2000_data/100_original/20_SOPP_CSVs/ks_wichita.csv
+(21 vars, 929,716 obs)
+string variables:
+raw_row_number           subject_race             posted_speed
+date                     subject_sex              vehicle_color
+time                     type                     vehicle_make
+location                 disposition              vehicle_model
+lat                      violation                vehicle_year
+lng                      citation_issued          raw_defendant_race
+subject_age              outcome                  raw_defendant_ethnicity
+
+non-string variables:
+
+(929,716 real changes made)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+(929,716 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ks_wichita.dta saved
+
+
+#32/88 | 23:53:02: 2000_data/100_original/20_SOPP_CSVs/ky_louisville.csv
+(32 vars, 110,960 obs)
+string variables:
+raw_row_number            officer_race              raw_activity_division
+date                      officer_sex               raw_division
+time                      type                      raw_activity_beat
+location                  violation                 raw_beat
+lat                       citation_issued           raw_driver_race
+lng                       warning_issued            raw_persons_race
+beat                      outcome                   raw_persons_ethnicity
+division                  frisk_performed           raw_driver_age_range
+subject_age               search_conducted          raw_was_vehcile_searched
+subject_race              search_basis              raw_citation_location
+subject_sex               reason_for_search
+
+non-string variables:
+
+(110,960 real changes made)
+(110,960 missing values generated)
+(110,960 missing values generated)
+(110,960 missing values generated)
+(110,960 missing values generated)
+(110,960 missing values generated)
+(110,960 missing values generated)
+(110,960 missing values generated)
+(110,960 missing values generated)
+(110,960 missing values generated)
+(110,960 missing values generated)
+(110,960 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ky_louisville.dta saved
+
+
+#33/88 | 23:53:06: 2000_data/100_original/20_SOPP_CSVs/ky_owensboro.csv
+(18 vars, 6,921 obs)
+string variables:
+date                        officer_id_hash
+time                        type
+location                    violation
+lng                         arrest_made
+sector                      citation_issued
+subject_age                 outcome
+subject_race                vehicle_registration_state
+subject_sex                 raw_race
+
+non-string variables:
+raw_row_number  lat
+
+(6,921 real changes made)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+(6,921 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ky_owensboro.dta saved
+
+
+#34/88 | 23:53:06: 2000_data/100_original/20_SOPP_CSVs/la_new_orleans.csv
+(32 vars, 512,092 obs)
+string variables:
+raw_row_number      subject_age         outcome             search_basis
+date                subject_race        contraband_found    reason_for_stop
+time                subject_sex         contraband_drugs    vehicle_color
+location            officer_assignment  contraband_weapons  vehicle_make
+lat                 type                frisk_performed     vehicle_model
+lng                 arrest_made         search_conducted    vehicle_year
+district            citation_issued     search_person       raw_actions_taken
+zone                warning_issued      search_vehicle      raw_subject_race
+
+non-string variables:
+
+(512,092 real changes made)
+(512,092 missing values generated)
+(512,092 missing values generated)
+(512,092 missing values generated)
+(512,092 missing values generated)
+(512,092 missing values generated)
+(512,092 missing values generated)
+(512,092 missing values generated)
+(512,092 missing values generated)
+(512,092 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/la_new_orleans.dta saved
+
+
+#35/88 | 23:53:28: 2000_data/100_original/20_SOPP_CSVs/ma_statewide.csv
+(24 vars, 3,416,238 obs)
+string variables:
+date                        contraband_drugs
+location                    contraband_weapons
+county_name                 contraband_alcohol
+subject_age                 contraband_other
+subject_race                frisk_performed
+subject_sex                 search_conducted
+type                        search_basis
+arrest_made                 reason_for_stop
+citation_issued             vehicle_type
+warning_issued              vehicle_registration_state
+outcome                     raw_race
+contraband_found
+
+non-string variables:
+raw_row_number
+
+(3,416,238 real changes made)
+(3,416,238 missing values generated)
+(3,416,238 missing values generated)
+(3,416,238 missing values generated)
+(3,416,238 missing values generated)
+(3,416,238 missing values generated)
+(3,416,238 missing values generated)
+(3,416,238 missing values generated)
+(3,416,238 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ma_statewide.dta saved
+
+
+#36/88 | 23:54:30: 2000_data/100_original/20_SOPP_CSVs/md_baltimore.csv
+(9 vars, 854,759 obs)
+string variables:
+raw_row_number   beat             type
+date             district         citation_issued
+time             officer_id_hash  outcome
+
+non-string variables:
+
+(854,759 real changes made)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+(854,759 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/md_baltimore.dta saved
+
+
+#37/88 | 23:54:41: 2000_data/100_original/20_SOPP_CSVs/md_statewide.csv
+(28 vars, 3,669,665 obs)
+string variables:
+date                type                contraband_found    reason_for_arrest
+time                disposition         contraband_drugs    reason_for_search
+location            violation           contraband_weapons  reason_for_stop
+subject_age         arrest_made         search_conducted    raw_race
+subject_race        citation_issued     search_person       raw_outcome
+subject_sex         warning_issued      search_vehicle      raw_arrest_made
+department_name     outcome             search_basis
+
+non-string variables:
+raw_row_number
+
+(3,669,665 real changes made)
+(3,669,665 missing values generated)
+(3,669,665 missing values generated)
+(3,669,665 missing values generated)
+(3,669,665 missing values generated)
+(3,669,665 missing values generated)
+(3,669,665 missing values generated)
+(3,669,665 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/md_statewide.dta saved
+
+
+#38/88 | 23:56:39: 2000_data/100_original/20_SOPP_CSVs/mi_statewide.csv
+(20 vars, 800,302 obs)
+string variables:
+raw_row_number   subject_race     violation        reason_for_stop
+date             officer_id_hash  arrest_made      speed
+time             department_id    citation_issued  posted_speed
+location         department_name  warning_issued   charged_speed
+county_name      type             outcome          raw_race
+
+non-string variables:
+
+(800,302 real changes made)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+(800,302 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/mi_statewide.dta saved
+
+
+#39/88 | 23:56:56: 2000_data/100_original/20_SOPP_CSVs/mn_saint_paul.csv
+(16 vars, 675,156 obs)
+string variables:
+raw_row_number      lng                 type                search_conducted
+date                subject_age         citation_issued     search_vehicle
+time                subject_race        outcome             raw_race_of_driver
+lat                 subject_sex         frisk_performed
+
+non-string variables:
+police_grid_number
+
+(675,156 real changes made)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+(675,156 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/mn_saint_paul.dta saved
+
+
+#40/88 | 23:57:10: 2000_data/100_original/20_SOPP_CSVs/mo_statewide.csv
+(9 vars, 10,038,706 obs)
+string variables:
+date              subject_race      type              search_conducted
+location          department_name   contraband_found  raw_race
+
+non-string variables:
+raw_row_number
+
+(10,038,706 real changes made)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+(10,038,706 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/mo_statewide.dta saved
+
+
+#41/88 | 23:58:53: 2000_data/100_original/20_SOPP_CSVs/ms_statewide.csv
+(13 vars, 758,412 obs)
+string variables:
+date             subject_race     type             posted_speed
+county_name      subject_sex      violation        raw_race
+subject_age      department_name  speed
+
+non-string variables:
+raw_row_number  department_id
+
+(758,412 real changes made)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+(758,412 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ms_statewide.dta saved
+
+
+#42/88 | 23:59:02: 2000_data/100_original/20_SOPP_CSVs/mt_statewide.csv
+(29 vars, 825,118 obs)
+string variables:
+date                        warning_issued
+time                        outcome
+location                    frisk_performed
+lat                         search_conducted
+lng                         search_basis
+county_name                 reason_for_stop
+subject_age                 vehicle_make
+subject_race                vehicle_model
+subject_sex                 vehicle_type
+department_name             vehicle_registration_state
+type                        vehicle_year
+violation                   raw_race
+arrest_made                 raw_ethnicity
+citation_issued             raw_searchtype
+
+non-string variables:
+raw_row_number
+
+(825,118 real changes made)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+(825,118 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/mt_statewide.dta saved
+
+
+#43/88 | 23:59:28: 2000_data/100_original/20_SOPP_CSVs/nc_charlotte.csv
+(29 vars, 1,598,453 obs)
+string variables:
+date                    arrest_made             search_vehicle
+time                    citation_issued         search_basis
+location                warning_issued          reason_for_frisk
+county_name             outcome                 reason_for_search
+subject_age             contraband_found        reason_for_stop
+subject_race            contraband_drugs        raw_ethnicity
+subject_sex             contraband_weapons      raw_race
+officer_id_hash         frisk_performed         raw_action_description
+department_name         search_conducted
+type                    search_person
+
+non-string variables:
+raw_row_number
+
+(1,598,453 real changes made)
+(1,598,453 missing values generated)
+(1,598,453 missing values generated)
+(1,598,453 missing values generated)
+(1,598,453 missing values generated)
+(1,598,453 missing values generated)
+(1,598,453 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nc_charlotte.dta saved
+
+
+#44/88 | 00:00:42: 2000_data/100_original/20_SOPP_CSVs/nc_durham.csv
+(29 vars, 326,024 obs)
+string variables:
+date                    arrest_made             search_vehicle
+time                    citation_issued         search_basis
+location                warning_issued          reason_for_frisk
+county_name             outcome                 reason_for_search
+subject_age             contraband_found        reason_for_stop
+subject_race            contraband_drugs        raw_ethnicity
+subject_sex             contraband_weapons      raw_race
+officer_id_hash         frisk_performed         raw_action_description
+department_name         search_conducted
+type                    search_person
+
+non-string variables:
+raw_row_number
+
+(326,024 real changes made)
+(326,024 missing values generated)
+(326,024 missing values generated)
+(326,024 missing values generated)
+(326,024 missing values generated)
+(326,024 missing values generated)
+(326,024 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nc_durham.dta saved
+
+
+#45/88 | 00:00:55: 2000_data/100_original/20_SOPP_CSVs/nc_fayetteville.csv
+(29 vars, 486,998 obs)
+string variables:
+date                    arrest_made             search_vehicle
+time                    citation_issued         search_basis
+location                warning_issued          reason_for_frisk
+county_name             outcome                 reason_for_search
+subject_age             contraband_found        reason_for_stop
+subject_race            contraband_drugs        raw_ethnicity
+subject_sex             contraband_weapons      raw_race
+officer_id_hash         frisk_performed         raw_action_description
+department_name         search_conducted
+type                    search_person
+
+non-string variables:
+raw_row_number
+
+(486,998 real changes made)
+(486,998 missing values generated)
+(486,998 missing values generated)
+(486,998 missing values generated)
+(486,998 missing values generated)
+(486,998 missing values generated)
+(486,998 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nc_fayetteville.dta saved
+
+
+#46/88 | 00:01:16: 2000_data/100_original/20_SOPP_CSVs/nc_greensboro.csv
+(29 vars, 600,031 obs)
+string variables:
+date                    arrest_made             search_vehicle
+time                    citation_issued         search_basis
+location                warning_issued          reason_for_frisk
+county_name             outcome                 reason_for_search
+subject_age             contraband_found        reason_for_stop
+subject_race            contraband_drugs        raw_ethnicity
+subject_sex             contraband_weapons      raw_race
+officer_id_hash         frisk_performed         raw_action_description
+department_name         search_conducted
+type                    search_person
+
+non-string variables:
+raw_row_number
+
+(600,031 real changes made)
+(600,031 missing values generated)
+(600,031 missing values generated)
+(600,031 missing values generated)
+(600,031 missing values generated)
+(600,031 missing values generated)
+(600,031 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nc_greensboro.dta saved
+
+
+#47/88 | 00:01:37: 2000_data/100_original/20_SOPP_CSVs/nc_raleigh.csv
+(29 vars, 856,400 obs)
+string variables:
+date                    arrest_made             search_person
+time                    citation_issued         search_vehicle
+location                warning_issued          search_basis
+county_name             outcome                 reason_for_frisk
+subject_race            contraband_found        reason_for_search
+subject_sex             contraband_drugs        reason_for_stop
+officer_id_hash         contraband_weapons      raw_ethnicity
+department_name         frisk_performed         raw_race
+type                    search_conducted        raw_action_description
+
+non-string variables:
+raw_row_number  subject_age
+
+(856,400 real changes made)
+(856,400 missing values generated)
+(856,400 missing values generated)
+(856,400 missing values generated)
+(856,400 missing values generated)
+(856,400 missing values generated)
+(856,400 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nc_raleigh.dta saved
+
+
+#48/88 | 00:01:58: 2000_data/100_original/20_SOPP_CSVs/nc_statewide.csv
+(29 vars, 20,286,645 obs)
+string variables:
+date                    arrest_made             search_vehicle
+time                    citation_issued         search_basis
+location                warning_issued          reason_for_frisk
+county_name             outcome                 reason_for_search
+subject_age             contraband_found        reason_for_stop
+subject_race            contraband_drugs        raw_ethnicity
+subject_sex             contraband_weapons      raw_race
+officer_id_hash         frisk_performed         raw_action_description
+department_name         search_conducted
+type                    search_person
+
+non-string variables:
+raw_row_number
+
+(20,286,645 real changes made)
+(20,286,645 missing values generated)
+(20,286,645 missing values generated)
+(20,286,645 missing values generated)
+(20,286,645 missing values generated)
+(20,286,645 missing values generated)
+(20,286,645 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nc_statewide.dta saved
+
+
+#49/88 | 00:13:46: 2000_data/100_original/20_SOPP_CSVs/nc_winston-salem.csv
+(29 vars, 452,560 obs)
+string variables:
+date                    arrest_made             search_vehicle
+time                    citation_issued         search_basis
+location                warning_issued          reason_for_frisk
+county_name             outcome                 reason_for_search
+subject_age             contraband_found        reason_for_stop
+subject_race            contraband_drugs        raw_ethnicity
+subject_sex             contraband_weapons      raw_race
+officer_id_hash         frisk_performed         raw_action_description
+department_name         search_conducted
+type                    search_person
+
+non-string variables:
+raw_row_number
+
+(452,560 real changes made)
+(452,560 missing values generated)
+(452,560 missing values generated)
+(452,560 missing values generated)
+(452,560 missing values generated)
+(452,560 missing values generated)
+(452,560 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nc_winston-salem.dta saved
+
+
+#50/88 | 00:14:18: 2000_data/100_original/20_SOPP_CSVs/nd_grand_forks.csv
+(14 vars, 82,535 obs)
+string variables:
+raw_row_number   lat              type             reason_for_stop
+date             lng              citation_issued  raw_race
+time             subject_race     warning_issued
+location         subject_sex      outcome
+
+non-string variables:
+
+(82,535 real changes made)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+(82,535 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nd_grand_forks.dta saved
+
+
+#51/88 | 00:14:19: 2000_data/100_original/20_SOPP_CSVs/nd_statewide.csv
+(12 vars, 330,132 obs)
+string variables:
+raw_row_number  location        subject_race    violation
+date            county_name     subject_sex     outcome
+time            subject_age     type            raw_race
+
+non-string variables:
+
+(330,132 real changes made)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+(330,132 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nd_statewide.dta saved
+
+
+#52/88 | 00:14:30: 2000_data/100_original/20_SOPP_CSVs/ne_statewide.csv
+(10 vars, 9,031,494 obs)
+string variables:
+date              department_name   raw_dept_lvl
+county_name       type              raw_dept
+subject_race      search_conducted  raw_race
+
+non-string variables:
+raw_row_number
+
+(9,031,494 real changes made)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+(9,031,494 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ne_statewide.dta saved
+
+
+#53/88 | 00:16:14: 2000_data/100_original/20_SOPP_CSVs/nh_statewide.csv
+(17 vars, 259,822 obs)
+string variables:
+raw_row_number             subject_sex
+date                       type
+time                       violation
+location                   citation_issued
+lat                        warning_issued
+lng                        outcome
+county_name                raw_race_cde
+subject_age                raw_citation_response_dsc
+subject_race
+
+non-string variables:
+
+(259,822 real changes made)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+(259,822 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nh_statewide.dta saved
+
+
+#54/88 | 00:16:18: 2000_data/100_original/20_SOPP_CSVs/nj_camden.csv
+(23 vars, 195,298 obs)
+string variables:
+raw_row_number              arrest_made
+date                        citation_issued
+time                        warning_issued
+location                    outcome
+lat                         vehicle_color
+lng                         vehicle_make
+subject_age                 vehicle_model
+subject_race                vehicle_registration_state
+subject_sex                 vehicle_year
+unit                        raw_race
+type                        raw_ethnicity
+disposition
+
+non-string variables:
+
+(195,298 real changes made)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+(195,298 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nj_camden.dta saved
+
+
+#55/88 | 00:16:24: 2000_data/100_original/20_SOPP_CSVs/nj_statewide.csv
+(24 vars, 3,845,334 obs)
+string variables:
+date                        outcome
+time                        contraband_found
+location                    frisk_performed
+subject_race                search_conducted
+subject_sex                 vehicle_color
+officer_id_hash             vehicle_make
+department_id               vehicle_model
+type                        vehicle_registration_state
+violation                   raw_township
+arrest_made                 raw_race
+citation_issued             raw_ethnicity
+warning_issued
+
+non-string variables:
+raw_row_number
+
+(3,845,334 real changes made)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+(3,845,334 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nj_statewide.dta saved
+
+
+#56/88 | 00:17:52: 2000_data/100_original/20_SOPP_CSVs/nv_henderson.csv
+(19 vars, 111,090 obs)
+string variables:
+raw_row_number              type
+date                        violation
+time                        citation_issued
+location                    outcome
+lat                         vehicle_color
+lng                         vehicle_make
+subject_age                 vehicle_type
+subject_race                vehicle_registration_state
+subject_sex                 raw_race
+officer_id_hash
+
+non-string variables:
+
+(111,090 real changes made)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+(111,090 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nv_henderson.dta saved
+
+
+#57/88 | 00:17:54: 2000_data/100_original/20_SOPP_CSVs/nv_statewide.csv
+(11 vars, 737,285 obs)
+string variables:
+date             type             citation_issued  raw_race
+subject_age      violation        warning_issued
+subject_race     arrest_made      outcome
+
+non-string variables:
+raw_row_number
+
+(737,285 real changes made)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+(737,285 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/nv_statewide.dta saved
+
+
+#58/88 | 00:18:04: 2000_data/100_original/20_SOPP_CSVs/ny_albany.csv
+(16 vars, 74,093 obs)
+string variables:
+raw_row_number              subject_sex
+date                        type
+time                        violation
+location                    vehicle_color
+lat                         vehicle_make
+lng                         vehicle_registration_state
+subject_age                 vehicle_year
+subject_race                raw_race
+
+non-string variables:
+
+(74,093 real changes made)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+(74,093 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ny_albany.dta saved
+
+
+#59/88 | 00:18:05: 2000_data/100_original/20_SOPP_CSVs/ny_statewide.csv
+(19 vars, 7,962,169 obs)
+string variables:
+date                        speed
+time                        posted_speed
+location                    vehicle_color
+county_name                 vehicle_make
+subject_age                 vehicle_model
+subject_race                vehicle_type
+subject_sex                 vehicle_registration_state
+type                        vehicle_year
+violation                   raw_race
+
+non-string variables:
+raw_row_number
+
+(7,962,169 real changes made)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+(7,962,169 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ny_statewide.dta saved
+
+
+#60/88 | 00:20:35: 2000_data/100_original/20_SOPP_CSVs/oh_cincinnati.csv
+(25 vars, 315,281 obs)
+string variables:
+raw_row_number              arrest_made
+date                        citation_issued
+time                        warning_issued
+location                    outcome
+lat                         reason_for_stop
+lng                         vehicle_make
+neighborhood                vehicle_model
+beat                        vehicle_registration_state
+subject_race                vehicle_year
+subject_sex                 raw_race
+officer_assignment          raw_action_taken_cid
+type                        raw_field_subject_cid
+disposition
+
+non-string variables:
+
+(315,281 real changes made)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+(315,281 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/oh_cincinnati.dta saved
+
+
+#61/88 | 00:20:43: 2000_data/100_original/20_SOPP_CSVs/oh_columbus.csv
+(18 vars, 128,157 obs)
+string variables:
+raw_row_number         precinct               citation_issued
+date                   zone                   warning_issued
+time                   subject_race           outcome
+location               subject_sex            search_conducted
+lat                    type                   reason_for_stop
+lng                    arrest_made            raw_enforcement_taken
+
+non-string variables:
+
+(128,157 real changes made)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+(128,157 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/oh_columbus.dta saved
+
+
+#62/88 | 00:20:46: 2000_data/100_original/20_SOPP_CSVs/oh_statewide.csv
+(24 vars, 7,225,577 obs)
+string variables:
+date              subject_race      arrest_made       search_basis
+time              subject_sex       warning_issued    raw_disp_string
+location          officer_id_hash   outcome           raw_orc_string
+lat               department_name   contraband_found  raw_dispositions
+lng               type              contraband_drugs  raw_race
+county_name       violation         search_conducted
+
+non-string variables:
+raw_row_number
+
+(7,225,577 real changes made)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+(7,225,577 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/oh_statewide.dta saved
+
+
+#63/88 | 00:27:47: 2000_data/100_original/20_SOPP_CSVs/ok_oklahoma_city.csv
+(25 vars, 726,433 obs)
+string variables:
+raw_row_number              type
+date                        violation
+time                        citation_issued
+location                    outcome
+lat                         speed
+lng                         posted_speed
+beat                        vehicle_color
+division                    vehicle_make
+sector                      vehicle_model
+subject_age                 vehicle_registration_state
+subject_race                vehicle_year
+subject_sex                 raw_dfnd_race
+officer_id_hash
+
+non-string variables:
+
+(726,433 real changes made)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+(726,433 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ok_oklahoma_city.dta saved
+
+
+#64/88 | 00:28:12: 2000_data/100_original/20_SOPP_CSVs/ok_tulsa.csv
+(19 vars, 438,248 obs)
+string variables:
+raw_row_number              violation
+date                        speed
+time                        posted_speed
+location                    vehicle_color
+lat                         vehicle_make
+lng                         vehicle_model
+division                    vehicle_registration_state
+subject_race                vehicle_year
+subject_sex                 raw_race
+type
+
+non-string variables:
+
+(438,248 real changes made)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+(438,248 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ok_tulsa.dta saved
+
+
+#65/88 | 00:28:21: 2000_data/100_original/20_SOPP_CSVs/or_statewide.csv
+(5 vars, 1,143,017 obs)
+string variables:
+date          subject_race  type          raw_race
+
+non-string variables:
+raw_row_number
+
+(1,143,017 real changes made)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+(1,143,017 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/or_statewide.dta saved
+
+
+#66/88 | 00:28:30: 2000_data/100_original/20_SOPP_CSVs/pa_philadelphia.csv
+(22 vars, 1,865,096 obs)
+string variables:
+raw_row_number             type
+date                       arrest_made
+time                       outcome
+location                   contraband_found
+lat                        frisk_performed
+lng                        search_conducted
+district                   search_person
+service_area               search_vehicle
+subject_age                raw_race
+subject_race               raw_individual_contraband
+subject_sex                raw_vehicle_contraband
+
+non-string variables:
+
+(1,865,096 real changes made)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+(1,865,096 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/pa_philadelphia.dta saved
+
+
+#67/88 | 00:29:27: 2000_data/100_original/20_SOPP_CSVs/ri_statewide.csv
+(31 vars, 509,681 obs)
+string variables:
+date                   outcome                reason_for_stop
+time                   contraband_found       vehicle_make
+zone                   contraband_drugs       vehicle_model
+subject_race           contraband_weapons     raw_basisforstop
+subject_sex            contraband_alcohol     raw_operatorrace
+department_id          contraband_other       raw_operatorsex
+type                   frisk_performed        raw_resultofstop
+arrest_made            search_conducted       raw_searchresultone
+citation_issued        search_basis           raw_searchresulttwo
+warning_issued         reason_for_search      raw_searchresultthree
+
+non-string variables:
+raw_row_number
+
+(509,681 real changes made)
+(509,681 missing values generated)
+(509,681 missing values generated)
+(509,681 missing values generated)
+(509,681 missing values generated)
+(509,681 missing values generated)
+(509,681 missing values generated)
+(509,681 missing values generated)
+(509,681 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/ri_statewide.dta saved
+
+
+#68/88 | 00:29:43: 2000_data/100_original/20_SOPP_CSVs/sc_statewide.csv
+(34 vars, 8,983,810 obs)
+string variables:
+date                officer_age         contraband_drugs    raw_sex
+location            officer_race        contraband_weapons  raw_race
+lat                 department_id       contraband_alcohol  raw_sectionnum
+lng                 type                contraband_other    raw_offensecode
+county_name         violation           search_conducted    raw_contrabanddesc
+subject_age         arrest_made         search_person       raw_officer_race
+subject_race        citation_issued     search_vehicle
+subject_sex         outcome             reason_for_stop
+officer_id_hash     contraband_found    raw_contact_type
+
+non-string variables:
+raw_row_number
+
+(8,983,810 real changes made)
+(8,983,810 missing values generated)
+(8,983,810 missing values generated)
+(8,983,810 missing values generated)
+(8,983,810 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/sc_statewide.dta saved
+
+
+#69/88 | 00:34:12: 2000_data/100_original/20_SOPP_CSVs/sd_statewide.csv
+(16 vars, 435,895 obs)
+string variables:
+date                        warning_issued
+time                        outcome
+location                    vehicle_color
+county_name                 vehicle_make
+subject_sex                 vehicle_model
+type                        vehicle_registration_state
+violation                   vehicle_year
+citation_issued
+
+non-string variables:
+raw_row_number
+
+(435,895 real changes made)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+(435,895 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/sd_statewide.dta saved
+
+
+#70/88 | 00:34:23: 2000_data/100_original/20_SOPP_CSVs/tn_nashville.csv
+(42 vars, 3,092,351 obs)
+string variables:
+raw_row_number                  contraband_weapons
+date                            frisk_performed
+time                            search_conducted
+location                        search_person
+lat                             search_vehicle
+lng                             search_basis
+precinct                        reason_for_stop
+reporting_area                  vehicle_registration_state
+zone                            notes
+subject_age                     raw_verbal_warning_issued
+subject_race                    raw_written_warning_issued
+subject_sex                     raw_traffic_citation_issued
+officer_id_hash                 raw_misd_state_citation_issued
+type                            raw_suspect_ethnicity
+violation                       raw_driver_searched
+arrest_made                     raw_passenger_searched
+citation_issued                 raw_search_consent
+warning_issued                  raw_search_arrest
+outcome                         raw_search_warrant
+contraband_found                raw_search_inventory
+contraband_drugs                raw_search_plain_view
+
+non-string variables:
+
+(3,092,351 real changes made)
+(3,092,351 missing values generated)
+(3,092,351 missing values generated)
+(3,092,351 missing values generated)
+(3,092,351 missing values generated)
+(3,092,351 missing values generated)
+(3,092,351 missing values generated)
+(3,092,351 missing values generated)
+(3,092,351 missing values generated)
+(3,092,351 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tn_nashville.dta saved
+
+
+#71/88 | 00:36:12: 2000_data/100_original/20_SOPP_CSVs/tn_statewide.csv
+(20 vars, 3,829,082 obs)
+string variables:
+date                    department_name         vehicle_year
+time                    type                    raw_orig_trfc_viol_cde
+location                violation               raw_cnty_nbr
+county_name             citation_issued         raw_race_ind
+subject_race            outcome                 raw_sex_ind
+subject_sex             vehicle_make
+department_id           vehicle_model
+
+non-string variables:
+raw_row_number
+
+(3,829,082 real changes made)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+(3,829,082 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tn_statewide.dta saved
+
+
+#72/88 | 00:37:22: 2000_data/100_original/20_SOPP_CSVs/tx_arlington.csv
+(19 vars, 112,526 obs)
+string variables:
+date                          subject_sex
+time                          officer_id_hash
+location                      type
+lat                           outcome
+lng                           search_conducted
+beat                          reason_for_stop
+district                      raw_1st_digit_race
+sector                        raw_4th_digit_final_outcome
+subject_race                  raw_6th_digit_search_outcome
+
+non-string variables:
+raw_row_number
+
+(112,526 real changes made)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+(112,526 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tx_arlington.dta saved
+
+
+#73/88 | 00:37:24: 2000_data/100_original/20_SOPP_CSVs/tx_austin.csv
+(29 vars, 483,255 obs)
+string variables:
+raw_row_number                    reason_for_stop
+date                              vehicle_make
+subject_age                       vehicle_model
+subject_race                      vehicle_registration_state
+subject_sex                       vehicle_year
+officer_id_hash                   raw_ethnicity
+type                              raw_person_search_search_based_o
+contraband_found                  raw_person_search_search_discove
+contraband_drugs                  raw_person_searched
+contraband_weapons                raw_vehicle_search_search_based_
+frisk_performed                   raw_vehicle_search_search_discov
+search_conducted                  raw_vehicle_searched
+search_person                     raw_race_description
+search_vehicle                    raw_street_check_description
+search_basis
+
+non-string variables:
+
+(483,255 real changes made)
+(483,255 missing values generated)
+(483,255 missing values generated)
+(483,255 missing values generated)
+(483,255 missing values generated)
+(483,255 missing values generated)
+(483,255 missing values generated)
+(483,255 missing values generated)
+(483,255 missing values generated)
+(483,255 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tx_austin.dta saved
+
+
+#74/88 | 00:37:37: 2000_data/100_original/20_SOPP_CSVs/tx_garland.csv
+(23 vars, 159,845 obs)
+string variables:
+raw_row_number              citation_issued
+date                        outcome
+time                        speed
+location                    posted_speed
+subject_race                vehicle_color
+subject_sex                 vehicle_make
+officer_id_hash             vehicle_registration_state
+officer_race                vehicle_year
+officer_sex                 raw_race
+type                        raw_alleged_speed
+disposition                 raw_posted_speed
+violation
+
+non-string variables:
+
+(159,845 real changes made)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+(159,845 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tx_garland.dta saved
+
+
+#75/88 | 00:37:41: 2000_data/100_original/20_SOPP_CSVs/tx_houston.csv
+(19 vars, 1,375,920 obs)
+string variables:
+raw_row_number   beat             violation        vehicle_color
+date             district         citation_issued  vehicle_make
+location         subject_race     outcome          vehicle_model
+lat              subject_sex      speed            raw_race
+lng              type             posted_speed
+
+non-string variables:
+
+(1,375,920 real changes made)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+(1,375,920 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tx_houston.dta saved
+
+
+#76/88 | 00:38:17: 2000_data/100_original/20_SOPP_CSVs/tx_lubbock.csv
+(10 vars, 546,101 obs)
+string variables:
+date             lng              citation_issued
+location         type             warning_issued
+lat              disposition      outcome
+
+non-string variables:
+raw_row_number
+
+(546,101 real changes made)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+(546,101 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tx_lubbock.dta saved
+
+
+#77/88 | 00:38:24: 2000_data/100_original/20_SOPP_CSVs/tx_plano.csv
+(36 vars, 249,043 obs)
+string variables:
+raw_row_number        unit                  speed
+date                  type                  posted_speed
+time                  violation             vehicle_color
+location              arrest_made           vehicle_make
+lat                   citation_issued       vehicle_model
+lng                   warning_issued        vehicle_type
+beat                  outcome               notes
+sector                contraband_found      raw_race
+subject_age           contraband_drugs      raw_contraband
+subject_race          contraband_weapons    raw_contraband_found
+subject_sex           search_conducted      raw_results
+officer_id_hash       search_basis          raw_ethnicity
+
+non-string variables:
+
+(249,043 real changes made)
+(249,043 missing values generated)
+(249,043 missing values generated)
+(249,043 missing values generated)
+(249,043 missing values generated)
+(249,043 missing values generated)
+(249,043 missing values generated)
+(249,043 missing values generated)
+(249,043 missing values generated)
+(249,043 missing values generated)
+(249,043 missing values generated)
+(249,043 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tx_plano.dta saved
+
+
+#78/88 | 00:38:35: 2000_data/100_original/20_SOPP_CSVs/tx_san_antonio.csv
+(32 vars, 1,040,428 obs)
+string variables:
+raw_row_number              contraband_found
+date                        search_conducted
+time                        search_basis
+location                    speed
+lat                         posted_speed
+lng                         vehicle_color
+district                    vehicle_make
+substation                  vehicle_model
+subject_age                 vehicle_registration_state
+subject_race                vehicle_year
+subject_sex                 raw_race
+type                        raw_posted_speed
+violation                   raw_actual_speed
+arrest_made                 raw_search_reason
+citation_issued             raw_contraband_or_evidence
+outcome                     raw_custodial_arrest_made
+
+non-string variables:
+
+(1,040,428 real changes made)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+(1,040,428 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tx_san_antonio.dta saved
+
+
+#79/88 | 00:39:05: 2000_data/100_original/20_SOPP_CSVs/tx_statewide.csv
+(34 vars, 27,426,840 obs)
+string variables:
+date                           contraband_found
+time                           contraband_drugs
+location                       contraband_weapons
+lat                            search_conducted
+lng                            search_vehicle
+county_name                    search_basis
+district                       vehicle_color
+precinct                       vehicle_make
+region                         vehicle_model
+subject_race                   vehicle_type
+subject_sex                    vehicle_year
+officer_id_hash                raw_ha_race_sex
+type                           raw_ha_search_pc_boolean
+violation                      raw_ha_search_concent_boolean
+citation_issued                raw_ha_incidto_arrest_boolean
+warning_issued                 raw_ha_vehicle_invent_boolean
+outcome
+
+non-string variables:
+raw_row_number
+
+(27,426,840 real changes made)
+(27,426,840 missing values generated)
+(27,426,840 missing values generated)
+(27,426,840 missing values generated)
+(27,426,840 missing values generated)
+(27,426,840 missing values generated)
+(27,426,840 missing values generated)
+(27,426,840 missing values generated)
+(27,426,840 missing values generated)
+(27,426,840 missing values generated)
+(27,426,840 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/tx_statewide.dta saved
+
+
+#80/88 | 01:07:36: 2000_data/100_original/20_SOPP_CSVs/va_statewide.csv
+(11 vars, 5,006,847 obs)
+string variables:
+date              subject_race      type              raw_race
+location          officer_id_hash   search_conducted
+county_name       officer_race      raw_officer_race
+
+non-string variables:
+raw_row_number
+
+(5,006,847 real changes made)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+(5,006,847 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/va_statewide.dta saved
+
+
+#81/88 | 01:08:40: 2000_data/100_original/20_SOPP_CSVs/vt_burlington.csv
+(26 vars, 31,510 obs)
+string variables:
+raw_row_number              citation_issued
+date                        warning_issued
+time                        outcome
+location                    contraband_found
+lat                         search_conducted
+lng                         search_basis
+subject_age                 reason_for_search
+subject_race                reason_for_stop
+subject_sex                 vehicle_registration_state
+department_name             raw_race
+type                        raw_gender
+violation                   raw_contraband_evidence
+arrest_made                 raw_outcome_of_stop
+
+non-string variables:
+
+(31,510 real changes made)
+(31,510 missing values generated)
+(31,510 missing values generated)
+(31,510 missing values generated)
+(31,510 missing values generated)
+(31,510 missing values generated)
+(31,510 missing values generated)
+(31,510 missing values generated)
+(31,510 missing values generated)
+(31,510 missing values generated)
+(31,510 missing values generated)
+(31,510 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/vt_burlington.dta saved
+
+
+#82/88 | 01:08:41: 2000_data/100_original/20_SOPP_CSVs/vt_statewide.csv
+(25 vars, 283,285 obs)
+string variables:
+date                          citation_issued
+time                          warning_issued
+location                      outcome
+lat                           contraband_found
+lng                           search_conducted
+subject_age                   search_basis
+subject_race                  raw_stop_city
+subject_sex                   raw_stop_reason_description
+officer_id_hash               raw_stop_search_description
+department_name               raw_stop_outcome_description
+type                          raw_driver_gender
+arrest_made                   raw_driver_race
+
+non-string variables:
+raw_row_number
+
+(283,285 real changes made)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+(283,285 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/vt_statewide.dta saved
+
+
+#83/88 | 01:08:48: 2000_data/100_original/20_SOPP_CSVs/wa_seattle.csv
+(27 vars, 319,959 obs)
+string variables:
+date                        disposition
+time                        violation
+location                    arrest_made
+lat                         citation_issued
+lng                         warning_issued
+beat                        outcome
+precinct                    vehicle_color
+sector                      vehicle_make
+subject_age                 vehicle_model
+subject_race                vehicle_registration_state
+subject_sex                 vehicle_year
+officer_id_hash             raw_type_description
+type                        raw_vehicle_description
+
+non-string variables:
+raw_row_number
+
+(319,959 real changes made)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+(319,959 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/wa_seattle.dta saved
+
+
+#84/88 | 01:08:57: 2000_data/100_original/20_SOPP_CSVs/wa_statewide.csv
+(30 vars, 11,333,425 obs)
+string variables:
+date                subject_sex         warning_issued      raw_contact_type
+time                officer_race        outcome             raw_driver_race
+location            officer_sex         contraband_found    raw_driver_gender
+lat                 department_name     frisk_performed     raw_search_type
+lng                 type                search_conducted    raw_enforcements
+county_name         violation           search_basis
+subject_age         arrest_made         raw_officer_race
+subject_race        citation_issued     raw_officer_gender
+
+non-string variables:
+raw_row_number
+
+(11,333,425 real changes made)
+(11,333,425 missing values generated)
+(11,333,425 missing values generated)
+(11,333,425 missing values generated)
+(11,333,425 missing values generated)
+(11,333,425 missing values generated)
+(11,333,425 missing values generated)
+(11,333,425 missing values generated)
+(11,333,425 missing values generated)
+(11,333,425 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/wa_statewide.dta saved
+
+
+#85/88 | 01:13:17: 2000_data/100_original/20_SOPP_CSVs/wa_tacoma.csv
+(15 vars, 271,912 obs)
+string variables:
+date             lng              type             warning_issued
+time             sector           disposition      outcome
+location         subsector        arrest_made
+lat              officer_id_hash  citation_issued
+
+non-string variables:
+raw_row_number
+
+(271,912 real changes made)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+(271,912 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/wa_tacoma.dta saved
+
+
+#86/88 | 01:13:21: 2000_data/100_original/20_SOPP_CSVs/wi_madison.csv
+(23 vars, 277,924 obs)
+string variables:
+raw_row_number              citation_issued
+date                        warning_issued
+time                        outcome
+location                    speed
+lat                         posted_speed
+lng                         vehicle_color
+district                    vehicle_make
+sector                      vehicle_model
+subject_race                vehicle_registration_state
+subject_sex                 vehicle_year
+type                        raw_race
+violation
+
+non-string variables:
+
+(277,924 real changes made)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+(277,924 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/wi_madison.dta saved
+
+
+#87/88 | 01:13:28: 2000_data/100_original/20_SOPP_CSVs/wi_statewide.csv
+(44 vars, 1,058,902 obs)
+string variables:
+raw_row_number                 search_conducted
+date                           search_person
+time                           search_vehicle
+location                       search_basis
+lat                            vehicle_color
+lng                            vehicle_make
+county_name                    vehicle_model
+subject_race                   vehicle_type
+subject_sex                    vehicle_registration_state
+department_id                  vehicle_year
+department_name                raw_onhighwaydirection
+type                           raw_onhighwayname
+violation                      raw_fromatstreetname
+arrest_made                    raw_race
+citation_issued                raw_sex
+warning_issued                 raw_individualsearchconducted
+outcome                        raw_vehiclesearchconducted
+contraband_found               raw_individualcontraband
+contraband_drugs               raw_vehiclecontraband
+contraband_weapons             raw_summaryoutcome
+contraband_alcohol             raw_individualsearchbasis
+contraband_other               raw_vehiclesearchbasis
+
+non-string variables:
+
+(1,058,902 real changes made)
+(1,058,902 missing values generated)
+(1,058,902 missing values generated)
+(1,058,902 missing values generated)
+(1,058,902 missing values generated)
+(1,058,902 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/wi_statewide.dta saved
+
+
+#88/88 | 01:14:07: 2000_data/100_original/20_SOPP_CSVs/wy_statewide.csv
+(16 vars, 173,311 obs)
+string variables:
+raw_row_number   county_name      officer_id_hash  raw_race
+date             subject_age      department_id    raw_sex
+time             subject_race     type             raw_streetnbr
+location         subject_sex      outcome          raw_street
+
+non-string variables:
+
+(173,311 real changes made)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+(173,311 missing values generated)
+file 2000_data/200_raw/20_SOPP_DTAs/wy_statewide.dta saved
+
+
+. 
+. 
+. 
+. log close
+      name:  <unnamed>
+       log:  /bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/1000_note
+> s/200_smcl_logs/01_prepping/01a_converting.smcl
+  log type:  smcl
+ closed on:  20 Nov 2024, 01:14:10
+-------------------------------------------------------------------------------
+
+. 
+. 

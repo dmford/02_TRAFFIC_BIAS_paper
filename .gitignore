@@ -1,0 +1,37 @@
+# Ignore top-level project folders
+0000_old/
+1000_notes/
+2000_data/
+4000_outputs/
+5000_figures/
+6000_LaTeX/
+7000_final_product/
+9999_appendix/
+9999_folder_templates/
+pciv/
+
+# Ignore archive/vendor/old code inside 3000_code
+3000_code/0000a_GrosjeanMaseraYousef_do/
+3000_code/0000b_PCIV_files/
+3000_code/0000_old/
+3000_code/00_misc/
+3000_code/06_graphs/old/
+
+# Ignore Stata logs and generated graph files
+*.gph
+
+# Ignore data/spreadsheet files
+*.dta
+*.xlsx
+*.xls
+*.csv
+*.zip
+
+# Ignore PDFs
+*.pdf
+
+# Ignore LaTeX/generated clutter
+*.aux
+*.out
+*.toc
+*.tmp

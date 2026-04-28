@@ -1,0 +1,3683 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/1000_notes/200_smcl_logs/02_dept_renaming/02a_SOPP_to_FE_rename.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}27 Nov 2024, 11:09:01
+
+{com}. 
+. 
+. 
+. * this ugly piece is used to reduce data-crunching: 
+
+. 
+. local my_sopp_vars = "state locale date subject_race subject_age subject_sex department_name county_name search_conducted officer_race officer_age officer_sex contraband_found search_basis search_vehicle search_person contraband_alcohol contraband_drugs contraband_weapons contraband_other type reason_for_search department_id type"
+
+. 
+. 
+. 
+. * 1/88: AR_LITTLE_ROCK 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ar_little_rock.dta", replace
+
+. 
+. qui replace department_name = "little rock police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ar_little_rock.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ar_little_rock.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 2/88: AZ_GILBERT 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/az_gilbert.dta", replace
+
+. 
+. qui replace department_name = "gilbert police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/az_gilbert.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/az_gilbert.dta saved
+
+{com}. 
+. 
+. 
+. * 3/88: AZ_MESA 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/az_mesa.dta", replace
+
+. 
+. qui replace department_name = "mesa police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/az_mesa.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/az_mesa.dta saved
+
+{com}. 
+. 
+. 
+. * 4/88: AZ_STATEWIDE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/az_statewide.dta", replace
+
+. 
+. qui replace department_name = "arizona department of public safety" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/az_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/az_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. *  5/88: CA_ANAHEIM 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ca_anaheim.dta", replace
+
+. 
+. qui replace department_name = "anaheim police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_anaheim.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_anaheim.dta saved
+
+{com}. 
+. 
+. 
+. *  6/88: CA_BAKERSFIELD 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ca_bakersfield.dta", replace
+
+. 
+. qui replace department_name = "bakersfield police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_bakersfield.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_bakersfield.dta saved
+
+{com}. 
+. 
+. 
+. * 7/88: CA_LONG_BEACH 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ca_long_beach.dta", replace
+
+. 
+. qui replace department_name = "long beach police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_long_beach.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_long_beach.dta saved
+
+{com}. 
+. 
+. 
+. * 8/88: CA_LOS_ANGELES 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ca_los_angeles.dta", replace
+
+. 
+. qui replace department_name = "los angeles police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_los_angeles.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_los_angeles.dta saved
+
+{com}. 
+. 
+. 
+. * 9/88: CA_OAKLAND 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ca_oakland.dta", replace
+
+. 
+. qui replace department_name = "oakland police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_oakland.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_oakland.dta saved
+
+{com}. 
+. 
+. 
+. * 10/88: CA_SAN_BERNARDINO 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ca_san_bernardino.dta", replace
+
+. 
+. qui replace department_name = "san bernardino police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_san_bernardino.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_san_bernardino.dta saved
+
+{com}. 
+. 
+. 
+. * 11/88: CA_SAN_DIEGO 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ca_san_diego.dta", replace
+
+. 
+. qui replace department_name = "san diego police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_san_diego.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_san_diego.dta saved
+
+{com}. 
+. 
+. 
+. * 12/88: CA_SAN_FRANCISCO 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ca_san_francisco.dta", replace
+
+. 
+. qui replace department_name = "san francisco police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_san_francisco.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_san_francisco.dta saved
+
+{com}. 
+. 
+. 
+. * 13/88: CA_SAN_JOSE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ca_san_jose.dta", replace
+
+. 
+. qui replace department_name = "san jose police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_san_jose.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_san_jose.dta saved
+
+{com}. 
+. 
+. 
+. * 14/88: CA_SANTA_ANA 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ca_santa_ana.dta", replace
+
+. 
+. qui replace department_name = "santa ana police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_santa_ana.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_santa_ana.dta saved
+
+{com}. 
+. 
+. 
+. * 15/88: CA_STATEWIDE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ca_statewide.dta", replace
+
+. 
+. qui replace department_name = "california highway patrol" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_statewide.dta saved
+
+{com}. 
+. 
+. 
+. * 16/88: CA_STOCKTON 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ca_stockton.dta", replace
+
+. 
+. qui replace department_name = "stockton police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_stockton.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_stockton.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 17/88: CO_AURORA 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/co_aurora.dta", replace
+
+. 
+. qui replace department_name = "aurora police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/co_aurora.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/co_aurora.dta saved
+
+{com}. 
+. 
+. 
+. * 18/88: CO_DENVER
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/co_denver.dta", replace
+
+. 
+. qui replace department_name = "denver police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/co_denver.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/co_denver.dta saved
+
+{com}. 
+. 
+. 
+. * 19/88: CO_STATEWIDE
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/co_statewide.dta", replace
+
+. 
+. qui replace department_name = "colorado state patrol" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/co_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/co_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 20/88: CT_HARTFORD 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ct_hartford.dta", replace
+
+. 
+. qui replace department_name = "hartford police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ct_hartford.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ct_hartford.dta saved
+
+{com}. 
+. 
+. 
+. * 21/88: CT_STATEWIDE
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (104) DEPARTMENTS ***
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ct_statewide.dta", replace
+
+. 
+. qui replace department_name = "ansonia police department" if department_name == "Ansonia"
+
+. 
+. qui replace department_name = "bethel police department" if department_name == "Bethel"
+
+. 
+. qui replace department_name = "branford police department" if department_name == "Branford"
+
+. 
+. qui replace department_name = "bridgeport police department" if department_name == "Bridgeport"
+
+. 
+. qui replace department_name = "danbury police department" if department_name == "Danbury"
+
+. 
+. qui replace department_name = "east hartford police department" if department_name == "East Hartford"
+
+. 
+. qui replace department_name = "fairview police department" if department_name == "Fairfield"
+
+. 
+. qui replace department_name = "groton police department" if department_name == "Groton City"
+
+. 
+. qui replace department_name = "groton town police department" if department_name == "Groton Town"
+
+. 
+. qui replace department_name = "hamden police department" if department_name == "Hamden"
+
+. 
+. qui replace department_name = "hartford police department" if department_name == "Hartford"
+
+. 
+. qui replace department_name = "madison police department" if department_name == "Madison"
+
+. 
+. qui replace department_name = "manchester police department" if department_name == "Manchester"
+
+. 
+. qui replace department_name = "meriden police department" if department_name == "Meriden"
+
+. 
+. qui replace department_name = "middletown police department" if department_name == "Middletown"
+
+. 
+. qui replace department_name = "milford police department" if department_name == "Milford"
+
+. 
+. qui replace department_name = "monroe police department" if department_name == "Monroe"
+
+. 
+. qui replace department_name = "new britain police department" if department_name == "New Britain"
+
+. 
+. qui replace department_name = "new haven police department" if department_name == "New Haven"
+
+. 
+. qui replace department_name = "new london police department" if department_name == "New London"
+
+. 
+. qui replace department_name = "new milford police department" if department_name == "New Milford"
+
+. 
+. qui replace department_name = "newington police department" if department_name == "Newington"
+
+. 
+. qui replace department_name = "norwalk police department" if department_name == "Norwalk"
+
+. 
+. qui replace department_name = "norwich police department" if department_name == "Norwich"
+
+. 
+. qui replace department_name = "old saybrook department of police services" if department_name == "Old Saybrook"
+
+. 
+. qui replace department_name = "orange police department" if department_name == "Orange"
+
+. 
+. qui replace department_name = "plainfield police department" if department_name == "Plainfield"
+
+. 
+. qui replace department_name = "plainville police department" if department_name == "Plainville"
+
+. 
+. qui replace department_name = "putnam police department" if department_name == "Putnam"
+
+. 
+. qui replace department_name = "ridgefield police department" if department_name == "Ridgefield"
+
+. 
+. qui replace department_name = "seymour police department" if department_name == "Seymour"
+
+. 
+. qui replace department_name = "south windsor police department" if department_name == "South Windsor"
+
+. 
+. qui replace department_name = "stamford police department" if department_name == "Stamford"
+
+. 
+. qui replace department_name = "connecticut state police" if department_name == "State Police"
+
+. 
+. qui replace department_name = "stratford police department" if department_name == "Stratford"
+
+. 
+. qui replace department_name = "suffield police department" if department_name == "Suffield"
+
+. 
+. qui replace department_name = "vernon police department" if department_name == "Vernon"
+
+. 
+. qui replace department_name = "wallingford police department" if department_name == "Wallingford"
+
+. 
+. qui replace department_name = "waterbury police department" if department_name == "Waterbury"
+
+. 
+. qui replace department_name = "waterford police department" if department_name == "Waterford"
+
+. 
+. qui replace department_name = "west haven police department" if department_name == "West Haven"
+
+. 
+. qui replace department_name = "westport police department" if department_name == "Westport"
+
+. 
+. qui replace department_name = "wethersfield police department" if department_name == "Wethersfield"
+
+. 
+. qui replace department_name = "willimantic police department" if department_name == "Willimantic"
+
+. 
+. qui replace department_name = "windsor locks police department" if department_name == "Windsor Locks"
+
+. 
+. qui replace department_name = lower(department_name)
+
+. 
+. drop if department_name == "na"
+{txt}(0 observations deleted)
+
+{com}. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ct_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ct_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 22/88: FL_SAINT_PETERSBURG
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/fl_saint_petersburg.dta", replace
+
+. 
+. qui replace department_name = "st. petersburg police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/fl_saint_petersburg.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/fl_saint_petersburg.dta saved
+
+{com}. 
+. 
+. 
+. * 23/88: FL_STATEWIDE
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (5) DEPARTMENTS! ***
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/fl_statewide.dta", replace
+
+. 
+. qui replace department_name = "florida highway patrol" if inlist(department_name, "FLORIDA HIGHWAY PATROL", "FLORIDA HIGHWAY PATROL - TROOP K", "FLORIDA HIGHWAY PATROL  MOTORS SQ")
+
+. 
+. *replace department_name = "" if department_name == "FLORIDA DEPARTMENT OF AGRICULTURE"
+
+. 
+. drop if department_name == "NA"
+{txt}(3,188,813 observations deleted)
+
+{com}. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/fl_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/fl_statewide.dta saved
+
+{com}. 
+. 
+. 
+. * 24/88: FL_TAMPA 
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (436) DEPARTMENTS! ***
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/fl_tampa.dta", replace
+
+. 
+. 
+. 
+. * FL_TAMPA is a mess; department_name == "A|B|B|C" type problems
+
+. 
+. * 1: make all lowercase, split along dividers
+
+. 
+. * 2: change repeats into blanks
+
+. 
+. * 3: shoving left, re-forming variable
+
+. 
+. qui replace department_name = lower(department_name) 
+
+. 
+. drop if department_name == ""
+{txt}(0 observations deleted)
+
+{com}. 
+. split department_name, parse("|")
+{res}variables created as string: 
+{txt}{col 1}departmen~e1{col 15}departmen~e6{col 29}departmen~11{col 43}departmen~16{col 57}departmen~21
+{col 1}departmen~e2{col 15}departmen~e7{col 29}departmen~12{col 43}departmen~17{col 57}departmen~22
+{col 1}departmen~e3{col 15}departmen~e8{col 29}departmen~13{col 43}departmen~18{col 57}departmen~23
+{col 1}departmen~e4{col 15}departmen~e9{col 29}departmen~14{col 43}departmen~19{col 57}departmen~24
+{col 1}departmen~e5{col 15}departmen~10{col 29}departmen~15{col 43}departmen~20
+
+{com}. 
+. forvalues i = 1(1)24 {c -(}
+{txt}  2{com}. 
+. local p1 = `i'+1
+{txt}  3{com}. 
+. forvalues ip1 = `p1'(1)24 {c -(}
+{txt}  4{com}. 
+. replace department_name`ip1' = "" if department_name`ip1' == department_name`i'
+{txt}  5{com}. 
+. {c )-}
+{txt}  6{com}. 
+. {c )-}
+{txt}(781 real changes made)
+(608 real changes made)
+(445 real changes made)
+(324 real changes made)
+(228 real changes made)
+(156 real changes made)
+(104 real changes made)
+(66 real changes made)
+(41 real changes made)
+(24 real changes made)
+(19 real changes made)
+(11 real changes made)
+(9 real changes made)
+(6 real changes made)
+(4 real changes made)
+(2 real changes made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(178 real changes made)
+(126 real changes made)
+(79 real changes made)
+(51 real changes made)
+(40 real changes made)
+(23 real changes made)
+(13 real changes made)
+(8 real changes made)
+(2 real changes made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(158 real changes made)
+(119 real changes made)
+(90 real changes made)
+(59 real changes made)
+(41 real changes made)
+(33 real changes made)
+(24 real changes made)
+(17 real changes made)
+(9 real changes made)
+(4 real changes made)
+(2 real changes made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(150 real changes made)
+(121 real changes made)
+(94 real changes made)
+(66 real changes made)
+(48 real changes made)
+(36 real changes made)
+(20 real changes made)
+(8 real changes made)
+(5 real changes made)
+(2 real changes made)
+(2 real changes made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(121 real changes made)
+(102 real changes made)
+(86 real changes made)
+(58 real changes made)
+(40 real changes made)
+(28 real changes made)
+(23 real changes made)
+(11 real changes made)
+(8 real changes made)
+(4 real changes made)
+(1 real change made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(101 real changes made)
+(77 real changes made)
+(61 real changes made)
+(45 real changes made)
+(34 real changes made)
+(25 real changes made)
+(16 real changes made)
+(11 real changes made)
+(9 real changes made)
+(6 real changes made)
+(5 real changes made)
+(4 real changes made)
+(2 real changes made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(68 real changes made)
+(57 real changes made)
+(46 real changes made)
+(39 real changes made)
+(29 real changes made)
+(22 real changes made)
+(13 real changes made)
+(5 real changes made)
+(3 real changes made)
+(3 real changes made)
+(1 real change made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(49 real changes made)
+(42 real changes made)
+(36 real changes made)
+(26 real changes made)
+(18 real changes made)
+(11 real changes made)
+(8 real changes made)
+(5 real changes made)
+(3 real changes made)
+(2 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(33 real changes made)
+(29 real changes made)
+(27 real changes made)
+(20 real changes made)
+(13 real changes made)
+(12 real changes made)
+(7 real changes made)
+(4 real changes made)
+(3 real changes made)
+(3 real changes made)
+(2 real changes made)
+(2 real changes made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(19 real changes made)
+(18 real changes made)
+(16 real changes made)
+(7 real changes made)
+(5 real changes made)
+(2 real changes made)
+(2 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(12 real changes made)
+(10 real changes made)
+(9 real changes made)
+(7 real changes made)
+(6 real changes made)
+(6 real changes made)
+(3 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(5 real changes made)
+(5 real changes made)
+(4 real changes made)
+(3 real changes made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(6 real changes made)
+(3 real changes made)
+(3 real changes made)
+(2 real changes made)
+(2 real changes made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(3 real changes made)
+(3 real changes made)
+(3 real changes made)
+(2 real changes made)
+(2 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+(0 real changes made)
+
+{com}. 
+. forvalues loop = 1(1)2 {c -(}
+{txt}  2{com}. 
+. forvalues i = 1(1)23 {c -(}
+{txt}  3{com}. 
+. display `i'
+{txt}  4{com}. 
+. replace department_name`i' = "" if inlist(department_name`i', "unknown", "other")
+{txt}  5{com}. 
+. replace department_name`i' = "state attorney's office" if (department_name`i' == "state attorney")
+{txt}  6{com}. 
+. local mi = 24-(`i'-1)
+{txt}  7{com}. 
+. display `mi'
+{txt}  8{com}. 
+. local mi2 = `mi'-1
+{txt}  9{com}. 
+. display `mi2'
+{txt} 10{com}. 
+. replace department_name`mi2' = department_name`mi' if (department_name`mi2'=="" & department_name`mi'!="")
+{txt} 11{com}. 
+. replace department_name`mi' = "" if (department_name`mi' == department_name`mi2') & (department_name`mi'!="")
+{txt} 12{com}. 
+. {c )-}
+{txt} 13{com}. 
+. {c )-}
+1
+{txt}(6 real changes made)
+(603 real changes made)
+24
+23
+(0 real changes made)
+(0 real changes made)
+2
+(1 real change made)
+(2 real changes made)
+23
+22
+(0 real changes made)
+(0 real changes made)
+3
+(0 real changes made)
+(0 real changes made)
+22
+21
+(0 real changes made)
+(0 real changes made)
+4
+(0 real changes made)
+(0 real changes made)
+21
+20
+(0 real changes made)
+(0 real changes made)
+5
+(0 real changes made)
+(0 real changes made)
+20
+19
+(0 real changes made)
+(0 real changes made)
+6
+(0 real changes made)
+(0 real changes made)
+19
+18
+(0 real changes made)
+(0 real changes made)
+7
+(0 real changes made)
+(0 real changes made)
+18
+17
+(1 real change made)
+(1 real change made)
+8
+(0 real changes made)
+(0 real changes made)
+17
+16
+(2 real changes made)
+(2 real changes made)
+9
+(0 real changes made)
+(0 real changes made)
+16
+15
+(3 real changes made)
+(3 real changes made)
+10
+(0 real changes made)
+(0 real changes made)
+15
+14
+(6 real changes made)
+(6 real changes made)
+11
+(0 real changes made)
+(0 real changes made)
+14
+13
+(6 real changes made)
+(6 real changes made)
+12
+(0 real changes made)
+(0 real changes made)
+13
+12
+(12 real changes made)
+(12 real changes made)
+13
+(0 real changes made)
+(0 real changes made)
+12
+11
+(17 real changes made)
+(17 real changes made)
+14
+(0 real changes made)
+(0 real changes made)
+11
+10
+(32 real changes made)
+(32 real changes made)
+15
+(0 real changes made)
+(0 real changes made)
+10
+9
+(56 real changes made)
+(56 real changes made)
+16
+(0 real changes made)
+(0 real changes made)
+9
+8
+(94 real changes made)
+(94 real changes made)
+17
+(0 real changes made)
+(0 real changes made)
+8
+7
+(146 real changes made)
+(146 real changes made)
+18
+(0 real changes made)
+(0 real changes made)
+7
+6
+(219 real changes made)
+(219 real changes made)
+19
+(0 real changes made)
+(0 real changes made)
+6
+5
+(332 real changes made)
+(332 real changes made)
+20
+(0 real changes made)
+(0 real changes made)
+5
+4
+(479 real changes made)
+(479 real changes made)
+21
+(0 real changes made)
+(0 real changes made)
+4
+3
+(640 real changes made)
+(640 real changes made)
+22
+(0 real changes made)
+(0 real changes made)
+3
+2
+variable {bf}department_name2{sf} was {bf}{res}str37{sf}{txt} now {bf}{res}str41{sf}
+{txt}(781 real changes made)
+(781 real changes made)
+23
+(0 real changes made)
+(0 real changes made)
+2
+1
+(1 real change made)
+(2 real changes made)
+1
+(0 real changes made)
+(0 real changes made)
+24
+23
+(0 real changes made)
+(0 real changes made)
+2
+(0 real changes made)
+(0 real changes made)
+23
+22
+(0 real changes made)
+(0 real changes made)
+3
+(0 real changes made)
+(0 real changes made)
+22
+21
+(0 real changes made)
+(0 real changes made)
+4
+(0 real changes made)
+(0 real changes made)
+21
+20
+(0 real changes made)
+(0 real changes made)
+5
+(0 real changes made)
+(0 real changes made)
+20
+19
+(0 real changes made)
+(0 real changes made)
+6
+(0 real changes made)
+(0 real changes made)
+19
+18
+(0 real changes made)
+(0 real changes made)
+7
+(0 real changes made)
+(0 real changes made)
+18
+17
+(0 real changes made)
+(0 real changes made)
+8
+(0 real changes made)
+(0 real changes made)
+17
+16
+(0 real changes made)
+(0 real changes made)
+9
+(0 real changes made)
+(0 real changes made)
+16
+15
+(0 real changes made)
+(0 real changes made)
+10
+(0 real changes made)
+(0 real changes made)
+15
+14
+(0 real changes made)
+(0 real changes made)
+11
+(0 real changes made)
+(0 real changes made)
+14
+13
+(0 real changes made)
+(0 real changes made)
+12
+(0 real changes made)
+(0 real changes made)
+13
+12
+(0 real changes made)
+(0 real changes made)
+13
+(0 real changes made)
+(0 real changes made)
+12
+11
+(0 real changes made)
+(0 real changes made)
+14
+(0 real changes made)
+(0 real changes made)
+11
+10
+(1 real change made)
+(1 real change made)
+15
+(0 real changes made)
+(0 real changes made)
+10
+9
+(1 real change made)
+(1 real change made)
+16
+(0 real changes made)
+(0 real changes made)
+9
+8
+(1 real change made)
+(1 real change made)
+17
+(0 real changes made)
+(0 real changes made)
+8
+7
+(2 real changes made)
+(2 real changes made)
+18
+(0 real changes made)
+(0 real changes made)
+7
+6
+(4 real changes made)
+(4 real changes made)
+19
+(0 real changes made)
+(0 real changes made)
+6
+5
+(6 real changes made)
+(6 real changes made)
+20
+(0 real changes made)
+(0 real changes made)
+5
+4
+(10 real changes made)
+(10 real changes made)
+21
+(0 real changes made)
+(0 real changes made)
+4
+3
+(30 real changes made)
+(30 real changes made)
+22
+(0 real changes made)
+(0 real changes made)
+3
+2
+(0 real changes made)
+(0 real changes made)
+23
+(0 real changes made)
+(0 real changes made)
+2
+1
+(0 real changes made)
+(0 real changes made)
+
+{com}. 
+. forvalues i=1(1)24 {c -(}
+{txt}  2{com}. 
+. levelsof department_name`i', local(d`i')
+{txt}  3{com}. 
+. if missing(`"`d`i''"') {c -(}
+{txt}  4{com}. 
+. drop department_name`i'
+{txt}  5{com}. 
+. {c )-}
+{txt}  6{com}. 
+. {c )-}
+{res}{txt}`"department of drivers license"' `"department of motor vehicles"' `"department of natural resource"' `"department of transportation"' `"department security services"' `"division of alcoholic beverage and tobacco"' `"fish and wildlife conservation commission"' `"fl bur insurance fraud"' `"florida department of agriculture/consumer services"' `"florida department of corrections"' `"florida department of law enforcement"' `"florida dot toll operations - 091"' `"florida highway patrol"' `"florida wildlife commission"' `"game and fresh water fish"' `"hernando county sheriffs office"' `"hillsborough community college"' `"hillsborough county animal services"' `"hillsborough county sheriff's office"' `"hillsborough county transportation comission"' `"office general services"' `"office of agriculture law enforcement"' `"pasco county"' `"plant city police department"' `"seminole deparment of law enforcement"' `"seminole indian reservation police"' `"seminole police department"' `"state attorney's office"' `"tampa international airport"' `"tampa police department"' `"temple terrace police department"' `"university of south florida"' `"university of tampa police department"' `"veterans administration police department"'
+{res}{txt}`"department of transportation"' `"fish and wildlife conservation commission"' `"florida dot toll operations - 091"' `"florida highway patrol"' `"florida wildlife commission"' `"hillsborough county sheriff's office"' `"plant city police department"' `"seminole deparment of law enforcement"' `"seminole indian reservation police"' `"state attorney's office"' `"tampa international airport"' `"tampa police department"' `"temple terrace police department"' `"university of south florida"'
+{res}{txt}`"florida highway patrol"' `"hillsborough county sheriff's office"' `"tampa police department"'
+{res}{txt}
+{res}{txt}
+{res}{txt}
+{res}{txt}
+{res}{txt}
+{res}{txt}
+{res}{txt}
+{res}{txt}
+{res}{txt}
+{res}{txt}
+{res}{txt}
+{res}{txt}
+{res}{txt}
+{res}{txt}
+{res}{txt}
+{res}{txt}
+{res}{txt}
+{res}{txt}
+{res}{txt}
+{res}{txt}
+{res}{txt}
+
+{com}. 
+. replace department_name = department_name1 if (department_name2 == "") & (department_name3 == "")
+{txt}(609 real changes made)
+
+{com}. 
+. replace department_name = department_name1 + "|" + department_name2 if (department_name2 != "") & (department_name3 == "")
+{txt}(898 real changes made)
+
+{com}. 
+. replace department_name = department_name1 + "|" + department_name2 + "|" + department_name3 if (department_name2 != "") & (department_name3 != "")
+{txt}(97 real changes made)
+
+{com}. 
+. 
+. 
+. drop department_name1 department_name2 department_name3 
+
+. 
+. 
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/fl_tampa.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/fl_tampa.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 25/88: GA_STATEWIDE
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (3) DEPARTMENTS! ***
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ga_statewide.dta", replace
+
+. 
+. qui replace department_name = "georgia state patrol" if department_name == "GEORGIA DEPARTMENT OF PUBLIC SAFETY"
+
+. 
+. qui replace department_name = "georgia department of natural resources" if department_name == "GEORGIA DEPARTMENT OF NATURAL RESOURCES"
+
+. 
+. qui replace department_name = "georgia state patrol" if department_name == "GEORGIA STATE PATROL"
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ga_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ga_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 26/88: IA_STATEWIDE
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (341) DEPARTMENTS! ***
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ia_statewide.dta", replace
+
+. 
+. * evidently IA_STATEWIDE breaks-down stops by state patrol districts - which I dont' use 
+
+. 
+. qui replace department_name = "iowa state patrol" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ia_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ia_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 27/88: ID_IDAHO_FALLS
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/id_idaho_falls.dta", replace
+
+. 
+. qui replace department_name = "idaho falls police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/id_idaho_falls.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/id_idaho_falls.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 28/88: IL_CHICAGO 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/il_chicago.dta", replace
+
+. 
+. qui replace department_name = "chicago police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/il_chicago.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/il_chicago.dta saved
+
+{com}. 
+. 
+. 
+. * 29/88: IL_STATEWIDE 
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (1013) DEPARTMENTS! ***
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/il_statewide.dta", replace
+
+. 
+. qui replace department_name = lower(department_name)
+
+. 
+. qui replace department_name = "illinois department of natural resources" if department_name == "illinois department of natural resources police"
+
+. 
+. qui replace department_name = subinstr(department_name, "police", "police department", .)
+
+. 
+. qui replace department_name = subinstr(department_name, "sheriff", "sheriff's office", .)
+
+. 
+. qui replace department_name = "illinois state police" if department_name == "illinois state police department"
+
+. 
+. qui replace department_name = "la grange police department" if department_name == "lagrange police department"
+
+. 
+. qui replace department_name = "mt. zion police department" if department_name == "mount zion police department"
+
+. 
+. qui replace department_name = "naplate village police department" if department_name == "naplate police department"
+
+. 
+. qui replace department_name = "university of illinois at chicago police department" if department_name == "university of illinois chicago police department"
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/il_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/il_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 30/88: IN_FORT_WAYNE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/in_fort_wayne.dta", replace
+
+. 
+. qui replace department_name = "fort wayne police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/in_fort_wayne.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/in_fort_wayne.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 31/88: KS_WICHITA 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ks_wichita.dta", replace
+
+. 
+. qui replace department_name = "wichita police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ks_wichita.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ks_wichita.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 32/88: KY_LOUISVILLE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ky_louisville.dta", replace
+
+. 
+. qui replace department_name = "louisville metro police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ky_louisville.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ky_louisville.dta saved
+
+{com}. 
+. 
+. 
+. * 33/88: KY_OWENSBORO 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ky_owensboro.dta", replace
+
+. 
+. qui replace department_name = "owensboro police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ky_owensboro.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ky_owensboro.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 34/88: LA_NEW_ORLEANS 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/la_new_orleans.dta", replace
+
+. 
+. qui replace department_name = "new orleans police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/la_new_orleans.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/la_new_orleans.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 35/88: MA_STATEWIDE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ma_statewide.dta", replace
+
+. 
+. qui replace department_name = "massachusetts state police" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ma_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ma_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 36/88: MD_BALTIMORE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/md_baltimore.dta", replace
+
+. 
+. qui replace department_name = "baltimore police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/md_baltimore.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/md_baltimore.dta saved
+
+{com}. 
+. 
+. 
+. * 37/88: MD_STATEWIDE 
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (425) DEPARTMENTS! ***
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/md_statewide.dta", replace
+
+. 
+. * few shorthands used in this data, mostly changing "X" to "X police department": 
+
+. 
+. qui replace department_name = subinstr(department_name, "PD", "police department", .)
+
+. 
+. qui replace department_name = subinstr(department_name, "SO", "sheriff's office", .)
+
+. 
+. qui replace department_name = lower(department_name)
+
+. 
+. qui replace department_name = "aberdeen police department" if inlist(department_name, "aberdeen city police department")
+
+. 
+. qui replace department_name = "allegany county sheriff's office" if inlist(department_name, "allegany county bureau of police", "allegany county sheriffs office", "alleghany", "alleghany county sheriff's office")
+
+. 
+. qui replace department_name = "annapolice police department" if inlist(department_name, "annapolis city police department")
+
+. 
+. qui replace department_name = "anne arundel county police department" if inlist(department_name, "aa county", "anne arundel county police departme")
+
+. 
+. qui replace department_name = "anne arundel county sheriff's office" if inlist(department_name, "aa co sheriff", "anne arundel county sheriff's offic")
+
+. 
+. qui replace department_name = "baltimore city school police" if inlist(department_name, "baltimore city public schools polic", "baltimore city schools police")
+
+. 
+. qui replace department_name = "baltimore county police department" if inlist(department_name, "baltimore county")
+
+. 
+. qui replace department_name = "baltimore police department" if inlist(department_name, "baltimore city police department", "balt city")
+
+. 
+. qui replace department_name = "bowei police department" if inlist(department_name, "bowie", "bower police department", "city of bowie")
+
+. 
+. qui replace department_name = "bowie state university police department" if inlist(department_name, "bowie state univ", "bowie state university police")
+
+. 
+. qui replace department_name = "brunswick police department" if inlist(department_name, "brunswick")
+
+. 
+. qui replace department_name = "calvert county sheriff's office" if inlist(department_name, "calvert co", "calvert")
+
+. 
+. qui replace department_name = "cambridge police department" if inlist(department_name, "cambridge")
+
+. 
+. qui replace department_name = "capitol heights police department" if inlist(department_name, "capitolheights")
+
+. 
+. qui replace department_name = "caroline county sheriff's office" if inlist(department_name, "caroline", "caroline county sheriff")
+
+. 
+. qui replace department_name = "carroll county sheriff's office" if inlist(department_name, "carroll", "carroll county police department")
+
+. 
+. qui replace department_name = "cecil county sheriff's office" if inlist(department_name, "cecil county")
+
+. 
+. qui replace department_name = "centreville police department" if inlist(department_name, "centreville", "centreville  police department")
+
+. 
+. qui replace department_name = "charles county sheriff's office" if inlist(department_name, "charles", "charles county")
+
+. 
+. qui replace department_name = "chestertown police department" if inlist(department_name, "chestertown")
+
+. 
+. qui replace department_name = "cheverly police department" if inlist(department_name, "cheverly")
+
+. 
+. qui replace department_name = "chevy chase village police department" if inlist(department_name, "chevy chase police department", "chevy chase village police departme", "chevychase")
+
+. 
+. qui replace department_name = "colmar manor police department" if inlist(department_name, "colmar", "colmar police department")
+
+. 
+. qui replace department_name = "comptroller of maryland" if inlist(department_name, "comptroller")
+
+. 
+. qui replace department_name = "coppin state university police department" if inlist(department_name, "coppin", "coppin state university  police dep", "coppin state university police")
+
+. 
+. qui replace department_name = "cottage city police department" if inlist(department_name, "cottagecity")
+
+. 
+. qui replace department_name = "crofton police department" if inlist(department_name, "crofton")
+
+. 
+. qui replace department_name = "cumberland police department" if inlist(department_name, "cumberland", "cumberland city police department")
+
+. 
+. qui replace department_name = "delmar police department" if inlist(department_name, "delmar")
+
+. 
+. qui replace department_name = "denton police department" if inlist(department_name, "denton")
+
+. 
+. qui replace department_name = "department of general services" if inlist(department_name, "dgs", "general services police department")
+
+. 
+. qui replace department_name = "district heights police department" if inlist(department_name, "distheights", "districts heights police department")
+
+. 
+. qui replace department_name = "dorchester county sheriff's office" if inlist(department_name, "dorchester", "dorchester co sheriff")
+
+. 
+. qui replace department_name = "easton police department" if inlist(department_name, "easton")
+
+. 
+. qui replace department_name = "edmonston police department" if inlist(department_name, "edmonston")
+
+. 
+. qui replace department_name = "elkton police department" if inlist(department_name, "elkton")
+
+. 
+. qui replace department_name = "federalsburg police department" if inlist(department_name, "federalsburg")
+
+. 
+. qui replace department_name = "frederick county sheriff's office" if inlist(department_name, "frederick co sheriff")
+
+. 
+. qui replace department_name = "frederick police department" if inlist(department_name, "frederickpolice department", "frederick")
+
+. 
+. qui replace department_name = "frostburg police department" if inlist(department_name, "frostburg", "frostburg city police department")
+
+. 
+. qui replace department_name = "frostburg state university police department" if inlist(department_name, "frostburg state university", "frostburg state university police d")
+
+. 
+. qui replace department_name = "fruitland police department" if inlist(department_name, "fruitland")
+
+. 
+. qui replace department_name = "gaithersburg police department" if inlist(department_name, "gaithersburg")
+
+. 
+. qui replace department_name = "garrett county police department" if inlist(department_name, "garrett")
+
+. 
+. qui replace department_name = "garrett county sheriff's office" if inlist(department_name, "garrett county sheriff")
+
+. 
+. qui replace department_name = "glenarden police department" if inlist(department_name, "glenarden", "city of glenarden")
+
+. 
+. qui replace department_name = "greenbelt police department" if inlist(department_name, "greenbelt")
+
+. 
+. qui replace department_name = "greensboro police department" if inlist(department_name, "greensboro")
+
+. 
+. qui replace department_name = "hagerstown police department" if inlist(department_name, "hagerstown")
+
+. 
+. qui replace department_name = "hampstead police department" if inlist(department_name, "hampstead")
+
+. 
+. qui replace department_name = "harford county sheriff's office" if inlist(department_name, "harford", "harford county")
+
+. 
+. qui replace department_name = "havre de grace police department" if inlist(department_name, "havredegrace")
+
+. 
+. qui replace department_name = "howard county police department" if inlist(department_name, "hocpolice department")
+
+. 
+. qui replace department_name = "howard county sheriff's office" if inlist(department_name, "howard co sheriff's office")
+
+. 
+. qui replace department_name = "hurlock police department" if inlist(department_name, "hurlock")
+
+. 
+. qui replace department_name = "hyattsville police department" if inlist(department_name, "hyattsville")
+
+. 
+. qui replace department_name = "kent county sheriff's office" if inlist(department_name, "kent", "kent co sheriff")
+
+. 
+. qui replace department_name = "la plata police department" if inlist(department_name, "laplata")
+
+. 
+. qui replace department_name = "landover hills police department" if inlist(department_name, "landover hills police  department", "landover", "landover police department")
+
+. 
+. qui replace department_name = "laurel police department" if inlist(department_name, "laurel")
+
+. 
+. qui replace department_name = "manchester police department" if inlist(department_name, "manchester", "manchester police  department")
+
+. 
+. qui replace department_name = "maryland national capital park police" if inlist(department_name, "maryland - national capital pa", "maryland national capital park poli", "maryland national capital park police montgomery county", "maryland national capital park police prince george's county", "maryland national capital park prin", "maryland-national capital park police montgomery county")
+
+. 
+. qui replace department_name = "maryland national capital park police" if inlist(department_name, "maryland-national capital park police prince george's county", "mcpark", "mdncpp montgomery", "mdncpp prince george's", "pgpark")
+
+. 
+. qui replace department_name = "maryland state police" if inlist(department_name, "msp")
+
+. 
+. qui replace department_name = "maryland transit administration police department" if inlist(department_name, "maryland transportation administration police", "maryland transit administration police", "mta")
+
+. 
+. qui replace department_name = "maryland transportation authority police department" if inlist(department_name, "mdta", "mdta police")
+
+. 
+. qui replace department_name = "montgomery county police department" if inlist(department_name, "montgomery", "montgomery co")
+
+. 
+. qui replace department_name = "montgomery county sheriff's office" if inlist(department_name, "montgomery co sheriff", "montgomery county sheriffs office", "montsheriff")
+
+. 
+. qui replace department_name = "morgan state university police department" if inlist(department_name, "morgan state university police")
+
+. 
+. qui replace department_name = "mount rainier police department" if inlist(department_name, "mount ranier police department", "mtrainier")
+
+. 
+. qui replace department_name = "morningside police department" if inlist(department_name, "morningside")
+
+. 
+. qui replace department_name = "new carrollton police department" if inlist(department_name, "ncpolice department")
+
+. 
+. qui replace department_name = "north east police department" if inlist(department_name, "northeast police department")
+
+. 
+. qui replace department_name = "natural resources police" if inlist(department_name, "nrp")
+
+. 
+. qui replace department_name = "oakland police department" if inlist(department_name, "oakland")
+
+. 
+. qui replace department_name = "ocean city police department" if inlist(department_name, "oceancity")
+
+. 
+. qui replace department_name = "ocean pines police department" if inlist(department_name, "oceanpines")
+
+. 
+. qui replace department_name = "oxford police department" if inlist(department_name, "oxford")
+
+. 
+. qui replace department_name = "pocomoke city police department" if inlist(department_name, "pocomoke", "pokomoke county")
+
+. 
+. qui replace department_name = "prince george's county police department" if inlist(department_name, "prince george's police department", "pgcopolice department")
+
+. 
+. qui replace department_name = "prince george's county sheriff's office" if inlist(department_name, "prince george's county sheriff's of", "pg sheriff")
+
+. 
+. qui replace department_name = "princess anne police department" if inlist(department_name, "princessanne")
+
+. 
+. qui replace department_name = "queen anne's county sheriff's office" if inlist(department_name, "qacsheriff's office", "queen anne's county", "queen anne's county sheriff's offic")
+
+. 
+. qui replace department_name = "ridgely police department" if inlist(department_name, "ridgely", "ridgley police department")
+
+. 
+. qui replace department_name = "riverdale park police department" if inlist(department_name, "riverdale", "riverdale police department")
+
+. 
+. qui replace department_name = "rock hall police department" if inlist(department_name, "rockhall")
+
+. 
+. qui replace department_name = "rockville city police department" if inlist(department_name, "rockville", "rockville police department")
+
+. 
+. qui replace department_name = "salisbury police department" if inlist(department_name, "salisbury")
+
+. 
+. qui replace department_name = "seat pleasant police department" if inlist(department_name, "seatpleasant")
+
+. 
+. qui replace department_name = "salisbury university police department" if inlist(department_name, "salisbury university police departm")
+
+. 
+. qui replace department_name = "smithsburg police department" if inlist(department_name, "smithsburg")
+
+. 
+. qui replace department_name = "snow hill police department" if inlist(department_name, "snowhill", "snowhill police department")
+
+. 
+. qui replace department_name = "somerset county sheriff's office" if inlist(department_name, "sheriff's officemerset")
+
+. 
+. qui replace department_name = "sykesville police department" if inlist(department_name, "sykesville")
+
+. 
+. qui replace department_name = "st. michael's police department" if inlist(department_name, "st michaels police department", "st. michaels police department", "stmichaels")
+
+. 
+. qui replace department_name = "st. mary's county sheriff's office" if inlist(department_name, "st mary's sheriff", "stmarys")
+
+. 
+. qui replace department_name = "talbot county sheriff's office" if inlist(department_name, "talbot", "talbot county")
+
+. 
+. qui replace department_name = "taneytown police department" if inlist(department_name, "taneytown")
+
+. 
+. qui replace department_name = "takoma park police department" if inlist(department_name, "takoma")
+
+. 
+. qui replace department_name = "thurmont police department" if inlist(department_name, "thurmont")
+
+. 
+. qui replace department_name = "towson university police department" if inlist(department_name, "towson univ", "towson university police")
+
+. 
+. qui replace department_name = "trappe police department" if inlist(department_name, "trappe")
+
+. 
+. qui replace department_name = "university of baltimore police department" if inlist(department_name, "ub police department", "ubaltpolice department", "univ of balt police department", "university of baltimore police depa", "university of maryland baltimore police")
+
+. 
+. qui replace department_name = "university of maryland baltimore police department" if inlist(department_name, "umab police department", "umb", "university of maryland at baltimore police department")
+
+. 
+. qui replace department_name = "university of maryland baltimore county police department" if inlist(department_name, "umbc", "umbc police", "university of maryland baltimore county police")
+
+. 
+. qui replace department_name = "university of maryland college park police department" if inlist(department_name, "umcp", "univ of md police department", "university of maryland college park police", "university of maryland police colle", "university of maryland police college park", "university of maryland police department", "umpolice department")
+
+. 
+. qui replace department_name = "university of maryland eastern shore police department" if inlist(department_name, "umes", "university of maryland eastern shor", "university of maryland eastern shore police")
+
+. 
+. qui replace department_name = "university park police department" if inlist(department_name, "university park police", "universitypark")
+
+. 
+. qui replace department_name = "washington county sheriff's office" if inlist(department_name, "washington co. sheriffs office", "washington county sheriffs office")
+
+. 
+. qui replace department_name = "westminster police department" if inlist(department_name, "westminster")
+
+. 
+. qui replace department_name = "wicomico county sheriff's office" if inlist(department_name, "wicomico", "wicomico county sheriffs office")
+
+. 
+. qui replace department_name = "worcester county sheriff's office" if inlist(department_name, "worcester", "worchester co sheriff")
+
+. 
+. qui replace department_name = "washington county sheriff's office" if inlist(department_name, "washington", "washington co")
+
+. 
+. qui replace department_name = "washington suburban sanitary commission police department" if inlist(department_name, "wssc police department")
+
+. 
+. qui replace department_name = "westernport police department" if inlist(department_name, "westernport")
+
+. 
+. qui replace department_name = "worcester county sheriff's office" if inlist(department_name, "worcester", "worchester co sheriff")
+
+. 
+. 
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/md_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/md_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 38/88: MI_STATEWIDE 
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (95) DEPARTMENTS! ***
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/mi_statewide.dta", replace
+
+. 
+. 
+. 
+. * confident corrections:  
+
+. 
+. qui drop if inlist(department_name, "675.00", "683.10", "69", "70", "70 1469", "70 @744")
+
+. 
+. qui drop if inlist(department_name, "1015.00", "1085.00", "1645.00", "257.00", "296.00", "492.00", "560.00")
+
+. 
+. qui replace department_name = "michigan state police adrian post" if inlist(department_name, "MSPAdrian")
+
+. 
+. qui replace department_name = "michigan state police alpena post" if inlist(department_name, "MSPAlpena")
+
+. 
+. qui replace department_name = "michigan state police brighton post" if inlist(department_name, "MSPBrighto")
+
+. 
+. qui replace department_name = "michigan state police brighton post" if department_id == "MSPBrighto"
+
+. 
+. qui replace department_name = "michigan state police cadillac post" if inlist(department_name, "MSPCadilla")
+
+. 
+. qui replace department_name = "michigan state police calumet post" if inlist(department_name, "MSPCalumet")
+
+. 
+. qui replace department_name = "michigan state police coldwater post" if inlist(department_name, "MSPColdwat")
+
+. 
+. qui replace department_name = "michigan state police corunna post" if inlist(department_name, "MSPCorunna")
+
+. 
+. qui replace department_name = "michigan state police east tawas post" if inlist(department_name, "MSPEastTaw")
+
+. 
+. qui replace department_name = "michigan state police gaylord post" if inlist(department_name, "MSPGaylord")
+
+. 
+. qui replace department_name = "michigan state police grand haven post" if inlist(department_name, "MSPGrandHa")
+
+. 
+. qui replace department_name = "michigan state police gladstone post" if inlist(department_name, "MSPGladsto")
+
+. 
+. qui replace department_name = "michigan state police hart post" if inlist(department_name, "MSPHart")
+
+. 
+. qui replace department_name = "michigan state police hastings post" if inlist(department_name, "MSPHasting")
+
+. 
+. qui replace department_name = "michigan state police houghton lake post" if inlist(department_name, "MSPHoughto")
+
+. 
+. qui replace department_name = "michigan state police iron mountain post" if inlist(department_name, "MSPIronMou")
+
+. 
+. qui replace department_name = "michigan state police ithaca post" if inlist(department_name, "MSPIthaca")
+
+. 
+. qui replace department_name = "michigan state police jackson post" if inlist(department_name, "MSPJackson")
+
+. 
+. qui replace department_name = "michigan state police lakeview post" if inlist(department_name, "MSPLakevie")
+
+. 
+. qui replace department_name = "michigan state police lansing post" if inlist(department_name, "MSPLansing")
+
+. 
+. qui replace department_name = "michigan state police lapeer post" if inlist(department_name, "MSPLapeer", "MSPLapeerH")
+
+. 
+. qui replace department_name = "michigan state police manistique post" if inlist(department_name, "MSPManisti")
+
+. 
+. qui replace department_name = "michigan state police marshall post" if inlist(department_name, "MSPMarshal")
+
+. 
+. qui replace department_name = "michigan state police metro north post" if inlist(department_name, "MSPMetroNo")
+
+. 
+. qui replace department_name = "michigan state police metro south post" if inlist(department_name, "MSPMetroSo")
+
+. 
+. qui replace department_name = "michigan state police mount pleasant post" if inlist(department_name, "MSPMtPleas")
+
+. 
+. qui replace department_name = "michigan state police negaunee post" if inlist(department_name, "MSPNegaune")
+
+. 
+. qui replace department_name = "michigan state police petoskey post" if inlist(department_name, "MSPPetoske")
+
+. 
+. qui replace department_name = "michigan state police rockford" if inlist(department_name, "MSPRockfor")
+
+. 
+. qui replace department_name = "michigan state police st. ignace post" if inlist(department_name, "MSPStIgnac")
+
+. 
+. qui replace department_name = "michigan state police traverse city post" if inlist(department_name, "MSPTrav")
+
+. 
+. qui replace department_name = "michigan state police wakefield post" if inlist(department_name, "MSPWakefie")
+
+. 
+. qui replace department_name = "michigan state police wayland post" if inlist(department_name, "WaylandMSP")
+
+. 
+. qui replace department_name = "michigan state police west branch post" if inlist(department_name, "MSPWestBra")
+
+. 
+. qui replace department_name = "michigan state police white pigeon post" if inlist(department_name, "MSPWP")
+
+. 
+. qui replace department_name = "michigan state police ypsilanti post" if inlist(department_name, "MSPY")
+
+. 
+. 
+. 
+. * less confident corrections: 
+
+. 
+. qui replace department_name = "michigan state police flint post" if inlist(department_name, "MSPF")
+
+. 
+. qui replace department_name = "michigan state police niles post" if inlist(department_name, "MSPN")
+
+. 
+. qui replace department_name = "michigan state police paw paw post" if inlist(department_name, "MSPPP")
+
+. 
+. 
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/mi_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/mi_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 39/88: MN_SAINT_PAUL 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/mn_saint_paul.dta", replace
+
+. 
+. qui replace department_name = "saint paul police department"
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/mn_saint_paul.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/mn_saint_paul.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 40/88: MO_STATEWIDE 
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (679) DEPARTMENTS! ***
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/mo_statewide.dta", replace
+
+. 
+. 
+. 
+. * these capture all of the old manual-renaming that I had done (yuck)
+
+. 
+. qui replace department_name = lower(department_name)
+
+. 
+. qui replace department_name = subinstr(department_name, "dept. of public safety", "department of public safety", .)
+
+. 
+. qui replace department_name = subinstr(department_name, "co. sheriff's dept.", "county sheriff's office", .)
+
+. 
+. qui replace department_name = subinstr(department_name, "sheriff's dept.", "sheriff's office", .)
+
+. 
+. qui replace department_name = subinstr(department_name, "police dept.", "police department", .)
+
+. 
+. qui replace department_name = "de soto police department" if inlist(department_name, "desoto police department")
+
+. 
+. qui replace department_name = "gladstone police department" if inlist(department_name, "gladstone department of public safety")
+
+. 
+. qui replace department_name = "moberly police department" if inlist(department_name, "moberly")
+
+. 
+. qui replace department_name = "sikeston department of public safety" if inlist(department_name, "sikeston police department") 
+
+. 
+. qui replace department_name = "st. louis metropolitan police department" if inlist(department_name, "st. louis city police department")
+
+. 
+. qui replace department_name = "st. louis county park rangers" if inlist(department_name, "st. louis park rangers")
+
+. 
+. qui replace department_name = "riverside police department" if inlist(department_name, "riverside department of public safety")
+
+. 
+. qui replace department_name = "adair county sheriff's office" if inlist(department_name, "adair")
+
+. 
+. qui replace department_name = "bourbon department of public safety" if inlist(department_name, "bourbon - department of public safety")
+
+. 
+. qui replace department_name = "florissant valley community college police department" if inlist(department_name, "florissant valley community college")
+
+. 
+. qui replace department_name = "richmond police department" if inlist(department_name, "richmond")
+
+. 
+. qui drop if department_name == "vi"
+
+. 
+. qui replace department_name = "union pacific railroad police-kansas city/st. louis" if inlist(department_name, "union pacific railroad police - kansas city", "union pacific railroad police - st. louis")
+
+. 
+. qui replace department_name = "clark county sheriff's office" if inlist(department_name, "clark police department")
+
+. 
+. qui replace department_name = "gasconade county sheriff's office" if inlist(department_name, "gasconade police department")
+
+. 
+. qui replace department_name = "holt county sheriff's office" if inlist(department_name, "holt police department")
+
+. 
+. qui replace department_name = "miller county sheriff's office" if inlist(department_name, "miller police department")
+
+. 
+. 
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/mo_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/mo_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 41/88: MS_STATEWIDE 
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (366) DEPARTMENTS! ***
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ms_statewide.dta", replace
+
+. 
+. 
+. 
+. replace department_name = lower(department_name)
+{txt}(758,412 real changes made)
+
+{com}. 
+. replace department_name = subinstr(department_name, "police dept", "police department", .)
+{txt}(428,062 real changes made)
+
+{com}. 
+. replace department_name = subinstr(department_name, "sheriff office", "sheriff's office", .)
+{txt}(103,933 real changes made)
+
+{com}. 
+. drop if department_name == "na"
+{txt}(6,382 observations deleted)
+
+{com}. 
+. 
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ms_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ms_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 42/88: MT_STATEWIDE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/mt_statewide.dta", replace
+
+. 
+. qui replace department_name = "montana highway patrol" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/mt_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/mt_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 43/88: NC_CHARLOTTE 
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (2) DEPARTMENTS! ***
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/nc_charlotte.dta", replace
+
+. 
+. qui replace department_name = "charlotte-mecklenburg police department" if inlist(department_name, "Charlotte-Mecklenburg Police Department")
+
+. 
+. qui replace department_name = "unc charlotte university police department" if inlist(department_name, "UNC Charlotte University Police Department")
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_charlotte.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_charlotte.dta saved
+
+{com}. 
+. 
+. 
+. * 44/88: NC_DURHAM 
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (2) DEPARTMENTS! ***
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/nc_durham.dta", replace
+
+. 
+. qui replace department_name = "durham county sheriff's office" if department_name == "Durham County Sheriff's Office"
+
+. 
+. qui replace department_name = "durham police department" if department_name == "Durham Police Department"
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_durham.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_durham.dta saved
+
+{com}. 
+. 
+. 
+. * 45/88: NC_FAYETTEVILLE 
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (2) DEPARTMENTS! ***
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/nc_fayetteville.dta", replace
+
+. 
+. qui replace department_name = "fayetteville police department" if inlist(department_name, "Fayetteville Police Department")
+
+. 
+. qui replace department_name = "fayetteville state university police department" if inlist(department_name, "Fayetteville State University Police Department")
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_fayetteville.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_fayetteville.dta saved
+
+{com}. 
+. 
+. 
+. * 46/88: NC_GREENSBORO 
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (2) DEPARTMENTS! ***
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/nc_greensboro.dta", replace
+
+. 
+. qui replace department_name = "greensboro police department" if inlist(department_name, "Greensboro Police Department")
+
+. 
+. qui replace department_name = "unc greensboro university police department" if inlist(department_name, "UNC Greensboro University Police Department")
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_greensboro.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_greensboro.dta saved
+
+{com}. 
+. 
+. 
+. * 47/88: NC_RALEIGH 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/nc_raleigh.dta", replace
+
+. 
+. qui replace department_name = "raleigh police department" if department_name == "Raleigh Police Department"
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_raleigh.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_raleigh.dta saved
+
+{com}. 
+. 
+. 
+. * 48/88: NC_STATEWIDE 
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (312) DEPARTMENTS! ***
+
+. 
+. * (NOTABLY: it contains ALL of the other NC-departments from this section)
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/nc_statewide.dta", replace
+
+. 
+. qui replace department_name = subinstr(department_name, "UNC ", "unc ", .)
+
+. 
+. qui replace department_name = subinstr(department_name, "NC ", "north carolina ", .)
+
+. 
+. replace department_name = lower(department_name)
+{txt}(16,934,478 real changes made)
+
+{com}. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_statewide.dta saved
+
+{com}. 
+. 
+. 
+. *49/88: NC_WINSTON-SALEM 
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (2) DEPARTMENTS! ***
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/nc_winston-salem.dta", replace
+
+. 
+. qui replace department_name = "winston-salem police department" if inlist(department_name, "Winston-Salem Police Department")
+
+. 
+. qui replace department_name = "winston-salem state university police department" if inlist(department_name, "Winston-Salem State University Police Department")
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_winston-salem.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_winston-salem.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 50/88: ND_GRAND_FORKS 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/nd_grand_forks.dta", replace
+
+. 
+. qui replace department_name = "grand forks police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/nd_grand_forks.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nd_grand_forks.dta saved
+
+{com}. 
+. 
+. 
+. * 51/88: ND_STATEWIDE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/nd_statewide.dta", replace
+
+. 
+. qui replace department_name = "north dakota highway patrol" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/nd_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nd_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 52/88: NE_STATEWIDE 
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (246) DEPARTMENTS! ***
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ne_statewide.dta", replace
+
+. 
+. qui replace department_name = itrim(department_name)
+
+. 
+. qui replace department_name = subinstr(department_name, "P.D.", "police department", .)
+
+. 
+. qui replace department_name = subinstr(department_name, "CO.", "COUNTY", .)
+
+. 
+. qui replace department_name = lower(department_name)
+
+. 
+. qui replace department_name = "bayard police department" if inlist(department_name, "bayard pd")
+
+. 
+. qui replace department_name = "dakota county sheriff's office" if inlist(department_name, "dakota city police department")
+
+. 
+. qui replace department_name = "dodge-snyder police department" if inlist(department_name, "dodge police department / snyder police department")
+
+. 
+. qui replace department_name = "exeter police department" if inlist(department_name, "exeter p.d")
+
+. 
+. qui replace department_name = "fairmont police department" if inlist(department_name, "fairmont pd")
+
+. 
+. qui replace department_name = "mcpherson county sheriff's office" if inlist(department_name, "mc pherson county sheriff's office")
+
+. 
+. qui replace department_name = "pawnee county sheriff's office" if inlist(department_name, "pawnee city police department")
+
+. 
+. qui replace department_name = "stanton county sheriff's office" if inlist(department_name, "stanton police department")
+
+. 
+. qui drop if department_name == "nbhowelpd"
+
+. 
+. 
+. 
+. * workaround to remove sheriff names from sheriff departments 
+
+. 
+. split department_name, parse("s.o.")
+{res}variables created as string: 
+{txt}{col 1}department~1{col 15}department~2
+
+{com}. 
+. qui replace department_name2 = "sheriff's office" if (department_name2 != "")
+
+. 
+. qui replace department_name = department_name1 + department_name2 if (department_name2 == "sheriff's office")
+
+. 
+. drop department_name1 department_name2
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ne_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ne_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 53/88: NH_STATEWIDE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/nh_statewide.dta", replace
+
+. 
+. qui replace department_name = "new hampshire state police" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/nh_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nh_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 54/88: NJ_CAMDEN 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/nj_camden.dta", replace
+
+. 
+. qui replace department_name = "camden police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/nj_camden.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nj_camden.dta saved
+
+{com}. 
+. 
+. 
+. * 55/88: NJ_STATEWIDE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/nj_statewide.dta", replace
+
+. 
+. qui replace department_name = "new jersey state police" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/nj_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nj_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 56/88: NV_HENDERSON 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/nv_henderson.dta", replace
+
+. 
+. qui replace department_name = "henderson police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/nv_henderson.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nv_henderson.dta saved
+
+{com}. 
+. 
+. 
+. * 57/88: NV_STATEWIDE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/nv_statewide.dta", replace
+
+. 
+. qui replace department_name = "nevada highway patrol" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/nv_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nv_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 58/88: NY_ALBANY 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ny_albany.dta", replace
+
+. 
+. qui replace department_name = "albany police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ny_albany.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ny_albany.dta saved
+
+{com}. 
+. 
+. 
+. * 59/88: NY_STATEWIDE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ny_statewide.dta", replace
+
+. 
+. qui replace department_name = "new york state police" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ny_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ny_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 60/88: OH_CINCINNATI 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/oh_cincinnati.dta", replace
+
+. 
+. qui replace department_name = "cincinnati police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/oh_cincinnati.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/oh_cincinnati.dta saved
+
+{com}. 
+. 
+. 
+. * 61/88: OH_COLUMBUS 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/oh_columbus.dta", replace
+
+. 
+. qui replace department_name = "columbus division of police" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/oh_columbus.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/oh_columbus.dta saved
+
+{com}. 
+. 
+. 
+. * 62/88: OH_STATEWIDE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/oh_statewide.dta", replace
+
+. 
+. qui replace department_name = "ohio state highway patrol" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/oh_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/oh_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 63/88: OK_OKLAHOMA_CITY 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ok_oklahoma_city.dta", replace
+
+. 
+. qui replace department_name = "oklahoma city police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ok_oklahoma_city.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ok_oklahoma_city.dta saved
+
+{com}. 
+. 
+. 
+. * 64/88: OK_TULSA 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ok_tulsa.dta", replace
+
+. 
+. qui replace department_name = "tulsa police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ok_tulsa.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ok_tulsa.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 65/88: OR_STATEWIDE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/or_statewide.dta", replace
+
+. 
+. qui replace department_name = "oregon state police" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/or_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/or_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 66/88: PA_PHILADELPHIA 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/pa_philadelphia.dta", replace
+
+. 
+. qui replace department_name = "philadelphia police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/pa_philadelphia.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/pa_philadelphia.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 67/68: RI_STATEWIDE
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/ri_statewide.dta", replace
+
+. 
+. qui replace department_name = "rhode island state police" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/ri_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ri_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 68/88: SC_STATEWIDE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/sc_statewide.dta", replace
+
+. 
+. qui replace department_name = "south carolina highway patrol" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/sc_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/sc_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 69/88: SD_STATEWIDE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/sd_statewide.dta", replace
+
+. 
+. qui replace department_name = "south dakota highway patrol" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/sd_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/sd_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 70/88: TN_NASHVILLE 
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (2) DEPARTMENTS! ***
+
+. 
+. * (no it didn't?)
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/tn_nashville.dta", replace
+
+. 
+. qui replace department_name = "metro nashville police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/tn_nashville.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tn_nashville.dta saved
+
+{com}. 
+. 
+. 
+. * 71/88: TN_STATEWIDE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/tn_statewide.dta", replace
+
+. 
+. qui replace department_name = "tennessee highway patrol" 
+
+. 
+. qui drop if department_name == "NA"
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/tn_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tn_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 72/88: TX_ARLINGTON 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/tx_arlington.dta", replace
+
+. 
+. qui replace department_name = "arlington police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_arlington.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_arlington.dta saved
+
+{com}. 
+. 
+. 
+. * 73/88: TX_AUSTIN 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/tx_austin.dta", replace
+
+. 
+. qui replace department_name = "austin police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_austin.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_austin.dta saved
+
+{com}. 
+. 
+. 
+. * 74/88: TX_GARLAND 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/tx_garland.dta", replace
+
+. 
+. qui replace department_name = "garland police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_garland.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_garland.dta saved
+
+{com}. 
+. 
+. 
+. * 75/88: TX_HOUSTON 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/tx_houston.dta", replace
+
+. 
+. qui replace department_name = "houston police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_houston.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_houston.dta saved
+
+{com}. 
+. 
+. 
+. * 76/88: TX_LUBBOCK 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/tx_lubbock.dta", replace
+
+. 
+. qui replace department_name = "lubbock police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_lubbock.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_lubbock.dta saved
+
+{com}. 
+. 
+. 
+. * 77/88: TX_PLANO 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/tx_plano.dta", replace
+
+. 
+. qui replace department_name = "plano police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_plano.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_plano.dta saved
+
+{com}. 
+. 
+. 
+. * 78/88: TX_SAN_ANTONIO 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/tx_san_antonio.dta", replace
+
+. 
+. qui replace department_name = "san antonio police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_san_antonio.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_san_antonio.dta saved
+
+{com}. 
+. 
+. 
+. * 79/88: TX_STATEWIDE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/tx_statewide.dta", replace
+
+. 
+. qui replace department_name = "texas department of public safety" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 80/88: VA_STATEWIDE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/va_statewide.dta", replace
+
+. 
+. qui replace department_name = "virginia state police" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/va_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/va_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 81/88: VT_BURLINGTON 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/vt_burlington.dta", replace
+
+. 
+. qui replace department_name = "burlington police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/vt_burlington.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/vt_burlington.dta saved
+
+{com}. 
+. 
+. 
+. * 82/88: VT_STATEWIDE 
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (14) DEPARTMENTS! ***
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/vt_statewide.dta", replace
+
+. 
+. * VSP has headquarter info, may be useful? preserving under new variable name 
+
+. 
+. qui replace department_name = "vermont state police bradford" if inlist(department_name, "BRADFORD VSP")
+
+. 
+. qui replace department_name = "vermont state police battleboro" if inlist(department_name, "BRATTLEBORO VSP")
+
+. 
+. qui replace department_name = "vermont state police derby" if inlist(department_name, "DERBY VSP")
+
+. 
+. qui replace department_name = "vermont state police middlesex" if inlist(department_name, "MIDDLESEX VSP")
+
+. 
+. qui replace department_name = "vermont state police new haven" if inlist(department_name, "NEW HAVEN VSP")
+
+. 
+. qui replace department_name = "vermont state police rockingham" if inlist(department_name, "ROCKINGHAM VSP")
+
+. 
+. qui replace department_name = "vermont state police royalton" if inlist(department_name, "ROYALTON VSP")
+
+. 
+. qui replace department_name = "vermont state police rutland" if inlist(department_name, "RUTLAND VSP")
+
+. 
+. qui replace department_name = "vermont state police shaftsbury" if inlist(department_name, "SHAFTSBURY VSP")
+
+. 
+. qui replace department_name = "vermont state police st. albans" if inlist(department_name, "ST ALBANS VSP")
+
+. 
+. qui replace department_name = "vermont state police st. johnsbury" if inlist(department_name, "ST JOHNSBURY VSP")
+
+. 
+. qui replace department_name = "vermont state police hq - field force" if inlist(department_name, "VSP HEADQUARTERS - FIELD FORCE")
+
+. 
+. qui replace department_name = "vermont state police hq - bci/siu/niu" if inlist(department_name, "VSP HQ- BCI/SIU/NIU")
+
+. 
+. qui replace department_name = "vermont state police williston" if inlist(department_name, "WILLISTON VSP")
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/vt_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/vt_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 83/88: WA_SEATTLE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/wa_seattle.dta", replace
+
+. 
+. qui replace department_name = "seattle police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/wa_seattle.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/wa_seattle.dta saved
+
+{com}. 
+. 
+. 
+. * 84/88: WA_STATEWIDE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/wa_statewide.dta", replace
+
+. 
+. qui replace department_name = "washington state patrol" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/wa_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/wa_statewide.dta saved
+
+{com}. 
+. 
+. 
+. * 85/88: WA_TACOMA 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/wa_tacoma.dta", replace
+
+. 
+. qui replace department_name = "tacoma police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/wa_tacoma.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/wa_tacoma.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 86/88: WI_MADISON 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/wi_madison.dta", replace
+
+. 
+. qui replace department_name = "madison police department" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/wi_madison.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/wi_madison.dta saved
+
+{com}. 
+. 
+. 
+. * 87/88: WI_STATEWIDE 
+
+. 
+. *** THIS DATASET CONTAINS MULTIPLE (9) DEPARTMENTS! ***
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/wi_statewide.dta", replace
+
+. 
+. qui replace department_name = "wisconsin state patrol NCR/WSA" if inlist(department_name, "WI STATE PATROL NCR/WSA") 
+
+. 
+. qui replace department_name = "wisconsin state patrol NER/FON" if inlist(department_name, "WI STATE PATROL NER/FON") 
+
+. 
+. qui replace department_name = "wisconsin state patrol NWR/EAU" if inlist(department_name, "WI STATE PATROL NWR/EAU") 
+
+. 
+. qui replace department_name = "wisconsin state patrol NWE/SPO" if inlist(department_name, "WI STATE PATROL NWR/SPO") 
+
+. 
+. qui replace department_name = "wisconsin state patrol SER/WKE" if inlist(department_name, "WI STATE PATROL SER/WKE") 
+
+. 
+. qui replace department_name = "wisconsin state patrol SWR/DEF" if inlist(department_name, "WI STATE PATROL SWR/DEF") 
+
+. 
+. qui replace department_name = "wisconsin state patrol SWR/TOM" if inlist(department_name, "WI STATE PATROL SWR/TOM") 
+
+. 
+. qui replace department_name = "wisconsin state patrol" if inlist(department_name, "WISCONSIN STATE PATROL") 
+
+. 
+. qui replace department_name = "wisconsin state patrol ZWI" if inlist(department_name, "ZWI STATE PATROL") 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/wi_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/wi_statewide.dta saved
+
+{com}. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. * 88/88: WY_STATEWIDE 
+
+. 
+. use "2000_data/200_raw/20_SOPP_DTAs/wy_statewide.dta", replace
+
+. 
+. qui replace department_name = "wyoming highway patrol" 
+
+. 
+. save "2000_data/200_raw/20_SOPP_DTAs/2_renamed/wy_statewide.dta", replace
+{txt}file 2000_data/200_raw/20_SOPP_DTAs/2_renamed/wy_statewide.dta saved
+
+{com}. 
+. 
+. 
+. 
+. 
+. 
+. 
+. ********************************************************************************
+
+. 
+. **********   APPENDING SOPP DTAs   *********************************************
+
+. 
+. ********************************************************************************
+
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. set varabbrev off
+
+. 
+. 
+. 
+. filelist, dir("2000_data/200_raw/20_SOPP_DTAs/2_renamed") pat("*.dta") maxdeep(1)
+{res}{txt}Number of files found = {res}88
+
+{com}. 
+. gen dta_path = dirname + "/" + filename 
+
+. 
+. qui levelsof dta_path, local(full_appending)
+
+. 
+. 
+. 
+. drop dirname filename fsize
+
+. 
+. 
+. 
+. local j = 1
+
+. 
+. local k = _N
+
+. 
+. 
+. 
+. foreach file of local full_appending {c -(}
+{txt}  2{com}. 
+. display ""
+{txt}  3{com}. 
+. display "#`j'/`k', $S_TIME: `file'"
+{txt}  4{com}. 
+. append using "`file'", force keep(`my_sopp_vars')
+{txt}  5{com}. 
+. local ++j
+{txt}  6{com}. 
+. {c )-}
+
+#1/88, 11:25:44: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ar_little_rock.dta
+
+#2/88, 11:25:44: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/az_gilbert.dta
+{txt}{p 0 7 2}
+(note: variable
+type was 
+str9, now str10 to accommodate using data's values)
+{p_end}
+
+#3/88, 11:25:44: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/az_mesa.dta
+
+#4/88, 11:25:44: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/az_statewide.dta
+{p 0 7 2}
+(note: variable
+county_name was 
+str1, now str17 to accommodate using data's values)
+{p_end}
+{p 0 7 2}
+(note: variable
+contraband_found was 
+str1, now str5 to accommodate using data's values)
+{p_end}
+{p 0 7 2}
+(note: variable
+contraband_drugs was 
+str1, now str5 to accommodate using data's values)
+{p_end}
+{p 0 7 2}
+(note: variable
+contraband_other was 
+str1, now str5 to accommodate using data's values)
+{p_end}
+{p 0 7 2}
+(note: variable
+search_conducted was 
+str1, now str5 to accommodate using data's values)
+{p_end}
+{p 0 7 2}
+(note: variable
+search_person was 
+str1, now str5 to accommodate using data's values)
+{p_end}
+{p 0 7 2}
+(note: variable
+search_vehicle was 
+str1, now str5 to accommodate using data's values)
+{p_end}
+{p 0 7 2}
+(note: variable
+search_basis was 
+str1, now str14 to accommodate using data's values)
+{p_end}
+{p 0 7 2}
+(note: variable
+department_name was 
+str29, now str35 to accommodate using data's values)
+{p_end}
+
+#5/88, 11:25:50: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_anaheim.dta
+
+#6/88, 11:25:50: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_bakersfield.dta
+{p 0 7 2}
+(note: variable
+subject_age was 
+str2, now str3 to accommodate using data's values)
+{p_end}
+
+#7/88, 11:25:51: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_long_beach.dta
+{p 0 7 2}
+(note: variable
+officer_age was 
+str1, now str2 to accommodate using data's values)
+{p_end}
+{p 0 7 2}
+(note: variable
+officer_race was 
+str1, now str22 to accommodate using data's values)
+{p_end}
+{p 0 7 2}
+(note: variable
+officer_sex was 
+str1, now str6 to accommodate using data's values)
+{p_end}
+
+#8/88, 11:25:54: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_los_angeles.dta
+
+#9/88, 11:26:00: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_oakland.dta
+{p 0 7 2}
+(note: variable
+contraband_weapons was 
+str1, now str5 to accommodate using data's values)
+{p_end}
+
+#10/88, 11:26:01: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_san_bernardino.dta
+{p 0 7 2}
+(note: variable
+locale was 
+str15, now str18 to accommodate using data's values)
+{p_end}
+
+#11/88, 11:26:04: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_san_diego.dta
+{p 0 7 2}
+(note: variable
+reason_for_search was 
+str1, now str527 to accommodate using data's values)
+{p_end}
+
+#12/88, 11:26:12: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_san_francisco.dta
+
+#13/88, 11:26:13: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_san_jose.dta
+
+#14/88, 11:26:14: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_santa_ana.dta
+
+#15/88, 11:26:14: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_statewide.dta
+{p 0 7 2}
+(note: variable
+county_name was 
+str17, now str22 to accommodate using data's values)
+{p_end}
+
+#16/88, 11:27:02: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ca_stockton.dta
+
+#17/88, 11:27:03: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/co_aurora.dta
+
+#18/88, 11:27:03: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/co_denver.dta
+
+#19/88, 11:27:06: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/co_statewide.dta
+
+#20/88, 11:27:10: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ct_hartford.dta
+
+#21/88, 11:27:11: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ct_statewide.dta
+{p 0 7 2}
+(note: variable
+department_name was 
+str35, now str42 to accommodate using data's values)
+{p_end}
+
+#22/88, 11:27:29: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/fl_saint_petersburg.dta
+{p 0 7 2}
+(note: variable
+locale was 
+str18, now str20 to accommodate using data's values)
+{p_end}
+
+#23/88, 11:27:46: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/fl_statewide.dta
+{p 0 7 2}
+(note: variable
+reason_for_search was 
+str527, now strL to accommodate using data's values)
+{p_end}
+
+#24/88, 11:28:15: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/fl_tampa.dta
+{p 0 7 2}
+(note: variable
+department_name was 
+str42, now str679 to accommodate using data's values)
+{p_end}
+
+#25/88, 11:28:58: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ga_statewide.dta
+
+#26/88, 11:29:16: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ia_statewide.dta
+{p 0 7 2}
+(note: variable
+county_name was 
+str22, now str146 to accommodate using data's values)
+{p_end}
+{p 0 7 2}
+(note: variable
+department_name was 
+str679, now strL to accommodate using data's values)
+{p_end}
+
+#27/88, 11:30:32: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/id_idaho_falls.dta
+
+#28/88, 11:30:32: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/il_chicago.dta
+
+#29/88, 11:30:34: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/il_statewide.dta
+
+#30/88, 11:31:05: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/in_fort_wayne.dta
+
+#31/88, 11:31:05: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ks_wichita.dta
+
+#32/88, 11:31:07: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ky_louisville.dta
+
+#33/88, 11:31:08: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ky_owensboro.dta
+
+#34/88, 11:31:08: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/la_new_orleans.dta
+
+#35/88, 11:31:10: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ma_statewide.dta
+{p 0 7 2}
+(note: variable
+contraband_alcohol was 
+str1, now str5 to accommodate using data's values)
+{p_end}
+
+#36/88, 11:31:30: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/md_baltimore.dta
+
+#37/88, 11:31:32: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/md_statewide.dta
+
+#38/88, 11:31:34: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/mi_statewide.dta
+{p 0 7 2}
+(note: variable
+department_id was 
+str1, now str10 to accommodate using data's values)
+{p_end}
+
+#39/88, 11:31:57: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/mn_saint_paul.dta
+
+#40/88, 11:31:58: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/mo_statewide.dta
+
+#41/88, 11:32:12: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ms_statewide.dta
+{p 0 7 2}
+(note: variable
+department_id was int in the using data, but will be
+str10 now)
+{p_end}
+
+#42/88, 11:32:14: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/mt_statewide.dta
+
+#43/88, 11:32:16: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_charlotte.dta
+
+#44/88, 11:32:20: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_durham.dta
+
+#45/88, 11:32:22: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_fayetteville.dta
+
+#46/88, 11:32:23: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_greensboro.dta
+
+#47/88, 11:32:34: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_raleigh.dta
+
+#48/88, 11:32:37: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_statewide.dta
+
+#49/88, 11:33:16: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nc_winston-salem.dta
+
+#50/88, 11:33:18: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nd_grand_forks.dta
+
+#51/88, 11:33:19: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nd_statewide.dta
+
+#52/88, 11:33:20: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ne_statewide.dta
+
+#53/88, 11:33:33: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nh_statewide.dta
+
+#54/88, 11:33:34: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nj_camden.dta
+
+#55/88, 11:33:35: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nj_statewide.dta
+
+#56/88, 11:33:42: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nv_henderson.dta
+
+#57/88, 11:33:43: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/nv_statewide.dta
+
+#58/88, 11:33:45: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ny_albany.dta
+
+#59/88, 11:33:45: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ny_statewide.dta
+
+#60/88, 11:33:58: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/oh_cincinnati.dta
+
+#61/88, 11:33:59: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/oh_columbus.dta
+
+#62/88, 11:34:00: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/oh_statewide.dta
+
+#63/88, 11:34:12: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ok_oklahoma_city.dta
+
+#64/88, 11:34:14: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ok_tulsa.dta
+
+#65/88, 11:34:15: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/or_statewide.dta
+
+#66/88, 11:34:17: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/pa_philadelphia.dta
+
+#67/88, 11:34:21: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/ri_statewide.dta
+
+#68/88, 11:34:22: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/sc_statewide.dta
+
+#69/88, 11:34:38: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/sd_statewide.dta
+{p 0 7 2}
+(note: variable
+county_name was 
+str146, now str259 to accommodate using data's values)
+{p_end}
+
+#70/88, 11:36:03: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tn_nashville.dta
+
+#71/88, 11:36:09: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tn_statewide.dta
+
+#72/88, 11:36:16: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_arlington.dta
+
+#73/88, 11:36:17: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_austin.dta
+
+#74/88, 11:36:18: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_garland.dta
+
+#75/88, 11:36:19: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_houston.dta
+
+#76/88, 11:36:22: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_lubbock.dta
+
+#77/88, 11:36:24: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_plano.dta
+
+#78/88, 11:36:25: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_san_antonio.dta
+
+#79/88, 11:36:27: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/tx_statewide.dta
+
+#80/88, 11:37:32: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/va_statewide.dta
+
+#81/88, 11:37:40: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/vt_burlington.dta
+
+#82/88, 11:37:41: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/vt_statewide.dta
+
+#83/88, 11:37:43: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/wa_seattle.dta
+
+#84/88, 11:37:44: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/wa_statewide.dta
+
+#85/88, 11:38:02: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/wa_tacoma.dta
+
+#86/88, 11:38:03: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/wi_madison.dta
+
+#87/88, 11:38:05: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/wi_statewide.dta
+
+#88/88, 11:38:08: 2000_data/200_raw/20_SOPP_DTAs/2_renamed/wy_statewide.dta
+
+{com}. 
+. 
+. 
+. drop dta_path
+
+. 
+. drop if date == "NA" 
+{txt}(90,135 observations deleted)
+
+{com}. 
+. drop if date == "" 
+{txt}(88 observations deleted)
+
+{com}. 
+. 
+. 
+. gen state_locale = state + "_" + locale
+
+. 
+. order state locale department_name date
+
+. 
+. sort state locale department_name date
+
+. 
+. 
+. 
+. display "string variables:"
+{res}string variables:
+
+{com}. 
+. ds, has(type string) var(32)
+{txt}{col 1}state{col 21}subject_sex{col 41}officer_sex{col 61}contraband_drugs
+{col 1}locale{col 21}type{col 41}contraband_found{col 61}contraband_weapons
+{col 1}department_name{col 21}county_name{col 41}search_basis{col 61}contraband_other
+{col 1}date{col 21}search_conducted{col 41}search_vehicle{col 61}reason_for_search
+{col 1}subject_age{col 21}officer_race{col 41}search_person{col 61}department_id
+{col 1}subject_race{col 21}officer_age{col 41}contraband_alcohol{col 61}state_locale
+
+{com}. 
+. display ""
+{res}
+
+{com}. 
+. display "non-string variables:"
+{res}non-string variables:
+
+{com}. 
+. ds, not(type string) var(32)
+
+. 
+. 
+. 
+. save "2000_data/300_cleaning/20_SOPP/SOPP_appended.dta", replace
+{txt}file 2000_data/300_cleaning/20_SOPP/SOPP_appended.dta saved
+
+{com}. 
+. 
+. 
+. set varabbrev on
+
+. 
+. 
+. 
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/1000_notes/200_smcl_logs/02_dept_renaming/02a_SOPP_to_FE_rename.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}27 Nov 2024, 12:15:37
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

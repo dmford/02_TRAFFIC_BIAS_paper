@@ -1,0 +1,486 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/1000_notes/200_smcl_logs/03_cleaning/03a_SOPP_cleaning.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}27 Nov 2024, 12:16:00
+
+{com}. 
+. 
+. 
+. use "2000_data/300_cleaning/20_SOPP/SOPP_appended.dta", replace
+
+. 
+. 
+. 
+. display "string variables:"
+{res}string variables:
+
+{com}. 
+. ds, has(type string) var(32)
+{txt}{col 1}state{col 21}subject_sex{col 41}officer_sex{col 61}contraband_drugs
+{col 1}locale{col 21}type{col 41}contraband_found{col 61}contraband_weapons
+{col 1}department_name{col 21}county_name{col 41}search_basis{col 61}contraband_other
+{col 1}date{col 21}search_conducted{col 41}search_vehicle{col 61}reason_for_search
+{col 1}subject_age{col 21}officer_race{col 41}search_person{col 61}department_id
+{col 1}subject_race{col 21}officer_age{col 41}contraband_alcohol{col 61}state_locale
+
+{com}. 
+. display ""
+{res}
+
+{com}. 
+. display "non-string variables:"
+{res}non-string variables:
+
+{com}. 
+. ds, not(type string) var(32)
+
+. 
+. 
+. 
+. * dept non-unique, (state+dept) should be unique --> st_dept
+
+. 
+. gen st_dept = state + "_" + department_name
+
+. 
+. 
+. 
+. * SOPP dates --> stop_date
+
+. 
+. gen stop_date = date(date, "YMD")
+
+. 
+. drop date
+
+. 
+. format %td stop_date
+
+. 
+. 
+. 
+. * Assn: if max=min, no variation in days (months)--> monthly (annual) reporter
+
+. 
+. gen stop_day = day(stop_date)
+
+. 
+. bysort st_dept: egen max_stop_day = max(stop_day)
+
+. 
+. bysort st_dept: egen min_stop_day = min(stop_day)
+
+. 
+. gen temp_stop_day_diff = max_stop_day - min_stop_day
+
+. 
+. gen rep_monthly = (temp_stop_day_diff == 0)
+
+. 
+. drop temp_* stop_day max_stop_day min_stop_day
+
+. 
+. gen stop_month = month(stop_date)
+
+. 
+. bysort st_dept: egen max_stop_month = max(stop_month)
+
+. 
+. bysort st_dept: egen min_stop_month = min(stop_month)
+
+. 
+. gen temp_stop_month_diff = max_stop_month - min_stop_month
+
+. 
+. gen rep_annually = (temp_stop_month_diff == 0)
+
+. 
+. drop temp_* stop_month max_stop_month min_stop_month 
+
+. 
+. 
+. 
+. * re-framing SOPP's subject_race variable: (1=white, 2=black, 3=hispanic, 4=API, 5=NAmerican, 6=ME, 7=other, 8=unk, 9=NA)
+
+. 
+. label define races 1 "white" 2 "black" 3 "hispanic" 4 "asian/pacific islander" 5 "native american/alaskan" 6 "middle eastern" 7 "other" 8 "unknown" 9 "NA"
+
+. 
+. rename subject_race orig_subject_race
+{res}
+{com}. 
+. gen subject_race = 1 if orig_subject_race == "white"
+{txt}(96,823,515 missing values generated)
+
+{com}. 
+. replace subject_race = 2 if orig_subject_race == "black"
+{txt}(33,520,292 real changes made)
+
+{com}. 
+. replace subject_race = 3 if orig_subject_race == "hispanic"
+{txt}(32,780,412 real changes made)
+
+{com}. 
+. replace subject_race = 4 if orig_subject_race == "asian/pacific islander"
+{txt}(5,753,249 real changes made)
+
+{com}. 
+. replace subject_race = 5 if orig_subject_race == "native american/alaskan"
+{txt}(0 real changes made)
+
+{com}. 
+. replace subject_race = 6 if orig_subject_race == "middle eastern"
+{txt}(0 real changes made)
+
+{com}. 
+. replace subject_race = 7 if orig_subject_race == "other"
+{txt}(5,528,471 real changes made)
+
+{com}. 
+. replace subject_race = 8 if orig_subject_race == "unknown"
+{txt}(1,948,081 real changes made)
+
+{com}. 
+. replace subject_race = 9 if orig_subject_race == "NA"
+{txt}(12,326,071 real changes made)
+
+{com}. 
+. label values subject_race races
+
+. 
+. drop orig_subject_race
+
+. 
+. gen subj_race_flag = (subject_race == 8 | subject_race == 9)
+
+. 
+. 
+. 
+. * re-framing SOPP's officer_race variable: (1=white, 2=black, 3=hispanic, 4=API, 5=NAmerican, 6=ME, 7=other, 8=unk, 9=NA)
+
+. 
+. rename officer_race orig_officer_race
+{res}
+{com}. 
+. gen officer_race = 1 if orig_officer_race == "white"
+{txt}(199,573,039 missing values generated)
+
+{com}. 
+. replace officer_race = 2 if orig_officer_race == "black"
+{txt}(1,781,438 real changes made)
+
+{com}. 
+. replace officer_race = 3 if orig_officer_race == "hispanic"
+{txt}(1,150,372 real changes made)
+
+{com}. 
+. replace officer_race = 4 if orig_officer_race == "asian/pacific islander"
+{txt}(332,918 real changes made)
+
+{com}. 
+. replace officer_race = 5 if orig_officer_race == "native american/alaskan"
+{txt}(0 real changes made)
+
+{com}. 
+. replace officer_race = 6 if orig_officer_race == "middle eastern"
+{txt}(0 real changes made)
+
+{com}. 
+. replace officer_race = 7 if orig_officer_race == "other"
+{txt}(261,617 real changes made)
+
+{com}. 
+. replace officer_race = 8 if orig_officer_race == "unknown"
+{txt}(59,306 real changes made)
+
+{com}. 
+. replace officer_race = 9 if orig_officer_race == "NA"
+{txt}(9,244,349 real changes made)
+
+{com}. 
+. gen officer_race_flag = (officer_race ==  8 | officer_race == 9)
+
+. 
+. label values officer_race races
+
+. 
+. drop orig_officer_race
+
+. 
+. 
+. 
+. * re-framing SOPP's subject_age and officer_age variables: 
+
+. 
+. foreach var of varlist subject_age officer_age {c -(}
+{txt}  2{com}. 
+. replace `var' = "999" if `var' == "NA"
+{txt}  3{com}. 
+. destring `var', replace
+{txt}  4{com}. 
+. gen `var'_nines = (`var' == 999)
+{txt}  5{com}. 
+. egen temp_age = max(`var'_nines) 
+{txt}  6{com}. 
+. if temp_age == 0 drop `var'_nines
+{txt}  7{com}. 
+. drop temp_age
+{txt}  8{com}. 
+. {c )-}
+{txt}(20,831,003 real changes made)
+subject_age: all characters numeric; {res}replaced {txt}as {res}int
+{txt}(121340279 missing values generated)
+{res}{txt}variable {bf}officer_age{sf} was {bf}{res}str2{sf}{txt} now {bf}{res}str3{sf}
+{txt}(1,617,648 real changes made)
+officer_age: all characters numeric; {res}replaced {txt}as {res}int
+{txt}(203354110 missing values generated)
+{res}
+{com}. 
+. 
+. 
+. * re-framing SOPP's subject_sex and officer_sex variables: (1=male, 2=female, 3=trans, 9=NA)
+
+. 
+. label define sex 1 "male" 2 "female" 3 "transgender" 9 "NA"
+
+. 
+. foreach var of varlist subject_sex officer_sex {c -(}
+{txt}  2{com}. 
+. replace `var' = "1" if `var' == "male"
+{txt}  3{com}. 
+. replace `var' = "2" if `var' == "female"
+{txt}  4{com}. 
+. replace `var' = "3" if `var' == "transgender"
+{txt}  5{com}. 
+. replace `var' = "9" if `var' == "NA"
+{txt}  6{com}. 
+. destring `var', replace
+{txt}  7{com}. 
+. label values `var' sex
+{txt}  8{com}. 
+. gen `var'_flag = (`var' == 9)
+{txt}  9{com}. 
+. {c )-}
+{txt}(120,076,238 real changes made)
+(59,056,060 real changes made)
+(0 real changes made)
+(7,156,564 real changes made)
+subject_sex: all characters numeric; {res}replaced {txt}as {res}byte
+{txt}(31355841 missing values generated)
+{res}{txt}(16,018,749 real changes made)
+(1,174,345 real changes made)
+(0 real changes made)
+(2,830,766 real changes made)
+officer_sex: all characters numeric; {res}replaced {txt}as {res}byte
+{txt}(197620843 missing values generated)
+{res}
+{com}. 
+. 
+. 
+. * re-framing SOPP's search variables: (0=false, 1=true, 8=unknown, 9=NA)
+
+. 
+. label define false_true_unk_na 0 "false" 1 "true" 8 "unknown" 9 "NA"
+
+. 
+. foreach var of varlist search_conducted search_vehicle search_person {c -(}
+{txt}  2{com}. 
+. replace `var' = "0" if `var' == "FALSE"
+{txt}  3{com}. 
+. replace `var' = "1" if `var' == "TRUE"
+{txt}  4{com}. 
+. replace `var' = "8" if `var' == "UNKNOWN"
+{txt}  5{com}. 
+. replace `var' = "9" if `var' == "NA"
+{txt}  6{com}. 
+. destring `var', replace
+{txt}  7{com}. 
+. label values `var' false_true_unk_na
+{txt}  8{com}. 
+. gen flag_`var' = (`var' == 9)
+{txt}  9{com}. 
+. {c )-}
+{txt}(165,052,049 real changes made)
+(5,829,867 real changes made)
+(0 real changes made)
+(6,578,797 real changes made)
+search_conducted: all characters numeric; {res}replaced {txt}as {res}byte
+{txt}(40183990 missing values generated)
+{res}{txt}(80,439,749 real changes made)
+(1,845,019 real changes made)
+(0 real changes made)
+(2,660,853 real changes made)
+search_vehicle: all characters numeric; {res}replaced {txt}as {res}byte
+{txt}(132699082 missing values generated)
+{res}{txt}(83,693,507 real changes made)
+(1,736,345 real changes made)
+(0 real changes made)
+(1,093,454 real changes made)
+search_person: all characters numeric; {res}replaced {txt}as {res}byte
+{txt}(131121397 missing values generated)
+{res}
+{com}. 
+. 
+. 
+. * ensuring that any_search --> search_conducted
+
+. 
+. replace search_conducted = 1 if (search_vehicle==1) | (search_person==1)
+{txt}(0 real changes made)
+
+{com}. 
+. 
+. 
+. * re-framing SOPP's contraband variables: (0=false, 1=true, 8=unknown, 9=NA)
+
+. 
+. foreach var of varlist contraband_found contraband_alcohol contraband_drugs contraband_weapons contraband_other {c -(}
+{txt}  2{com}. 
+. replace `var' = "0" if `var' == "FALSE"
+{txt}  3{com}. 
+. replace `var' = "1" if `var' == "TRUE"
+{txt}  4{com}. 
+. replace `var' = "8" if `var' == "UNKNOWN"
+{txt}  5{com}. 
+. replace `var' = "9" if `var' == "NA"
+{txt}  6{com}. 
+. destring `var', replace
+{txt}  7{com}. 
+. label values `var' false_true_unk_na
+{txt}  8{com}. 
+. gen flag_`var' = (`var' == 9)
+{txt}  9{com}. 
+. {c )-}
+{txt}(2,978,575 real changes made)
+(1,065,745 real changes made)
+(0 real changes made)
+(153,375,849 real changes made)
+contraband_found: all characters numeric; {res}replaced {txt}as {res}byte
+{txt}(60224534 missing values generated)
+{res}{txt}(3,406,948 real changes made)
+(18,956 real changes made)
+(0 real changes made)
+(10,542,628 real changes made)
+contraband_alcohol: all characters numeric; {res}replaced {txt}as {res}byte
+{txt}(203676171 missing values generated)
+{res}{txt}(2,253,374 real changes made)
+(445,202 real changes made)
+(0 real changes made)
+(88,759,049 real changes made)
+contraband_drugs: all characters numeric; {res}replaced {txt}as {res}byte
+{txt}(126187078 missing values generated)
+{res}{txt}(2,390,628 real changes made)
+(44,138 real changes made)
+(0 real changes made)
+(78,303,129 real changes made)
+contraband_weapons: all characters numeric; {res}replaced {txt}as {res}byte
+{txt}(136906808 missing values generated)
+{res}{txt}(374,705 real changes made)
+(113,424 real changes made)
+(0 real changes made)
+(16,974,556 real changes made)
+contraband_other: all characters numeric; {res}replaced {txt}as {res}byte
+{txt}(200182018 missing values generated)
+{res}
+{com}. 
+. 
+. 
+. * ensuring that any_contraband --> contraband_found 
+
+. 
+. replace contraband_found = 1 if (contraband_alcohol==1) | (contraband_drugs==1) | (contraband_weapons==1) | (contraband_other==1)
+{txt}(9,094 real changes made)
+
+{com}. 
+. 
+. 
+. * re-framing SOPP's search_basis variable: 
+
+. 
+. label define basis 0 "plain view" 1 "consent" 2 "probable cause" 3 "k9" 4 "other" 9 "NA"
+
+. 
+. replace search_basis = "0" if search_basis == "plain view"
+{txt}(26,179 real changes made)
+
+{com}. 
+. replace search_basis = "1" if search_basis == "consent"
+{txt}(874,488 real changes made)
+
+{com}. 
+. replace search_basis = "2" if search_basis == "probable cause"
+{txt}(888,606 real changes made)
+
+{com}. 
+. replace search_basis = "3" if search_basis == "k9"
+{txt}(40,448 real changes made)
+
+{com}. 
+. replace search_basis = "4" if search_basis == "other"
+{txt}(1,870,116 real changes made)
+
+{com}. 
+. replace search_basis = "9" if search_basis == "NA"
+{txt}(133,922,092 real changes made)
+
+{com}. 
+. destring search_basis, replace
+{txt}search_basis: all characters numeric; {res}replaced {txt}as {res}byte
+{txt}(80022774 missing values generated)
+{res}
+{com}. 
+. label values search_basis basis
+
+. 
+. 
+. 
+. save "2000_data/400_base/SOPP_clean.dta", replace
+{txt}file 2000_data/400_base/SOPP_clean.dta saved
+
+{com}. 
+. 
+. 
+. display "string variables:"
+{res}string variables:
+
+{com}. 
+. ds, has(type string) var(32)
+{txt}{col 1}state{col 20}type{col 39}department_id
+{col 1}locale{col 20}county_name{col 39}state_locale
+{col 1}department_name{col 20}reason_for_search{col 39}st_dept
+
+{com}. 
+. display ""
+{res}
+
+{com}. 
+. display "non-string variables:"
+{res}non-string variables:
+
+{com}. 
+. ds, not(type string) var(32)
+{txt}{col 1}subject_age{col 26}contraband_weapons{col 51}subject_sex_flag
+{col 1}subject_sex{col 26}contraband_other{col 51}officer_sex_flag
+{col 1}search_conducted{col 26}stop_date{col 51}flag_search_conducted
+{col 1}officer_age{col 26}rep_monthly{col 51}flag_search_vehicle
+{col 1}officer_sex{col 26}rep_annually{col 51}flag_search_person
+{col 1}contraband_found{col 26}subject_race{col 51}flag_contraband_found
+{col 1}search_basis{col 26}subj_race_flag{col 51}flag_contraband_alcohol
+{col 1}search_vehicle{col 26}officer_race{col 51}flag_contraband_drugs
+{col 1}search_person{col 26}officer_race_flag{col 51}flag_contraband_weapons
+{col 1}contraband_alcohol{col 26}subject_age_nines{col 51}flag_contraband_other
+{col 1}contraband_drugs{col 26}officer_age_nines
+
+{com}. 
+. 
+. 
+. log close 
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/1000_notes/200_smcl_logs/03_cleaning/03a_SOPP_cleaning.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}27 Nov 2024, 14:38:20
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

@@ -1,0 +1,2730 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/3000_code/04_merge/04_SMCL_logs/04c_reg_prep.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}14 Oct 2025, 10:30:23
+
+{com}. 
+. 
+. 
+. *ssc install jwdid
+
+. 
+. *ssc install csdid
+
+. 
+. *ssc install hdfe
+
+. 
+. *ssc install drdid 
+
+. 
+. 
+. 
+. set varabbrev off
+
+. 
+. 
+. 
+. * Dates for consideration: 
+
+. 
+. * 01Jan2011=18628, 31Dec2020=22280
+
+. 
+. 
+. 
+. * bin-size: 
+
+. 
+. local k=14
+
+. 
+. 
+. 
+. * event-window, +/- b: 
+
+. 
+. local b=14
+
+. 
+. 
+. 
+. use fe_id num_dept state county_name date subject_race black n_stops search_conducted contraband_found rep_annually rep_monthly type search_basis edate FEgtrend_SOPP_merge reg_etime* reg_edate* scr_* sample0 sample1 sample2 sample3 sample4 dl_postm nl_postm pre_gt_dept_lower pre_gt_name_lower if ((date>=18628-134) & (date<=22280+135)) using "2000_data/400_base/10_merged/merged_gtrends", replace
+
+. 
+. 
+. 
+. display ""
+{res}
+
+{com}. 
+. display "Regression Prep Loop, `k'-Day Buckets:"
+{res}Regression Prep Loop, 14-Day Buckets:
+
+{com}. 
+. 
+. 
+. * note: should I drop if search=NA and contraband=NA earlier? 
+
+. 
+. tab search_conducted contraband_found
+
+{txt}search_con {c |}         contraband_found
+    ducted {c |}     false       true         NA {c |}     Total
+{hline 11}{c +}{hline 33}{c +}{hline 10}
+     false {c |}{res}         0       5667  103862065 {txt}{c |}{res} 103867732 
+{txt}      true {c |}{res}   2099320     774162     964929 {txt}{c |}{res}   3838411 
+{txt}        NA {c |}{res}         0          0    5140851 {txt}{c |}{res}   5140851 
+{txt}{hline 11}{c +}{hline 33}{c +}{hline 10}
+     Total {c |}{res}   2099320     779829  109967845 {txt}{c |}{res} 112846994 
+
+{com}. 
+. 
+. 
+. * keep if (st_dept*date: SOPP-only) OR ((st_dept*date: FE+SOPP) & (edate==nearest any))
+
+. 
+. keep if (FEgtrend_SOPP_merge==1) | ((FEgtrend_SOPP_merge==3) & (edate==reg_edate0))
+{txt}(65,268 observations deleted)
+
+{com}. 
+. 
+. 
+. * dropping annual, monthly reporters: 
+
+. 
+. drop if (rep_annually==1) 
+{txt}(9,182,022 observations deleted)
+
+{com}. 
+. drop if (rep_monthly==1) 
+{txt}(3,034,704 observations deleted)
+
+{com}. 
+. 
+. 
+. * dropping pedestrian stops: 
+
+. 
+. drop if (type=="pedestrian")
+{txt}(3,196,372 observations deleted)
+
+{com}. 
+. 
+. 
+. * dropping plain-view, consent searches: 
+
+. 
+. drop if (search_basis==0) 
+{txt}(23,734 observations deleted)
+
+{com}. 
+. drop if (search_basis==1)
+{txt}(513,178 observations deleted)
+
+{com}. 
+. 
+. 
+. * dropping non-(white, black, hispanic, API, indigenous peoples, middle eastern, other) race stops: 
+
+. 
+. * i.e. dropping stops that have no race data available 
+
+. 
+. drop if (!inlist(subject_race, 1, 2, 3, 4, 5, 6, 7))
+{txt}(14,248,986 observations deleted)
+
+{com}. 
+. 
+. 
+. drop (rep_annually rep_monthly type search_basis subject_race)
+
+. 
+. 
+. 
+. **************************************************
+
+. 
+. *** CONSTRUCTING OUTCOME VARIABLE ***
+
+. 
+. **************************************************
+
+. 
+. 
+. 
+. gen stop=1
+
+. 
+. gen bstop=black 
+
+. 
+. 
+. 
+. gen search=(search_conducted==1)
+
+. 
+. gen bsearch=(black*search)
+
+. 
+. 
+. 
+. gen bsr=.
+{txt}(128,131,495 missing values generated)
+
+{com}. 
+. replace bsr=0 if (bstop==1)
+{txt}(22,165,239 real changes made)
+
+{com}. 
+. replace bsr=1 if (search==1) & (black==1)
+{txt}(742,019 real changes made)
+
+{com}. 
+. 
+. 
+. gen bss=.
+{txt}(128,131,495 missing values generated)
+
+{com}. 
+. replace bss=0 if (search==1)
+{txt}(2,835,235 real changes made)
+
+{com}. 
+. replace bss=1 if (search==1) & (black==1)
+{txt}(742,019 real changes made)
+
+{com}. 
+. 
+. 
+. gen hit=(contraband_found==1)
+
+. 
+. gen bhit=(black*hit)
+
+. 
+. 
+. 
+. gen bhr=.
+{txt}(128,131,495 missing values generated)
+
+{com}. 
+. replace bhr=0 if (search==1) & (black==1) 
+{txt}(742,019 real changes made)
+
+{com}. 
+. replace bhr=1 if (hit==1) & (black==1)
+{txt}(150,463 real changes made)
+
+{com}. 
+. 
+. 
+. gen bhs=.
+{txt}(128,131,495 missing values generated)
+
+{com}. 
+. replace bhs=0 if (hit==1)
+{txt}(492,129 real changes made)
+
+{com}. 
+. replace bhs=1 if (hit==1) & (black==1)
+{txt}(150,463 real changes made)
+
+{com}. 
+. 
+. 
+. gen bhsr=.
+{txt}(128,131,495 missing values generated)
+
+{com}. 
+. replace bhsr=0 if (bstop==1) 
+{txt}(22,165,239 real changes made)
+
+{com}. 
+. replace bhsr=1 if (bhit==1)
+{txt}(150,463 real changes made)
+
+{com}. 
+. 
+. 
+. gen treat0=(reg_edate0!=.)
+
+. 
+. gen post0=0 
+
+. 
+. replace post0=1 if (date >= reg_edate0) & (treat0==1)
+{txt}(17,318,291 real changes made)
+
+{com}. 
+. 
+. 
+. sum (stop bstop search bsearch hit bhit bsr bss bhr bhs bhsr fe_id reg_edate0 scr_* sample0 treat0 post0 num_dept date dl_postm nl_postm)
+
+{txt}    Variable {c |}        Obs        Mean    Std. Dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 8}stop {c |}{res}128,131,495           1           0          1          1
+{txt}{space 7}bstop {c |}{res}128,131,495    .1729882    .3782371          0          1
+{txt}{space 6}search {c |}{res}128,131,495    .0221275    .1470983          0          1
+{txt}{space 5}bsearch {c |}{res}128,131,495    .0057911    .0758784          0          1
+{txt}{space 9}hit {c |}{res}128,131,495    .0038408    .0618552          0          1
+{txt}{hline 13}{c +}{hline 57}
+{space 8}bhit {c |}{res}128,131,495    .0011743    .0342477          0          1
+{txt}{space 9}bsr {c |}{res} 22,165,239    .0334767    .1798778          0          1
+{txt}{space 9}bss {c |}{res}  2,835,235    .2617134    .4395675          0          1
+{txt}{space 9}bhr {c |}{res}    742,674    .2025963    .4019344          0          1
+{txt}{space 9}bhs {c |}{res}    492,129    .3057389    .4607202          0          1
+{txt}{hline 13}{c +}{hline 57}
+{space 8}bhsr {c |}{res} 22,165,239    .0067882    .0821107          0          1
+{txt}{space 7}fe_id {c |}{res} 37,182,379    16246.76    3349.166       9779      25705
+{txt}{space 2}reg_edate0 {c |}{res} 37,182,379    19954.04    585.0304      18636      21620
+{txt}{space 6}scr_nl {c |}{res} 37,182,379    1.608733     .488034          1          2
+{txt}{space 6}scr_nu {c |}{res} 37,182,379    1.667484    .4711147          1          2
+{txt}{hline 13}{c +}{hline 57}
+{space 6}scr_dl {c |}{res} 37,182,379    1.483224    .4997185          1          2
+{txt}{space 6}scr_du {c |}{res} 37,182,379    1.483224    .4997185          1          2
+{txt}{space 5}sample0 {c |}{res}128,131,495           1           0          1          1
+{txt}{space 6}treat0 {c |}{res}128,131,495    .2901892    .4538496          0          1
+{txt}{space 7}post0 {c |}{res}128,131,495    .1351603    .3418947          0          1
+{txt}{hline 13}{c +}{hline 57}
+{space 4}num_dept {c |}{res}128,131,495    1601.067    1343.527          1       2979
+{txt}{space 8}date {c |}{res}128,131,495    19798.49    699.0723      18628      21943
+{txt}{space 4}dl_postm {c |}{res} 13,918,716   -2.456964    36.38462  -131.8408   382.9675
+{txt}{space 4}nl_postm {c |}{res} 13,918,716    .6732204    4.389093  -22.94715   81.42619
+
+{com}. 
+. 
+. 
+. **************************************************
+
+. 
+. *** COLLAPSING OBS TO DEPT-DAY ***
+
+. 
+. **************************************************
+
+. 
+. collapse (sum) n_stops=stop n_bstops=bstop n_searches=search n_bsearches=bsearch n_hits=hit n_bhits=bhit (mean) bstop_share=bstop bsearch_rate=bsr bsearch_share=bss bhit_rate=bhr bhit_share=bhs bhit_bstop_ratio=bhsr fe_id reg_edate0 scr_* sample0 treat0 post0 dl_postm nl_postm pre_gt_dept_lower pre_gt_name_lower, by(num_dept date)
+
+. 
+. 
+. 
+. sum (n_stops n_bstops n_searches n_bsearches n_hits n_bhits bstop_share bsearch_rate bsearch_share bhit_rate bhit_share bhit_bstop_ratio reg_edate0 scr_* sample0 treat0 post0 num_dept date dl_postm nl_postm pre_gt_dept_lower pre_gt_name_lower)
+
+{txt}    Variable {c |}        Obs        Mean    Std. Dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 5}n_stops {c |}{res}  1,733,531    73.91359    613.3587          1     234395
+{txt}{space 4}n_bstops {c |}{res}  1,733,531    12.78618    123.8835          0      68875
+{txt}{space 2}n_searches {c |}{res}  1,733,531    1.635526    17.60038          0       4485
+{txt}{space 1}n_bsearches {c |}{res}  1,733,531    .4280391    4.013864          0       1828
+{txt}{space 6}n_hits {c |}{res}  1,733,531    .2838882    3.030516          0        593
+{txt}{hline 13}{c +}{hline 57}
+{space 5}n_bhits {c |}{res}  1,733,531    .0867957     .779616          0        338
+{txt}{space 1}bstop_share {c |}{res}  1,733,531    .2044121    .2855409          0          1
+{txt}bsearch_rate {c |}{res}    934,805    .0496571    .1722735          0          1
+{txt}bsearch_sh~e {c |}{res}    324,176    .3268325    .4044851          0          1
+{txt}{space 3}bhit_rate {c |}{res}    157,980    .2472338    .3756368          0          1
+{txt}{hline 13}{c +}{hline 57}
+{space 2}bhit_share {c |}{res}    130,279     .357815    .4318018          0          1
+{txt}bhit_bstop~o {c |}{res}    934,805    .0114223    .0798195          0          1
+{txt}{space 2}reg_edate0 {c |}{res}     42,840    20002.92    622.5347      18636      21620
+{txt}{space 6}scr_nl {c |}{res}     42,840     1.58345    .4929927          1          2
+{txt}{space 6}scr_nu {c |}{res}     42,840    1.591013    .4916526          1          2
+{txt}{hline 13}{c +}{hline 57}
+{space 6}scr_dl {c |}{res}     42,840    1.458473    .4982784          1          2
+{txt}{space 6}scr_du {c |}{res}     42,840    1.458473    .4982784          1          2
+{txt}{space 5}sample0 {c |}{res}  1,733,531           1           0          1          1
+{txt}{space 6}treat0 {c |}{res}  1,733,531    .0247126    .1552478          0          1
+{txt}{space 7}post0 {c |}{res}  1,733,531     .011502    .1066287          0          1
+{txt}{hline 13}{c +}{hline 57}
+{space 4}num_dept {c |}{res}  1,733,531    1180.293    893.1341          1       2979
+{txt}{space 8}date {c |}{res}  1,733,531    19963.93    626.5874      18628      21943
+{txt}{space 4}dl_postm {c |}{res}     17,091    .9993649    36.40989  -131.8408   382.9675
+{txt}{space 4}nl_postm {c |}{res}     17,091    .6912301    5.805338  -22.94715   81.42619
+{txt}pre_gt_dep~r {c |}{res}     17,091    222.3549     382.023          0   2056.716
+{txt}{hline 13}{c +}{hline 57}
+pre_gt_nam~r {c |}{res}     17,091    5.089352    18.61096          0   168.3209
+
+{com}. 
+. 
+. 
+. la var n_stops "01. how many drivers did the department stop?"
+
+. 
+. la var n_bstops "02. how many black drivers did the department stop?"
+
+. 
+. la var bstop_share "03. what is the black-share of stops?"
+
+. 
+. la var n_searches "04. how many vehicle searches did the department conduct?"
+
+. 
+. la var n_bsearches "05. how many black-vehicle searches did the department conduct?"
+
+. 
+. la var bsearch_rate "06. how many black-stops are searched?"
+
+. 
+. la var bsearch_share "07. what is the black-share of searches?"
+
+. 
+. la var n_hits "08. how many vehicle searches found contraband?"
+
+. 
+. la var n_bhits "09. how many black-vehicle searches found contraband?"
+
+. 
+. la var bhit_rate "10. what is the success rate of black searches?"
+
+. 
+. la var bhit_share "11. what is the black-share of hits?"
+
+. 
+. la var bhit_bstop_ratio "12. out of all black stops, what is the hit rate?"
+
+. 
+. 
+. 
+. * Seasonality: (1) quarter, (2) month, (3) week, (4) day-of-week
+
+. 
+. gen quarter=quarter(date)
+
+. 
+. gen month=month(date)
+
+. 
+. gen week=week(date)
+
+. 
+. gen dow=dow(date)
+
+. 
+. 
+. 
+. * Time Trend: (0) date, (1) year, (2) year+quarter, (3) year+month, (4) year+week 
+
+. 
+. gen year=year(date)
+
+. 
+. gen yq=yq(year, quarter)
+
+. 
+. gen ym=ym(year, month)
+
+. 
+. gen yw=yw(year, week)
+
+. 
+. 
+. 
+. display "string variables:"
+{res}string variables:
+
+{com}. 
+. ds, has(type string) var(32)
+
+. 
+. display ""
+{res}
+
+{com}. 
+. display "non-string variables:"
+{res}non-string variables:
+
+{com}. 
+. ds, not(type string) var(32)
+{txt}{col 1}date{col 20}bsearch_rate{col 39}scr_dl{col 58}quarter
+{col 1}num_dept{col 20}bsearch_share{col 39}scr_du{col 58}month
+{col 1}n_stops{col 20}bhit_rate{col 39}sample0{col 58}week
+{col 1}n_bstops{col 20}bhit_share{col 39}treat0{col 58}dow
+{col 1}n_searches{col 20}bhit_bstop_ratio{col 39}post0{col 58}year
+{col 1}n_bsearches{col 20}fe_id{col 39}dl_postm{col 58}yq
+{col 1}n_hits{col 20}reg_edate0{col 39}nl_postm{col 58}ym
+{col 1}n_bhits{col 20}scr_nl{col 39}pre_gt_dept_lower{col 58}yw
+{col 1}bstop_share{col 20}scr_nu{col 39}pre_gt_name_lower
+
+{com}. 
+. 
+. 
+. * scr={c -(}0,1,2{c )-}, finding and using max for each event (constant), 0 for control group
+
+. 
+. * should it be 0? Are non-scrutinized events also 0? 
+
+. 
+. * (this should not be something I am unsure about)
+
+. 
+. foreach scr in scr_nl scr_nu scr_dl scr_du {c -(}
+{txt}  2{com}. 
+. bysort fe_id: egen temp_max=max(`scr')
+{txt}  3{com}. 
+. replace `scr'=temp_max 
+{txt}  4{com}. 
+. replace `scr'=0 if `scr'==.
+{txt}  5{com}. 
+. drop temp_*
+{txt}  6{com}. 
+. {c )-}
+{txt}(1,690,691 missing values generated)
+(0 real changes made)
+(1,690,691 real changes made)
+(1,690,691 missing values generated)
+(0 real changes made)
+(1,690,691 real changes made)
+(1,690,691 missing values generated)
+(0 real changes made)
+(1,690,691 real changes made)
+(1,690,691 missing values generated)
+(0 real changes made)
+(1,690,691 real changes made)
+
+{com}. 
+. 
+. 
+. * need fe_id==0 for control groups: 
+
+. 
+. replace fe_id=0 if (fe_id==.)
+{txt}(1,690,691 real changes made)
+
+{com}. 
+. 
+. 
+. sum _all
+
+{txt}    Variable {c |}        Obs        Mean    Std. Dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 8}date {c |}{res}  1,733,531    19963.93    626.5874      18628      21943
+{txt}{space 4}num_dept {c |}{res}  1,733,531    1180.293    893.1341          1       2979
+{txt}{space 5}n_stops {c |}{res}  1,733,531    73.91359    613.3587          1     234395
+{txt}{space 4}n_bstops {c |}{res}  1,733,531    12.78618    123.8835          0      68875
+{txt}{space 2}n_searches {c |}{res}  1,733,531    1.635526    17.60038          0       4485
+{txt}{hline 13}{c +}{hline 57}
+{space 1}n_bsearches {c |}{res}  1,733,531    .4280391    4.013864          0       1828
+{txt}{space 6}n_hits {c |}{res}  1,733,531    .2838882    3.030516          0        593
+{txt}{space 5}n_bhits {c |}{res}  1,733,531    .0867957     .779616          0        338
+{txt}{space 1}bstop_share {c |}{res}  1,733,531    .2044121    .2855409          0          1
+{txt}bsearch_rate {c |}{res}    934,805    .0496571    .1722735          0          1
+{txt}{hline 13}{c +}{hline 57}
+bsearch_sh~e {c |}{res}    324,176    .3268325    .4044851          0          1
+{txt}{space 3}bhit_rate {c |}{res}    157,980    .2472338    .3756368          0          1
+{txt}{space 2}bhit_share {c |}{res}    130,279     .357815    .4318018          0          1
+{txt}bhit_bstop~o {c |}{res}    934,805    .0114223    .0798195          0          1
+{txt}{space 7}fe_id {c |}{res}  1,733,531    392.2897    2523.124          0      25705
+{txt}{hline 13}{c +}{hline 57}
+{space 2}reg_edate0 {c |}{res}     42,840    20002.92    622.5347      18636      21620
+{txt}{space 6}scr_nl {c |}{res}  1,733,531    .0391311    .2577538          0          2
+{txt}{space 6}scr_nu {c |}{res}  1,733,531     .039318    .2588108          0          2
+{txt}{space 6}scr_dl {c |}{res}  1,733,531    .0360426    .2395907          0          2
+{txt}{space 6}scr_du {c |}{res}  1,733,531    .0360426    .2395907          0          2
+{txt}{hline 13}{c +}{hline 57}
+{space 5}sample0 {c |}{res}  1,733,531           1           0          1          1
+{txt}{space 6}treat0 {c |}{res}  1,733,531    .0247126    .1552478          0          1
+{txt}{space 7}post0 {c |}{res}  1,733,531     .011502    .1066287          0          1
+{txt}{space 4}dl_postm {c |}{res}     17,091    .9993649    36.40989  -131.8408   382.9675
+{txt}{space 4}nl_postm {c |}{res}     17,091    .6912301    5.805338  -22.94715   81.42619
+{txt}{hline 13}{c +}{hline 57}
+pre_gt_dep~r {c |}{res}     17,091    222.3549     382.023          0   2056.716
+{txt}pre_gt_nam~r {c |}{res}     17,091    5.089352    18.61096          0   168.3209
+{txt}{space 5}quarter {c |}{res}  1,733,531    2.472666    1.111741          1          4
+{txt}{space 7}month {c |}{res}  1,733,531    6.410344    3.419228          1         12
+{txt}{space 8}week {c |}{res}  1,733,531    26.09413     14.9156          1         52
+{txt}{hline 13}{c +}{hline 57}
+{space 9}dow {c |}{res}  1,733,531    3.058614    2.003555          0          6
+{txt}{space 8}year {c |}{res}  1,733,531    2014.168    1.696822       2011       2020
+{txt}{space 10}yq {c |}{res}  1,733,531    218.1448    6.857394        204        240
+{txt}{space 10}ym {c |}{res}  1,733,531    655.4269    20.58419        612        720
+{txt}{space 10}yw {c |}{res}  1,733,531    2841.832    89.20748       2652       3124
+
+{com}. 
+. 
+. 
+. * Assn: if max=min, no variation in days (months)--> monthly (annual) reporter
+
+. 
+. gen stop_day=day(date)
+
+. 
+. gen stop_month=month(date)
+
+. 
+. gen stop_year=year(date)
+
+. 
+. 
+. 
+. bysort num_dept stop_month: egen max_stop_day=max(stop_day)
+
+. 
+. bysort num_dept stop_month: egen min_stop_day=min(stop_day)
+
+. 
+. gen temp_stop_day_diff=max_stop_day - min_stop_day
+
+. 
+. gen rep_monthly=(temp_stop_day_diff==0)
+
+. 
+. drop temp_* max_stop_day min_stop_day
+
+. 
+. 
+. 
+. bysort num_dept stop_year: egen max_stop_month=max(stop_month)
+
+. 
+. bysort num_dept stop_year: egen min_stop_month=min(stop_month)
+
+. 
+. gen temp_stop_month_diff=max_stop_month - min_stop_month
+
+. 
+. gen rep_annually=(temp_stop_month_diff==0)
+
+. 
+. drop temp_* max_stop_month min_stop_month 
+
+. 
+. 
+. 
+. drop stop_day stop_month stop_year
+
+. 
+. 
+. 
+. drop if ((rep_annually==1) | (rep_monthly==1))
+{txt}(1,149 observations deleted)
+
+{com}. 
+. drop if rep_monthly==1
+{txt}(0 observations deleted)
+
+{com}. 
+. 
+. 
+. * Nevada Highway Patrol 2/2012 slipped through
+
+. 
+. drop if ((num_dept==2948) & (month==2) & (year==2012))
+{txt}(1 observation deleted)
+
+{com}. 
+. 
+. 
+. **************************************************
+
+. 
+. *** GENERATING CATEGORICAL HOLIDAY VARIABLE ***
+
+. 
+. **************************************************
+
+. 
+. * MEMORIAL DAYS: weekend + holiday monday
+
+. 
+. gen memorial=0
+
+. 
+. replace memorial=1 if inlist(date, td(30May2011), (td(30May2011)-1), (td(30May2011)-2), (td(30May2011)-3)) 
+{txt}(856 real changes made)
+
+{com}. 
+. replace memorial=1 if inlist(date, td(28May2012), (td(28May2012)-1), (td(28May2012)-2), (td(28May2012)-3)) 
+{txt}(3,008 real changes made)
+
+{com}. 
+. replace memorial=1 if inlist(date, td(27May2013), (td(27May2013)-1), (td(27May2013)-2), (td(27May2013)-3)) 
+{txt}(3,724 real changes made)
+
+{com}. 
+. replace memorial=1 if inlist(date, td(26May2014), (td(26May2014)-1), (td(26May2014)-2), (td(26May2014)-3)) 
+{txt}(3,900 real changes made)
+
+{com}. 
+. replace memorial=1 if inlist(date, td(25May2015), (td(25May2015)-1), (td(25May2015)-2), (td(25May2015)-3)) 
+{txt}(3,790 real changes made)
+
+{com}. 
+. replace memorial=1 if inlist(date, td(30May2016), (td(30May2016)-1), (td(30May2016)-2), (td(30May2016)-3)) 
+{txt}(2,502 real changes made)
+
+{com}. 
+. replace memorial=1 if inlist(date, td(29May2017), (td(29May2017)-1), (td(29May2017)-2), (td(29May2017)-3)) 
+{txt}(2,262 real changes made)
+
+{com}. 
+. replace memorial=1 if inlist(date, td(28May2018), (td(28May2018)-1), (td(28May2018)-2), (td(28May2018)-3)) 
+{txt}(29 real changes made)
+
+{com}. 
+. replace memorial=1 if inlist(date, td(27May2019), (td(27May2019)-1), (td(27May2019)-2), (td(27May2019)-3)) 
+{txt}(0 real changes made)
+
+{com}. 
+. replace memorial=1 if inlist(date, td(25May2020), (td(25May2020)-1), (td(25May2020)-2), (td(25May2020)-3)) 
+{txt}(0 real changes made)
+
+{com}. 
+. 
+. 
+. * LABOR DAYS: weekend + holiday monday
+
+. 
+. gen labor=0
+
+. 
+. replace labor=1 if inlist(date, td(05Sep2011), (td(05Sep2011)-1), (td(05Sep2011)-2), (td(05Sep2011)-3)) 
+{txt}(775 real changes made)
+
+{com}. 
+. replace labor=1 if inlist(date, td(03Sep2012), (td(03Sep2012)-1), (td(03Sep2012)-2), (td(03Sep2012)-3)) 
+{txt}(2,798 real changes made)
+
+{com}. 
+. replace labor=1 if inlist(date, td(02Sep2013), (td(02Sep2013)-1), (td(02Sep2013)-2), (td(02Sep2013)-3)) 
+{txt}(3,689 real changes made)
+
+{com}. 
+. replace labor=1 if inlist(date, td(01Sep2014), (td(01Sep2014)-1), (td(01Sep2014)-2), (td(01Sep2014)-3)) 
+{txt}(3,753 real changes made)
+
+{com}. 
+. replace labor=1 if inlist(date, td(07Sep2015), (td(07Sep2015)-1), (td(07Sep2015)-2), (td(07Sep2015)-3)) 
+{txt}(3,704 real changes made)
+
+{com}. 
+. replace labor=1 if inlist(date, td(05Sep2016), (td(05Sep2016)-1), (td(05Sep2016)-2), (td(05Sep2016)-3)) 
+{txt}(2,288 real changes made)
+
+{com}. 
+. replace labor=1 if inlist(date, td(04Sep2017), (td(04Sep2017)-1), (td(04Sep2017)-2), (td(04Sep2017)-3)) 
+{txt}(2,224 real changes made)
+
+{com}. 
+. replace labor=1 if inlist(date, td(03Sep2018), (td(03Sep2018)-1), (td(03Sep2018)-2), (td(03Sep2018)-3)) 
+{txt}(12 real changes made)
+
+{com}. 
+. replace labor=1 if inlist(date, td(02Sep2019), (td(02Sep2019)-1), (td(02Sep2019)-2), (td(02Sep2019)-3)) 
+{txt}(0 real changes made)
+
+{com}. 
+. replace labor=1 if inlist(date, td(07Sep2020), (td(07Sep2020)-1), (td(07Sep2020)-2), (td(07Sep2020)-3)) 
+{txt}(0 real changes made)
+
+{com}. 
+. 
+. 
+. * FOURTHS OF JULY WEEKS: 4th + surrounding days (and weekend if applicable)
+
+. 
+. gen fourth=0
+
+. 
+. replace fourth=1 if inlist(date, td(01Jul2011), td(02Jul2011), td(03Jul2011), td(04Jul2011))
+{txt}(827 real changes made)
+
+{com}. 
+. replace fourth=1 if inlist(date, td(03Jul2012), td(04Jul2012))
+{txt}(1,408 real changes made)
+
+{com}. 
+. replace fourth=1 if inlist(date, td(03Jul2013), td(04Jul2013))
+{txt}(1,822 real changes made)
+
+{com}. 
+. replace fourth=1 if inlist(date, td(03Jul2014), td(04Jul2014), td(05Jul2014), td(06Jul2014))
+{txt}(3,802 real changes made)
+
+{com}. 
+. replace fourth=1 if inlist(date, td(02Jul2015), td(03Jul2015), td(04Jul2015), td(05Jul2015))
+{txt}(3,744 real changes made)
+
+{com}. 
+. replace fourth=1 if inlist(date, td(01Jul2016), td(02Jul2016), td(03Jul2016), td(04Jul2016))
+{txt}(2,286 real changes made)
+
+{com}. 
+. replace fourth=1 if inlist(date, td(03Jul2017), td(04Jul2017))
+{txt}(1,044 real changes made)
+
+{com}. 
+. replace fourth=1 if inlist(date, td(03Jul2018), td(04Jul2018))
+{txt}(8 real changes made)
+
+{com}. 
+. replace fourth=1 if inlist(date, td(03Jul2019), td(04Jul2019))
+{txt}(0 real changes made)
+
+{com}. 
+. replace fourth=1 if inlist(date, td(02Jul2020), td(03Jul2020), td(04Jul2020), td(05Jul2020))
+{txt}(0 real changes made)
+
+{com}. 
+. 
+. 
+. * THANKSGIVING WEEKEND: We, Th, Fr, Sa & Su
+
+. 
+. gen tg=0 
+
+. 
+. replace tg=1 if inlist(date, td(24Nov2011), (td(24Nov2011)-1), (td(24Nov2011)+1), (td(24Nov2011)+2), (td(24Nov2011)+3)) 
+{txt}(953 real changes made)
+
+{com}. 
+. replace tg=1 if inlist(date, td(22Nov2012), (td(22Nov2012)-1), (td(22Nov2012)+1), (td(22Nov2012)+2), (td(22Nov2012)+3)) 
+{txt}(3,403 real changes made)
+
+{com}. 
+. replace tg=1 if inlist(date, td(28Nov2013), (td(28Nov2013)-1), (td(28Nov2013)+1), (td(28Nov2013)+2), (td(28Nov2013)+3)) 
+{txt}(4,700 real changes made)
+
+{com}. 
+. replace tg=1 if inlist(date, td(27Nov2014), (td(27Nov2014)-1), (td(27Nov2014)+1), (td(27Nov2014)+2), (td(27Nov2014)+3)) 
+{txt}(4,208 real changes made)
+
+{com}. 
+. replace tg=1 if inlist(date, td(26Nov2015), (td(26Nov2015)-1), (td(26Nov2015)+1), (td(26Nov2015)+2), (td(26Nov2015)+3)) 
+{txt}(3,823 real changes made)
+
+{com}. 
+. replace tg=1 if inlist(date, td(24Nov2016), (td(24Nov2016)-1), (td(24Nov2016)+1), (td(24Nov2016)+2), (td(24Nov2016)+3)) 
+{txt}(2,591 real changes made)
+
+{com}. 
+. replace tg=1 if inlist(date, td(23Nov2017), (td(23Nov2017)-1), (td(23Nov2017)+1), (td(23Nov2017)+2), (td(23Nov2017)+3)) 
+{txt}(2,607 real changes made)
+
+{com}. 
+. replace tg=1 if inlist(date, td(22Nov2018), (td(22Nov2018)-1), (td(22Nov2018)+1), (td(22Nov2018)+2), (td(22Nov2018)+3)) 
+{txt}(10 real changes made)
+
+{com}. 
+. replace tg=1 if inlist(date, td(28Nov2019), (td(28Nov2019)-1), (td(28Nov2019)+1), (td(28Nov2019)+2), (td(28Nov2019)+3)) 
+{txt}(0 real changes made)
+
+{com}. 
+. replace tg=1 if inlist(date, td(26Nov2020), (td(26Nov2020)-1), (td(26Nov2020)+1), (td(26Nov2020)+2), (td(26Nov2020)+3)) 
+{txt}(0 real changes made)
+
+{com}. 
+. 
+. 
+. * CHRISTMAS: Christmas Day + Eve 
+
+. 
+. gen xmas=0
+
+. 
+. replace xmas=1 if inlist(date, td(24Dec2011), td(25Dec2011))
+{txt}(328 real changes made)
+
+{com}. 
+. replace xmas=1 if inlist(date, td(24Dec2012), td(25Dec2012))
+{txt}(896 real changes made)
+
+{com}. 
+. replace xmas=1 if inlist(date, td(24Dec2013), td(25Dec2013))
+{txt}(1,260 real changes made)
+
+{com}. 
+. replace xmas=1 if inlist(date, td(24Dec2014), td(25Dec2014))
+{txt}(1,217 real changes made)
+
+{com}. 
+. replace xmas=1 if inlist(date, td(24Dec2015), td(25Dec2015))
+{txt}(1,121 real changes made)
+
+{com}. 
+. replace xmas=1 if inlist(date, td(24Dec2016), td(25Dec2016))
+{txt}(702 real changes made)
+
+{com}. 
+. replace xmas=1 if inlist(date, td(24Dec2017), td(25Dec2017))
+{txt}(630 real changes made)
+
+{com}. 
+. replace xmas=1 if inlist(date, td(24Dec2018), td(25Dec2018))
+{txt}(4 real changes made)
+
+{com}. 
+. replace xmas=1 if inlist(date, td(24Dec2019), td(25Dec2019))
+{txt}(0 real changes made)
+
+{com}. 
+. replace xmas=1 if inlist(date, td(24Dec2020), td(25Dec2020))
+{txt}(0 real changes made)
+
+{com}. 
+. 
+. 
+. * NEW YEARS: New Years Day + Eve
+
+. 
+. gen nye=0
+
+. 
+. replace nye=1 if (date==td(01Jan2011)) 
+{txt}(199 real changes made)
+
+{com}. 
+. replace nye=1 if inlist(date, td(31Dec2011), td(01Jan2012))
+{txt}(842 real changes made)
+
+{com}. 
+. replace nye=1 if inlist(date, td(31Dec2012), td(01Jan2013))
+{txt}(1,420 real changes made)
+
+{com}. 
+. replace nye=1 if inlist(date, td(31Dec2013), td(01Jan2014))
+{txt}(1,803 real changes made)
+
+{com}. 
+. replace nye=1 if inlist(date, td(31Dec2014), td(01Jan2015))
+{txt}(1,736 real changes made)
+
+{com}. 
+. replace nye=1 if inlist(date, td(31Dec2015), td(01Jan2016))
+{txt}(1,470 real changes made)
+
+{com}. 
+. replace nye=1 if inlist(date, td(31Dec2016), td(01Jan2017))
+{txt}(1,063 real changes made)
+
+{com}. 
+. replace nye=1 if inlist(date, td(31Dec2017), td(01Jan2018))
+{txt}(455 real changes made)
+
+{com}. 
+. replace nye=1 if inlist(date, td(31Dec2018), td(01Jan2019))
+{txt}(3 real changes made)
+
+{com}. 
+. replace nye=1 if inlist(date, td(31Dec2019), td(01Jan2020))
+{txt}(0 real changes made)
+
+{com}. 
+. 
+. 
+. * COMBINING: 
+
+. 
+. gen holidays=0
+
+. 
+. replace holidays=1 if (memorial==1)
+{txt}(20,071 real changes made)
+
+{com}. 
+. replace holidays=2 if (labor==1)
+{txt}(19,243 real changes made)
+
+{com}. 
+. replace holidays=3 if (fourth==1)
+{txt}(14,941 real changes made)
+
+{com}. 
+. replace holidays=4 if (tg==1)
+{txt}(22,295 real changes made)
+
+{com}. 
+. replace holidays=5 if (xmas==1)
+{txt}(6,158 real changes made)
+
+{com}. 
+. replace holidays=6 if (nye==1)
+{txt}(8,991 real changes made)
+
+{com}. 
+. *drop memorial labor fourth tg xmas nye 
+
+. 
+. 
+. 
+. **************************************************
+
+. 
+. *** PROBLEMATIC DEPARTMENTS ***
+
+. 
+. **************************************************
+
+. 
+. * SOME DEPARTMENTS BOTH TREATED AND UNTREATED: 
+
+. 
+. bysort num_dept: egen avg_treat=mean(treat0)
+
+. 
+. gen treat=0
+
+. 
+. replace treat=1 if (avg_treat>0)
+{txt}(85,546 real changes made)
+
+{com}. 
+. drop if (treat==1) & (treat0==0)
+{txt}(42,711 observations deleted)
+
+{com}. 
+. drop avg_treat
+
+. 
+. 
+. 
+. * I WANT TO SEE STATEWIDE vs NOT: 
+
+. 
+. bysort num_dept: egen avg_nstops=mean(n_stops)
+
+. 
+. gen statewide=0
+
+. 
+. replace statewide=1 if inlist(num_dept, 7, 2971, 2970, 2953, 2950, 124, 2959, 2976, 2685, 2, 1149, 2962, 18, 1017, 83, 1390, 128, 2948, 2978, 2449, 129, 2979, 2944, 2413, 1406, 2731, 2973, 2958, 1391, 2946)
+{txt}(40,773 real changes made)
+
+{com}. 
+. 
+. 
+. * GENERATING UNION/INTERSECTION SCRUTINY ***
+
+. 
+. *gen n_scr=scr_nl
+
+. 
+. *gen d_scr=scr_dl
+
+. 
+. *gen or_scr=0
+
+. 
+. *replace or_scr=1 if (scr_nl==1) | (scr_dl==1)
+
+. 
+. *replace or_scr=2 if (scr_nl==2) | (scr_dl==2)
+
+. 
+. *gen and_scr=0
+
+. 
+. *replace and_scr=1 if (scr_nl==1) & (scr_dl==1)
+
+. 
+. *replace and_scr=2 if (scr_nl==2) & (scr_dl==2)
+
+. 
+. 
+. 
+. * GENERATING EVENT_ID: 
+
+. 
+. egen event_id=group(reg_edate0 num_dept) 
+{res}{txt}(1,646,835 missing values generated)
+
+{com}. 
+. replace event_id=0 if (event_id==.)
+{txt}(1,646,835 real changes made)
+
+{com}. 
+. 
+. 
+. **************************************************
+
+. 
+. *** DROPPING PROBLEMATIC DEPARTMENTS ***
+
+. 
+. **************************************************
+
+. 
+. * no post-event data for ALREADY TREATED dept: DROP
+
+. 
+. drop if (num_dept==9 & reg_edate0==td(29oct2018))
+{txt}(293 observations deleted)
+
+{com}. 
+. drop if (num_dept==124 & reg_edate0==td(12mar2019))
+{txt}(350 observations deleted)
+
+{com}. 
+. drop if (num_dept==960 & reg_edate0==td(06jun2018))
+{txt}(182 observations deleted)
+
+{com}. 
+. drop if (num_dept==2969 & reg_edate0==td(17oct2018))
+{txt}(240 observations deleted)
+
+{com}. 
+. 
+. 
+. * no pre-event data for WILL BE TREATED dept: DROP
+
+. 
+. drop if (num_dept==960 & reg_edate0==td(24nov2011))
+{txt}(22 observations deleted)
+
+{com}. 
+. drop if (num_dept==1387)
+{txt}(275 observations deleted)
+
+{com}. 
+. 
+. 
+. * only pre-event data for WILL BE TREATED dept: MAKE CONTROL
+
+. 
+. qui replace treat=0 if (num_dept==1099 | num_dept==1391)
+
+. 
+. qui replace post0=0 if (num_dept==1099 | num_dept==1391)
+
+. 
+. qui replace reg_edate0=. if (num_dept==1099 | num_dept==1391)
+
+. 
+. 
+. 
+. * only post-data for NOT YET TREATED dept: DROP
+
+. 
+. drop if (num_dept==1390 & reg_edate0==td(20dec2012))
+{txt}(215 observations deleted)
+
+{com}. 
+. 
+. 
+. * only post-data for ALREADY TREATED dept: DROP
+
+. 
+. drop if (num_dept==2963)
+{txt}(273 observations deleted)
+
+{com}. 
+. 
+. 
+. *** multi-event-depts ***
+
+. 
+. egen temp_tag=tag(num_dept reg_edate0) if (date==reg_edate0)
+
+. 
+. bysort num_dept: egen num_events=sum(temp_tag) 
+
+. 
+. gen multi_dept=(num_events>1)
+
+. 
+. drop temp_tag
+
+. 
+. 
+. 
+. * dept only has post-obs, no preperiod stop data: DROP
+
+. 
+. qui drop if (num_dept==82)
+
+. 
+. 
+. 
+. * dept*event only has post-obs: DROP
+
+. 
+. qui drop if (num_dept==1365 & reg_edate0==td(13jun2012))
+
+. 
+. 
+. 
+. * dept*event only has pre-obs: DROP
+
+. 
+. *** NOTE: if I am dropping dept*event, is that correct? 
+
+. 
+. *** or should I instead be shifting to different event within dept? 
+
+. 
+. qui drop if (num_dept==1365 & reg_edate0==td(22jul2014))
+
+. 
+. 
+. 
+. *** dept-events within one bin (15 days) of one another ***
+
+. 
+. qui gen scr=0 
+
+. 
+. qui replace scr=1 if (treat==1)
+
+. 
+. qui replace scr=2 if inlist(event_id, 79, 21, 77, 18, 87, 16, 64, 75, 31, 35, 53, 63, 13, 70, 58, 1, 65, 7, 72, 23, 80, 76, 34, 27, 54, 32, 62, 61, 3, 81, 36)
+
+. 
+. 
+. 
+. * department-based scrutiny: scr2
+
+. 
+. qui gen scr2=0
+
+. 
+. qui replace scr2=1 if (treat==1)
+
+. 
+. qui replace scr2=2 if inlist(event_id, 79, 21, 77, 18, 87, 16, 64, 75, 31, 35, 53, 63, 13, 70, 58, 1, 65, 7, 72, 23, 80, 76, 34, 27, 54, 32, 62, 61, 3, 81, 36)
+
+. 
+. 
+. 
+. * CA_los angeles police department: 9, (14jan2011 and 24jan2011)
+
+. 
+. qui replace reg_edate0=td(14jan2011) if (num_dept==9 & reg_edate0==td(24jan2011))
+
+. 
+. qui replace event_id=1 if (event_id==2)
+
+. 
+. 
+. 
+. * IL_chicago police department: 960, (01sep2013 and 07sep2013)
+
+. 
+. qui replace reg_edate0=td(01sep2013) if (num_dept==960 & reg_edate0==td(07sep2013))
+
+. 
+. qui replace event_id=30 if (event_id==31)
+
+. 
+. 
+. 
+. * MD_maryland state police: 1390, (18mar2014 and 21mar2014)
+
+. 
+. qui replace reg_edate0=td(18mar2014) if (num_dept==1390 & reg_edate0==td(21mar2014))
+
+. 
+. qui replace event_id=38 if (event_id==39)
+
+. 
+. 
+. 
+. * scrutiny correction because of paired-event-combining: 
+
+. 
+. * (unless I define scr after changing event_id above)
+
+. 
+. qui replace scr=2 if (num_dept==9 & reg_edate0==td(14jan2011))
+
+. 
+. qui replace scr=2 if (num_dept==960 & reg_edate0==td(01sep2013))
+
+. 
+. 
+. 
+. **************************************************
+
+. 
+. *** GENERATING BINS ***
+
+. 
+. **************************************************
+
+. 
+. qui gen reg_etime0=date - reg_edate0 
+
+. 
+. drop if ((reg_etime0<-26*`k') | (reg_etime0>26*`k')) & (reg_etime0!=.)
+{txt}(3,853 observations deleted)
+
+{com}. 
+. gen b_`k' = 0
+
+. 
+. replace b_`k'=1 if ((reg_etime0>=-26*`k') & (reg_etime0<-25*`k'))
+{txt}(527 real changes made)
+
+{com}. 
+. replace b_`k'=2 if ((reg_etime0>=-25*`k') & (reg_etime0<-24*`k'))
+{txt}(519 real changes made)
+
+{com}. 
+. replace b_`k'=3 if ((reg_etime0>=-24*`k') & (reg_etime0<-23*`k'))
+{txt}(548 real changes made)
+
+{com}. 
+. replace b_`k'=4 if ((reg_etime0>=-23*`k') & (reg_etime0<-22*`k'))
+{txt}(577 real changes made)
+
+{com}. 
+. replace b_`k'=5 if ((reg_etime0>=-22*`k') & (reg_etime0<-21*`k'))
+{txt}(582 real changes made)
+
+{com}. 
+. replace b_`k'=6 if ((reg_etime0>=-21*`k') & (reg_etime0<-20*`k'))
+{txt}(596 real changes made)
+
+{com}. 
+. replace b_`k'=7 if ((reg_etime0>=-20*`k') & (reg_etime0<-19*`k'))
+{txt}(620 real changes made)
+
+{com}. 
+. replace b_`k'=8 if ((reg_etime0>=-19*`k') & (reg_etime0<-18*`k'))
+{txt}(633 real changes made)
+
+{com}. 
+. replace b_`k'=9 if ((reg_etime0>=-18*`k') & (reg_etime0<-17*`k'))
+{txt}(645 real changes made)
+
+{com}. 
+. replace b_`k'=10 if ((reg_etime0>=-17*`k') & (reg_etime0<-16*`k'))
+{txt}(651 real changes made)
+
+{com}. 
+. replace b_`k'=11 if ((reg_etime0>=-16*`k') & (reg_etime0<-15*`k'))
+{txt}(677 real changes made)
+
+{com}. 
+. replace b_`k'=12 if ((reg_etime0>=-15*`k') & (reg_etime0<-14*`k'))
+{txt}(687 real changes made)
+
+{com}. 
+. 
+. 
+. replace b_`k'=13 if ((reg_etime0>=-14*`k') & (reg_etime0<-13*`k'))
+{txt}(676 real changes made)
+
+{com}. 
+. replace b_`k'=14 if ((reg_etime0>=-13*`k') & (reg_etime0<-12*`k'))
+{txt}(686 real changes made)
+
+{com}. 
+. replace b_`k'=15 if ((reg_etime0>=-12*`k') & (reg_etime0<-11*`k'))
+{txt}(694 real changes made)
+
+{com}. 
+. replace b_`k'=16 if ((reg_etime0>=-11*`k') & (reg_etime0<-10*`k'))
+{txt}(726 real changes made)
+
+{com}. 
+. replace b_`k'=17 if ((reg_etime0>=-10*`k') & (reg_etime0<-9*`k'))
+{txt}(749 real changes made)
+
+{com}. 
+. replace b_`k'=18 if ((reg_etime0>=-9*`k') & (reg_etime0<-8*`k'))
+{txt}(774 real changes made)
+
+{com}. 
+. replace b_`k'=19 if ((reg_etime0>=-8*`k') & (reg_etime0<-7*`k'))
+{txt}(813 real changes made)
+
+{com}. 
+. replace b_`k'=20 if ((reg_etime0>=-7*`k') & (reg_etime0<-6*`k'))
+{txt}(849 real changes made)
+
+{com}. 
+. replace b_`k'=21 if ((reg_etime0>=-6*`k') & (reg_etime0<-5*`k'))
+{txt}(856 real changes made)
+
+{com}. 
+. replace b_`k'=22 if ((reg_etime0>=-5*`k') & (reg_etime0<-4*`k'))
+{txt}(895 real changes made)
+
+{com}. 
+. replace b_`k'=23 if ((reg_etime0>=-4*`k') & (reg_etime0<-3*`k'))
+{txt}(924 real changes made)
+
+{com}. 
+. replace b_`k'=24 if ((reg_etime0>=-3*`k') & (reg_etime0<-2*`k'))
+{txt}(936 real changes made)
+
+{com}. 
+. replace b_`k'=25 if ((reg_etime0>=-2*`k') & (reg_etime0<-1*`k'))
+{txt}(995 real changes made)
+
+{com}. 
+. replace b_`k'=26 if ((reg_etime0>=-1*`k') & (reg_etime0<0*`k'))
+{txt}(1,066 real changes made)
+
+{com}. 
+. *** TREATMENT OCCURS AT b_`k' = 26.999 ***
+
+. 
+. replace b_`k'=27 if ((reg_etime0>=0*`k') & (reg_etime0<1*`k'))
+{txt}(1,062 real changes made)
+
+{com}. 
+. replace b_`k'=28 if ((reg_etime0>=1*`k') & (reg_etime0<2*`k'))
+{txt}(1,007 real changes made)
+
+{com}. 
+. replace b_`k'=29 if ((reg_etime0>=2*`k') & (reg_etime0<3*`k'))
+{txt}(906 real changes made)
+
+{com}. 
+. replace b_`k'=30 if ((reg_etime0>=3*`k') & (reg_etime0<4*`k'))
+{txt}(867 real changes made)
+
+{com}. 
+. replace b_`k'=31 if ((reg_etime0>=4*`k') & (reg_etime0<5*`k'))
+{txt}(843 real changes made)
+
+{com}. 
+. replace b_`k'=32 if ((reg_etime0>=5*`k') & (reg_etime0<6*`k'))
+{txt}(784 real changes made)
+
+{com}. 
+. replace b_`k'=33 if ((reg_etime0>=6*`k') & (reg_etime0<7*`k'))
+{txt}(761 real changes made)
+
+{com}. 
+. replace b_`k'=34 if ((reg_etime0>=7*`k') & (reg_etime0<8*`k'))
+{txt}(741 real changes made)
+
+{com}. 
+. replace b_`k'=35 if ((reg_etime0>=8*`k') & (reg_etime0<9*`k'))
+{txt}(712 real changes made)
+
+{com}. 
+. replace b_`k'=36 if ((reg_etime0>=9*`k') & (reg_etime0<10*`k'))
+{txt}(659 real changes made)
+
+{com}. 
+. replace b_`k'=37 if ((reg_etime0>=10*`k') & (reg_etime0<11*`k'))
+{txt}(624 real changes made)
+
+{com}. 
+. replace b_`k'=38 if ((reg_etime0>=11*`k') & (reg_etime0<12*`k'))
+{txt}(597 real changes made)
+
+{com}. 
+. replace b_`k'=39 if ((reg_etime0>=12*`k') & (reg_etime0<13*`k'))
+{txt}(594 real changes made)
+
+{com}. 
+. replace b_`k'=40 if ((reg_etime0>=13*`k') & (reg_etime0<14*`k'))
+{txt}(605 real changes made)
+
+{com}. 
+. 
+. 
+. replace b_`k'=41 if ((reg_etime0>=14*`k') & (reg_etime0<15*`k'))
+{txt}(586 real changes made)
+
+{com}. 
+. replace b_`k'=42 if ((reg_etime0>=15*`k') & (reg_etime0<16*`k'))
+{txt}(579 real changes made)
+
+{com}. 
+. replace b_`k'=43 if ((reg_etime0>=16*`k') & (reg_etime0<17*`k'))
+{txt}(594 real changes made)
+
+{com}. 
+. replace b_`k'=44 if ((reg_etime0>=17*`k') & (reg_etime0<18*`k'))
+{txt}(587 real changes made)
+
+{com}. 
+. replace b_`k'=45 if ((reg_etime0>=18*`k') & (reg_etime0<19*`k'))
+{txt}(569 real changes made)
+
+{com}. 
+. replace b_`k'=46 if ((reg_etime0>=19*`k') & (reg_etime0<20*`k'))
+{txt}(540 real changes made)
+
+{com}. 
+. replace b_`k'=47 if ((reg_etime0>=20*`k') & (reg_etime0<21*`k'))
+{txt}(529 real changes made)
+
+{com}. 
+. replace b_`k'=48 if ((reg_etime0>=21*`k') & (reg_etime0<22*`k'))
+{txt}(515 real changes made)
+
+{com}. 
+. replace b_`k'=49 if ((reg_etime0>=22*`k') & (reg_etime0<23*`k'))
+{txt}(515 real changes made)
+
+{com}. 
+. replace b_`k'=50 if ((reg_etime0>=23*`k') & (reg_etime0<24*`k'))
+{txt}(497 real changes made)
+
+{com}. 
+. replace b_`k'=51 if ((reg_etime0>=24*`k') & (reg_etime0<25*`k'))
+{txt}(467 real changes made)
+
+{com}. 
+. replace b_`k'=52 if ((reg_etime0>=25*`k') & (reg_etime0<=26*`k'))
+{txt}(498 real changes made)
+
+{com}. 
+. 
+. 
+. * Philadelphia Police Department: DNC 2016, abnormal stop days
+
+. 
+. gen Philly_DNC=((num_dept==2957) & inlist(date, td(24Jul2016), td(25Jul2016), td(26Jul2016), td(27Jul2016), td(28Jul2016), td(29Jul2016), td(30Jul2016), td(31Jul2016)))
+
+. 
+. 
+. 
+. * New Orleans Police Department: Bourbon Street shooting, abnormal stop days
+
+. 
+. gen NOLA_Bourbon=((num_dept==1148) & inlist(date, td(29Jun2014), td(30Jun2014), td(01Jul2014), td(02Jul2014), td(03Jul2014)))
+
+. 
+. 
+. 
+. * VA State Patrol has some VERY unusual days, and is also evidently a weekly reporter: 
+
+. 
+. *drop if (num_dept==2971) & (n_searches>250)
+
+. 
+. drop if (num_dept==2971)
+{txt}(278 observations deleted)
+
+{com}. 
+. 
+. 
+. * Highly abnormal single month for this dept: 
+
+. 
+. gen WA_mar_2017=0
+
+. 
+. replace WA_mar_2017=1 if (num_dept==2976 & month==3 & year==2017)
+{txt}(31 real changes made)
+
+{com}. 
+. 
+. 
+. * FL very strange from 1/1/2016 until 11/1/2016: 
+
+. 
+. gen FL_strange=0
+
+. 
+. replace FL_strange=1 if (num_dept==124 & (date>=td(01jan2016) & date<td(01nov2016)))
+{txt}(305 real changes made)
+
+{com}. 
+. 
+. 
+. *** Trim AZ (num_dept==2)
+
+. 
+. gen day=day(date)
+
+. 
+. drop if ((day==15) & (num_dept==2))
+{txt}(37 observations deleted)
+
+{com}. 
+. 
+. 
+. * TX Garland - very unlikely stop volumes outside of this range: 
+
+. 
+. drop if (num_dept==2965 & (date<19292 | date>21366))
+{txt}(20 observations deleted)
+
+{com}. 
+. 
+. 
+. * bellwood IL average stops go up sharply after 10/2016
+
+. 
+. gen bellwood_strange=0
+
+. 
+. replace bellwood_strange=1 if ((num_dept==177) & (date>=20728))
+{txt}(457 real changes made)
+
+{com}. 
+. 
+. 
+. **************************************************
+
+. 
+. *** UNRELIABLE_SEARCHES & UNRELIABLE_HITS 
+
+. 
+. **************************************************
+
+. 
+. * halves
+
+. 
+. bysort num_dept: egen med_date = median(date)
+
+. 
+. gen half = 1 if (date <= med_date)
+{txt}(841,199 missing values generated)
+
+{com}. 
+. replace half = 2 if half==.
+{txt}(841,199 real changes made)
+
+{com}. 
+. 
+. 
+. * stop totals: 
+
+. 
+. bysort num_dept: egen stop_tot = sum(n_stops) 
+
+. 
+. bysort num_dept half: egen stop_tot_half = sum(n_stops) 
+
+. 
+. bysort num_dept year: egen stop_tot_year = sum(n_stops) 
+
+. 
+. bysort num_dept yq: egen stop_tot_yq = sum(n_stops) 
+
+. 
+. bysort num_dept ym: egen stop_tot_ym = sum(n_stops) 
+
+. 
+. bysort num_dept yw: egen stop_tot_yw = sum(n_stops) 
+
+. 
+. 
+. 
+. * bstop totals: 
+
+. 
+. bysort num_dept: egen bstop_tot = sum(n_bstops) 
+
+. 
+. bysort num_dept half: egen bstop_tot_half = sum(n_bstops) 
+
+. 
+. bysort num_dept year: egen bstop_tot_year = sum(n_bstops) 
+
+. 
+. bysort num_dept yq: egen bstop_tot_yq = sum(n_bstops) 
+
+. 
+. bysort num_dept ym: egen bstop_tot_ym = sum(n_bstops) 
+
+. 
+. bysort num_dept yw: egen bstop_tot_yw = sum(n_bstops) 
+
+. 
+. 
+. 
+. * search totals: 
+
+. 
+. bysort num_dept: egen search_tot = sum(n_searches) 
+
+. 
+. bysort num_dept half: egen search_tot_half = sum(n_searches)
+
+. 
+. bysort num_dept year: egen search_tot_year = sum(n_searches) 
+
+. 
+. bysort num_dept yq: egen search_tot_yq = sum(n_searches) 
+
+. 
+. bysort num_dept ym: egen search_tot_ym = sum(n_searches) 
+
+. 
+. bysort num_dept yw: egen search_tot_yw = sum(n_searches) 
+
+. 
+. 
+. 
+. * bsearch totals: 
+
+. 
+. bysort num_dept: egen bsearch_tot = sum(n_bsearches) 
+
+. 
+. bysort num_dept half: egen bsearch_tot_half = sum(n_bsearches)
+
+. 
+. bysort num_dept year: egen bsearch_tot_year = sum(n_bsearches) 
+
+. 
+. bysort num_dept yq: egen bsearch_tot_yq = sum(n_bsearches) 
+
+. 
+. bysort num_dept ym: egen bsearch_tot_ym = sum(n_bsearches) 
+
+. 
+. bysort num_dept yw: egen bsearch_tot_yw = sum(n_bsearches) 
+
+. 
+. 
+. 
+. * hit totals: 
+
+. 
+. bysort num_dept: egen hit_tot = sum(n_hits) 
+
+. 
+. bysort num_dept half: egen hit_tot_half = sum(n_hits)
+
+. 
+. bysort num_dept year: egen hit_tot_year = sum(n_hits) 
+
+. 
+. bysort num_dept yq: egen hit_tot_yq = sum(n_hits) 
+
+. 
+. bysort num_dept ym: egen hit_tot_ym = sum(n_hits) 
+
+. 
+. bysort num_dept yw: egen hit_tot_yw = sum(n_hits) 
+
+. 
+. 
+. 
+. * bhit totals: 
+
+. 
+. bysort num_dept: egen bhit_tot = sum(n_bhits) 
+
+. 
+. bysort num_dept half: egen bhit_tot_half = sum(n_bhits)
+
+. 
+. bysort num_dept year: egen bhit_tot_year = sum(n_bhits) 
+
+. 
+. bysort num_dept yq: egen bhit_tot_yq = sum(n_bhits) 
+
+. 
+. bysort num_dept ym: egen bhit_tot_ym = sum(n_bhits) 
+
+. 
+. bysort num_dept yw: egen bhit_tot_yw = sum(n_bhits) 
+
+. 
+. 
+. 
+. * black stop rates: 
+
+. 
+. gen avg_br = bstop_tot / stop_tot 
+
+. 
+. gen avg_br_half = bstop_tot_half / stop_tot_half
+
+. 
+. gen avg_br_year = bstop_tot_year / stop_tot_year 
+
+. 
+. gen avg_br_yq = bstop_tot_yq / stop_tot_yq 
+
+. 
+. gen avg_br_ym = bstop_tot_ym / stop_tot_ym 
+
+. 
+. gen avg_br_yw = bstop_tot_yw / stop_tot_yw 
+
+. 
+. gen avg_br_day = n_bstops / n_stops 
+
+. 
+. 
+. 
+. * search rates: 
+
+. 
+. gen avg_sr = search_tot / stop_tot 
+
+. 
+. gen avg_sr_half = search_tot_half / stop_tot_half
+
+. 
+. gen avg_sr_year = search_tot_year / stop_tot_year 
+
+. 
+. gen avg_sr_yq = search_tot_yq / stop_tot_yq 
+
+. 
+. gen avg_sr_ym = search_tot_ym / stop_tot_ym 
+
+. 
+. gen avg_sr_yw = search_tot_yw / stop_tot_yw 
+
+. 
+. gen avg_sr_day = n_searches / n_stops 
+
+. 
+. 
+. 
+. * bsearch rates: 
+
+. 
+. gen avg_bsr = bsearch_tot / bstop_tot 
+{txt}(4,214 missing values generated)
+
+{com}. 
+. gen avg_bsr_half = bsearch_tot_half / bstop_tot_half
+{txt}(7,930 missing values generated)
+
+{com}. 
+. gen avg_bsr_year = bsearch_tot_year / bstop_tot_year 
+{txt}(19,058 missing values generated)
+
+{com}. 
+. gen avg_bsr_yq = bsearch_tot_yq / bstop_tot_yq 
+{txt}(63,466 missing values generated)
+
+{com}. 
+. gen avg_bsr_ym = bsearch_tot_ym / bstop_tot_ym 
+{txt}(141,152 missing values generated)
+
+{com}. 
+. gen avg_bsr_yw = bsearch_tot_yw / bstop_tot_yw 
+{txt}(337,492 missing values generated)
+
+{com}. 
+. gen avg_bsr_day = n_bsearches / n_bstops 
+{txt}(794,440 missing values generated)
+
+{com}. 
+. 
+. 
+. * hit rates: 
+
+. 
+. gen avg_hr = hit_tot / search_tot 
+{txt}(208,049 missing values generated)
+
+{com}. 
+. gen avg_hr_half = hit_tot_half / search_tot_half 
+{txt}(250,195 missing values generated)
+
+{com}. 
+. gen avg_hr_year = hit_tot_year / search_tot_year 
+{txt}(342,939 missing values generated)
+
+{com}. 
+. gen avg_hr_yq = hit_tot_yq / search_tot_yq 
+{txt}(493,854 missing values generated)
+
+{com}. 
+. gen avg_hr_ym = hit_tot_ym / search_tot_ym 
+{txt}(661,930 missing values generated)
+
+{com}. 
+. gen avg_hr_yw = hit_tot_yw / search_tot_yw 
+{txt}(969,406 missing values generated)
+
+{com}. 
+. gen avg_hr_day = n_hits / n_searches 
+{txt}(1,380,905 missing values generated)
+
+{com}. 
+. 
+. 
+. * bhit rates: 
+
+. 
+. gen avg_bhr = bhit_tot / bsearch_tot 
+{txt}(320,038 missing values generated)
+
+{com}. 
+. gen avg_bhr_half = bhit_tot_half / bsearch_tot_half 
+{txt}(407,024 missing values generated)
+
+{com}. 
+. gen avg_bhr_year = bhit_tot_year / bsearch_tot_year 
+{txt}(544,003 missing values generated)
+
+{com}. 
+. gen avg_bhr_yq = bhit_tot_yq / bsearch_tot_yq 
+{txt}(777,261 missing values generated)
+
+{com}. 
+. gen avg_bhr_ym = bhit_tot_ym / bsearch_tot_ym 
+{txt}(997,394 missing values generated)
+
+{com}. 
+. gen avg_bhr_yw = bhit_tot_yw / bsearch_tot_yw 
+{txt}(1,292,114 missing values generated)
+
+{com}. 
+. gen avg_bhr_day = n_bhits / n_bsearches 
+{txt}(1,544,464 missing values generated)
+
+{com}. 
+. 
+. 
+. *** UNRELIABLE BLACK STOPS: 
+
+. 
+. * overall average: 4.43383%
+
+. 
+. * saying less than 1/10th --> non-reporting searches
+
+. 
+. sum avg_br if bstop_tot!=0
+
+{txt}    Variable {c |}        Obs        Mean    Std. Dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 6}avg_br {c |}{res}  1,679,118    .2004286    .2009679   .0023641          1
+
+{com}. 
+. local nbstop_threshold = 1/(r(mean)/20)
+
+. 
+. display `nbstop_threshold'
+{res}99.786156
+
+{com}. 
+. 
+. 
+. gen unreliable_bstops = 0 
+
+. 
+. replace unreliable_bstops = 1 if (bstop_tot==0)
+{txt}(4,214 real changes made)
+
+{com}. 
+. replace unreliable_bstops = 1 if (stop_tot >= `nbstop_threshold') & (avg_br==0) 
+{txt}(0 real changes made)
+
+{com}. 
+. replace unreliable_bstops = 1 if (stop_tot_half >= `nbstop_threshold') & (avg_br_half==0) 
+{txt}(2,416 real changes made)
+
+{com}. 
+. replace unreliable_bstops = 1 if (stop_tot_year >= `nbstop_threshold') & (avg_br_year==0) 
+{txt}(3,627 real changes made)
+
+{com}. 
+. replace unreliable_bstops = 1 if (stop_tot_yq >= `nbstop_threshold') & (avg_br_yq==0) 
+{txt}(6,915 real changes made)
+
+{com}. 
+. replace unreliable_bstops = 1 if (stop_tot_ym >= `nbstop_threshold') & (avg_br_ym==0) 
+{txt}(3,294 real changes made)
+
+{com}. 
+. *replace unreliable_bstops = 1 if (stop_tot_yw >= `nbstop_threshold') & (avg_br_yw==0) 
+
+. 
+. *replace unreliable_bstops = 1 if (n_stops >= `nbstop_threshold') & (avg_br_day==0) 
+
+. 
+. 
+. 
+. * same, but for 1 single search and double the threshold: (some sneaky ones make it through):
+
+. 
+. replace unreliable_bstops = 1 if (stop_tot >= 5*`nbstop_threshold') & (bstop_tot==1) 
+{txt}(0 real changes made)
+
+{com}. 
+. replace unreliable_bstops = 1 if (stop_tot_half >= 5*`nbstop_threshold') & (bstop_tot_half==1) 
+{txt}(203 real changes made)
+
+{com}. 
+. replace unreliable_bstops = 1 if (stop_tot_year >= 5*`nbstop_threshold') & (bstop_tot_year==1) 
+{txt}(260 real changes made)
+
+{com}. 
+. replace unreliable_bstops = 1 if (stop_tot_yq >= 5*`nbstop_threshold') & (bstop_tot_yq==1) 
+{txt}(0 real changes made)
+
+{com}. 
+. replace unreliable_bstops = 1 if (stop_tot_ym >= 5*`nbstop_threshold') & (bstop_tot_ym==1) 
+{txt}(0 real changes made)
+
+{com}. 
+. *replace unreliable_bstops = 1 if (stop_tot_yw >= 5*`nbstop_threshold') & (bstop_tot_yw==1) 
+
+. 
+. *replace unreliable_bstops = 1 if (n_stops >= 5*`nbstop_threshold') & (n_bstops==1) 
+
+. 
+. 
+. 
+. * overall average: 4.43383%
+
+. 
+. * saying less than 1/10th --> non-reporting searches
+
+. 
+. sum avg_sr if search_tot!=0
+
+{txt}    Variable {c |}        Obs        Mean    Std. Dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 6}avg_sr {c |}{res}  1,475,283    .0444679    .1230518   .0000779   .9999371
+
+{com}. 
+. local ns_threshold = 1/(r(mean)/20)
+
+. 
+. display `ns_threshold'
+{res}449.7631
+
+{com}. 
+. 
+. 
+. *** UNRELIABLE SEARCHES: 
+
+. 
+. gen unreliable_searches = 0 
+
+. 
+. replace unreliable_searches = 1 if (search_tot==0)
+{txt}(208,049 real changes made)
+
+{com}. 
+. replace unreliable_searches = 1 if (stop_tot >= `ns_threshold') & (avg_sr==0) 
+{txt}(0 real changes made)
+
+{com}. 
+. replace unreliable_searches = 1 if (stop_tot_half >= `ns_threshold') & (avg_sr_half==0) 
+{txt}(31,190 real changes made)
+
+{com}. 
+. replace unreliable_searches = 1 if (stop_tot_year >= `ns_threshold') & (avg_sr_year==0) 
+{txt}(56,041 real changes made)
+
+{com}. 
+. replace unreliable_searches = 1 if (stop_tot_yq >= `ns_threshold') & (avg_sr_yq==0) 
+{txt}(39,675 real changes made)
+
+{com}. 
+. replace unreliable_searches = 1 if (stop_tot_ym >= `ns_threshold') & (avg_sr_ym==0) 
+{txt}(9,508 real changes made)
+
+{com}. 
+. *replace unreliable_searches = 1 if (stop_tot_yw >= `ns_threshold') & (avg_sr_yw==0) 
+
+. 
+. *replace unreliable_searches = 1 if (n_stops >= `ns_threshold') & (avg_sr_day==0) 
+
+. 
+. 
+. 
+. * same, but for 1 single search and double the threshold: (some sneaky ones make it through):
+
+. 
+. replace unreliable_searches = 1 if (stop_tot >= 5*`ns_threshold') & (search_tot==1) 
+{txt}(2,754 real changes made)
+
+{com}. 
+. replace unreliable_searches = 1 if (stop_tot_half >= 5*`ns_threshold') & (search_tot_half==1) 
+{txt}(4,200 real changes made)
+
+{com}. 
+. replace unreliable_searches = 1 if (stop_tot_year >= 5*`ns_threshold') & (search_tot_year==1) 
+{txt}(2,314 real changes made)
+
+{com}. 
+. replace unreliable_searches = 1 if (stop_tot_yq >= 5*`ns_threshold') & (search_tot_yq==1) 
+{txt}(309 real changes made)
+
+{com}. 
+. replace unreliable_searches = 1 if (stop_tot_ym >= 5*`ns_threshold') & (search_tot_ym==1) 
+{txt}(124 real changes made)
+
+{com}. 
+. *replace unreliable_searches = 1 if (stop_tot_yw >= 5*`ns_threshold') & (search_tot_yw==1) 
+
+. 
+. *replace unreliable_searches = 1 if (n_stops >= 5*`ns_threshold') & (n_searches==1) 
+
+. 
+. 
+. 
+. *** UNRELIABLE BLACK SEARCHES: 
+
+. 
+. * overall average: 6.81167%
+
+. 
+. * saying less than 1/10th --> non-reporting searches
+
+. 
+. sum avg_bsr if bsearch_tot!=0
+
+{txt}    Variable {c |}        Obs        Mean    Std. Dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 5}avg_bsr {c |}{res}  1,363,294    .0682838    .1318455   .0000999          1
+
+{com}. 
+. local nbs_threshold = 1/(r(mean)/20)
+
+. 
+. display `nbs_threshold'
+{res}292.89526
+
+{com}. 
+. 
+. 
+. *gen unreliable_bsearches = 0 
+
+. 
+. *replace unreliable_bsearches = 1 if (bsearch_tot==0)
+
+. 
+. *replace unreliable_bsearches = 1 if (bstop_tot >= `nbs_threshold') & (avg_bsr==0) 
+
+. 
+. *replace unreliable_bsearches = 1 if (bstop_tot_half >= `nbs_threshold') & (avg_bsr_half==0) 
+
+. 
+. *replace unreliable_bsearches = 1 if (bstop_tot_year >= `nbs_threshold') & (avg_bsr_year==0) 
+
+. 
+. *replace unreliable_bsearches = 1 if (bstop_tot_yq >= `nbs_threshold') & (avg_bsr_yq==0) 
+
+. 
+. *replace unreliable_bsearches = 1 if (bstop_tot_ym >= `nbs_threshold') & (avg_bsr_ym==0) 
+
+. 
+. **replace unreliable_bsearches = 1 if (bstop_tot_yw >= `nbs_threshold') & (avg_bsr_yw==0) 
+
+. 
+. **replace unreliable_bsearches = 1 if (n_bstops >= `nbs_threshold') & (avg_bsr_day==0) 
+
+. 
+. 
+. 
+. ** same, but for 1 single search and double the threshold: (some sneaky ones make it through):
+
+. 
+. *replace unreliable_bsearches = 1 if (bstop_tot >= 5*`nbs_threshold') & (bsearch_tot==1) 
+
+. 
+. *replace unreliable_bsearches = 1 if (bstop_tot_half >= 5*`nbs_threshold') & (bsearch_tot_half==1) 
+
+. 
+. *replace unreliable_bsearches = 1 if (bstop_tot_year >= 5*`nbs_threshold') & (bsearch_tot_year==1) 
+
+. 
+. *replace unreliable_bsearches = 1 if (bstop_tot_yq >= 5*`nbs_threshold') & (bsearch_tot_yq==1) 
+
+. 
+. *replace unreliable_bsearches = 1 if (bstop_tot_ym >= 5*`nbs_threshold') & (bsearch_tot_ym==1) 
+
+. 
+. **replace unreliable_bsearches = 1 if (bstop_tot_yw >= 5*`nbs_threshold') & (bsearch_tot_yw==1) 
+
+. 
+. **replace unreliable_bsearches = 1 if (n_bstops >= 5*`nbs_threshold') & (n_bsearches==1) 
+
+. 
+. 
+. 
+. *** UNRELIABLE HITS: 
+
+. 
+. * overall average: 32.88078%
+
+. 
+. * saying less than 1/10th --> non-reporting contraband
+
+. 
+. sum avg_hr if hit_tot!=0
+
+{txt}    Variable {c |}        Obs        Mean    Std. Dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 6}avg_hr {c |}{res}  1,399,240     .328673     .179587   .0044092          1
+
+{com}. 
+. local nh_threshold = 1/(r(mean)/20)
+
+. 
+. display `nh_threshold'
+{res}60.850753
+
+{com}. 
+. 
+. 
+. gen unreliable_hits = 0 
+
+. 
+. replace unreliable_hits = 1 if (hit_tot==0)
+{txt}(284,092 real changes made)
+
+{com}. 
+. replace unreliable_hits = 1 if (search_tot >= `nh_threshold') & (avg_hr==0) 
+{txt}(0 real changes made)
+
+{com}. 
+. replace unreliable_hits = 1 if (search_tot_half >= `nh_threshold') & (avg_hr_half==0) 
+{txt}(2,191 real changes made)
+
+{com}. 
+. replace unreliable_hits = 1 if (search_tot_year >= `nh_threshold') & (avg_hr_year==0) 
+{txt}(2,499 real changes made)
+
+{com}. 
+. replace unreliable_hits = 1 if (search_tot_yq >= `nh_threshold') & (avg_hr_yq==0) 
+{txt}(3,679 real changes made)
+
+{com}. 
+. replace unreliable_hits = 1 if (search_tot_ym >= `nh_threshold') & (avg_hr_ym==0) 
+{txt}(3,091 real changes made)
+
+{com}. 
+. *replace unreliable_hits = 1 if (search_tot_yw >= `nh_threshold') & (avg_hr_yw==0) 
+
+. 
+. *replace unreliable_hits = 1 if (n_searches >= `nh_threshold') & (avg_hr_day==0) 
+
+. 
+. 
+. 
+. * same, but for 1 single search and double the threshold: (some sneaky ones make it through):
+
+. 
+. replace unreliable_hits = 1 if (search_tot >= 5*`nh_threshold') & (hit_tot==1) 
+{txt}(0 real changes made)
+
+{com}. 
+. replace unreliable_hits = 1 if (search_tot_half >= 5*`nh_threshold') & (hit_tot_half==1) 
+{txt}(0 real changes made)
+
+{com}. 
+. replace unreliable_hits = 1 if (search_tot_year >= 5*`nh_threshold') & (hit_tot_year==1) 
+{txt}(272 real changes made)
+
+{com}. 
+. replace unreliable_hits = 1 if (search_tot_yq >= 5*`nh_threshold') & (hit_tot_yq==1) 
+{txt}(298 real changes made)
+
+{com}. 
+. replace unreliable_hits = 1 if (search_tot_ym >= 5*`nh_threshold') & (hit_tot_ym==1) 
+{txt}(60 real changes made)
+
+{com}. 
+. *replace unreliable_hits = 1 if (search_tot_yw >= 5*`nh_threshold') & (hit_tot_yw==1) 
+
+. 
+. *replace unreliable_hits = 1 if (n_searches >= 5*`nh_threshold') & (n_hits==1) 
+
+. 
+. 
+. 
+. *** UNRELIABLE BLACK HITS: 
+
+. 
+. * overall average: 34.33532%
+
+. 
+. * saying less than 1/10th --> non-reporting contraband
+
+. 
+. sum avg_bhr if bhit_tot!=0
+
+{txt}    Variable {c |}        Obs        Mean    Std. Dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 5}avg_bhr {c |}{res}  1,208,977    .3430003    .2010496   .0057143          1
+
+{com}. 
+. local nbh_threshold = 1/(r(mean)/20)
+
+. 
+. display `nbh_threshold'
+{res}58.308989
+
+{com}. 
+. 
+. 
+. *gen unreliable_bhits = 0 
+
+. 
+. *replace unreliable_bhits = 1 if (bhit_tot==0)
+
+. 
+. *replace unreliable_bhits = 1 if (bsearch_tot >= `nbh_threshold') & (avg_bhr==0) 
+
+. 
+. *replace unreliable_bhits = 1 if (bsearch_tot_half >= `nbh_threshold') & (avg_bhr_half==0) 
+
+. 
+. *replace unreliable_bhits = 1 if (bsearch_tot_year >= `nbh_threshold') & (avg_bhr_year==0) 
+
+. 
+. *replace unreliable_bhits = 1 if (bsearch_tot_yq >= `nbh_threshold') & (avg_bhr_yq==0) 
+
+. 
+. *replace unreliable_bhits = 1 if (bsearch_tot_ym >= `nbh_threshold') & (avg_bhr_ym==0) 
+
+. 
+. **replace unreliable_bhits = 1 if (bsearch_tot_yw >= `nbh_threshold') & (avg_bhr_yw==0) 
+
+. 
+. **replace unreliable_bhits = 1 if (n_bsearches >= `nbh_threshold') & (avg_bhr_day==0) 
+
+. 
+. 
+. 
+. ** same, but for 1 single search and double the threshold: (some sneaky ones make it through):
+
+. 
+. *replace unreliable_bhits = 1 if (bsearch_tot >= 5*`nbh_threshold') & (bhit_tot==1) 
+
+. 
+. *replace unreliable_bhits = 1 if (bsearch_tot_half >= 5*`nbh_threshold') & (bhit_tot_half==1) 
+
+. 
+. *replace unreliable_bhits = 1 if (bsearch_tot_year >= 5*`nbh_threshold') & (bhit_tot_year==1) 
+
+. 
+. *replace unreliable_bhits = 1 if (bsearch_tot_yq >= 5*`nbh_threshold') & (bhit_tot_yq==1) 
+
+. 
+. *replace unreliable_bhits = 1 if (bsearch_tot_ym >= 5*`nbh_threshold') & (bhit_tot_ym==1) 
+
+. 
+. **replace unreliable_bhits = 1 if (bsearch_tot_yw >= 5*`nbh_threshold') & (bhit_tot_yw==1) 
+
+. 
+. **replace unreliable_bhits = 1 if (n_bsearches >= 5*`nbh_threshold') & (n_bhits==1) 
+
+. 
+. 
+. 
+. drop hit_tot* search_tot* stop_tot* avg_sr* avg_hr* half med_date 
+
+. 
+. 
+. 
+. drop pre_gt_dept_lower pre_gt_name_lower dl_postm nl_postm 
+
+. 
+. 
+. 
+. drop sample0 scr_nl scr_nu scr_dl scr_du
+
+. 
+. 
+. 
+. drop bhit_tot* bsearch_tot* bstop_tot* avg_bsr* avg_bhr* 
+
+. 
+. 
+. 
+. **************************************************
+
+. 
+. *** BALANCING *** --- note: treatment occurs at (b_`k'==26.999)
+
+. 
+. **************************************************
+
+. 
+. gen weak_bal = 0
+
+. 
+. replace weak_bal = 26 if (treat==0)
+{txt}(1,647,230 real changes made)
+
+{com}. 
+. gen str_bal = 0
+
+. 
+. replace str_bal = 26 if (treat==0)
+{txt}(1,647,230 real changes made)
+
+{com}. 
+. 
+. 
+. forvalues bal=1(1)26 {c -(}
+{txt}  2{com}. 
+. * WEAK BALANCE = bal if #bal bins NONEMPTY: 
+. 
+. egen temp_tag=tag(num_dept reg_edate0 b_`k') if ((b_`k'<=26+`bal') & (b_`k'>=27-`bal'))
+{txt}  3{com}. 
+. bysort num_dept reg_edate0: egen nonempty_bins=sum(temp_tag)
+{txt}  4{com}. 
+. replace weak_bal=`bal' if (nonempty_bins==2*`bal')
+{txt}  5{com}. 
+. drop temp_tag nonempty_bins 
+{txt}  6{com}. 
+. 
+. 
+. * WEAK BALANCE = bal if #bal bins FULL: 
+. 
+. egen temp_tag = tag(num_dept reg_edate0 b_`k' date) if ((b_`k'<=26+`bal') & (b_`k'>=27-`bal'))
+{txt}  7{com}. 
+. bysort num_dept reg_edate0: egen full_bins=sum(temp_tag)
+{txt}  8{com}. 
+. replace str_bal=`bal' if (full_bins==14*2*`bal')
+{txt}  9{com}. 
+. drop temp_tag full_bins 
+{txt} 10{com}. 
+. {c )-}
+{txt}(36,071 real changes made)
+(30,262 real changes made)
+(35,657 real changes made)
+(28,603 real changes made)
+(33,406 real changes made)
+(27,488 real changes made)
+(32,486 real changes made)
+(26,545 real changes made)
+(31,963 real changes made)
+(24,828 real changes made)
+(29,598 real changes made)
+(23,945 real changes made)
+(29,598 real changes made)
+(23,945 real changes made)
+(29,598 real changes made)
+(22,255 real changes made)
+(27,136 real changes made)
+(21,449 real changes made)
+(25,840 real changes made)
+(20,493 real changes made)
+(24,241 real changes made)
+(17,947 real changes made)
+(21,621 real changes made)
+(16,411 real changes made)
+(20,085 real changes made)
+(15,402 real changes made)
+(19,701 real changes made)
+(15,402 real changes made)
+(19,701 real changes made)
+(14,676 real changes made)
+(19,701 real changes made)
+(14,676 real changes made)
+(19,701 real changes made)
+(13,509 real changes made)
+(18,534 real changes made)
+(13,509 real changes made)
+(18,534 real changes made)
+(12,891 real changes made)
+(17,291 real changes made)
+(12,249 real changes made)
+(16,649 real changes made)
+(12,249 real changes made)
+(16,649 real changes made)
+(12,249 real changes made)
+(16,649 real changes made)
+(12,249 real changes made)
+(16,649 real changes made)
+(9,477 real changes made)
+(14,578 real changes made)
+(9,477 real changes made)
+(14,578 real changes made)
+(0 real changes made)
+
+{com}. 
+. tab weak_bal 
+
+   {txt}weak_bal {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}         31        0.00        0.00
+{txt}          1 {c |}{res}        414        0.02        0.03
+{txt}          2 {c |}{res}      2,251        0.13        0.16
+{txt}          3 {c |}{res}        920        0.05        0.21
+{txt}          4 {c |}{res}        523        0.03        0.25
+{txt}          5 {c |}{res}      2,365        0.14        0.39
+{txt}          8 {c |}{res}      2,462        0.15        0.53
+{txt}          9 {c |}{res}      1,296        0.08        0.61
+{txt}         10 {c |}{res}      1,599        0.09        0.70
+{txt}         11 {c |}{res}      2,620        0.16        0.86
+{txt}         12 {c |}{res}      1,536        0.09        0.95
+{txt}         13 {c |}{res}        384        0.02        0.97
+{txt}         17 {c |}{res}      1,167        0.07        1.04
+{txt}         19 {c |}{res}      1,243        0.07        1.12
+{txt}         20 {c |}{res}        642        0.04        1.16
+{txt}         24 {c |}{res}      2,071        0.12        1.28
+{txt}         26 {c |}{res}  1,661,808       98.72      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}  1,683,332      100.00
+
+{com}. 
+. tab str_bal
+
+    {txt}str_bal {c |}      Freq.     Percent        Cum.
+{hline 12}{c +}{hline 35}
+          0 {c |}{res}      5,840        0.35        0.35
+{txt}          1 {c |}{res}      1,659        0.10        0.45
+{txt}          2 {c |}{res}      1,115        0.07        0.51
+{txt}          3 {c |}{res}        943        0.06        0.57
+{txt}          4 {c |}{res}      1,717        0.10        0.67
+{txt}          5 {c |}{res}        883        0.05        0.72
+{txt}          7 {c |}{res}      1,690        0.10        0.82
+{txt}          8 {c |}{res}        806        0.05        0.87
+{txt}          9 {c |}{res}        956        0.06        0.93
+{txt}         10 {c |}{res}      2,546        0.15        1.08
+{txt}         11 {c |}{res}      1,536        0.09        1.17
+{txt}         12 {c |}{res}      1,009        0.06        1.23
+{txt}         14 {c |}{res}        726        0.04        1.27
+{txt}         16 {c |}{res}      1,167        0.07        1.34
+{txt}         18 {c |}{res}        618        0.04        1.38
+{txt}         19 {c |}{res}        642        0.04        1.42
+{txt}         23 {c |}{res}      2,772        0.16        1.58
+{txt}         25 {c |}{res}      9,477        0.56        2.14
+{txt}         26 {c |}{res}  1,647,230       97.86      100.00
+{txt}{hline 12}{c +}{hline 35}
+      Total {c |}{res}  1,683,332      100.00
+
+{com}. 
+. 
+. 
+. * generating pseudo-departments (unique combinations of edate+dept)
+
+. 
+. replace reg_edate0 = 999999999 if treat==0
+{txt}(1,647,230 real changes made)
+
+{com}. 
+. egen pseudo_dept = group(num_dept reg_edate0)
+{res}
+{com}. 
+. 
+. 
+. egen pseudo_year = group(pseudo_dept year)
+{res}
+{com}. 
+. egen dept_year = group(num_dept year)
+{res}
+{com}. 
+. 
+. 
+. rename ym year_mo
+{res}
+{com}. 
+. 
+. 
+. * generating log(Y) for volume-based outcomes: 
+
+. 
+. gen log_n_stops = ln(n_stops)
+
+. 
+. gen log_n_bstops = ln(n_bstops)
+{txt}(794,440 missing values generated)
+
+{com}. 
+. gen log_n_searches = ln(n_searches)
+{txt}(1,380,905 missing values generated)
+
+{com}. 
+. gen log_n_bsearches = ln(n_bsearches)
+{txt}(1,544,464 missing values generated)
+
+{com}. 
+. gen log_n_hits = ln(n_hits)
+{txt}(1,566,378 missing values generated)
+
+{com}. 
+. gen log_n_bhits = ln(n_bhits)
+{txt}(1,629,903 missing values generated)
+
+{com}. 
+. 
+. 
+. * CT Hartford has very abnormal stop patterns, and even moreso for searches: 
+
+. 
+. drop if (num_dept==90) & (date<19663)
+{txt}(7 observations deleted)
+
+{com}. 
+. drop if (num_dept==90) & (year>2015)
+{txt}(266 observations deleted)
+
+{com}. 
+. 
+. 
+. * generating time-invariant weights for each num_dept (need to be constant within dept): 
+
+. 
+. bysort num_dept: egen n_stops_weight = mean(n_stops)
+
+. 
+. bysort num_dept: egen n_searches_weight = mean(n_searches)
+
+. 
+. bysort num_dept: egen n_hits_weight = mean(n_hits)
+
+. 
+. bysort num_dept: egen n_bstops_weight = mean(n_bstops)
+
+. 
+. bysort num_dept: egen n_bsearches_weight = mean(n_bsearches)
+
+. 
+. bysort num_dept: egen n_bhits_weight = mean(n_bhits)
+
+. 
+. 
+. 
+. * defining lower and upper event-window bookends: 
+
+. 
+. replace b_`k' = 1 if ((b_`k' < 27-`b') & (b_`k' >= 1))
+{txt}(6,725 real changes made)
+
+{com}. 
+. replace b_`k' = 52 if ((b_`k' > 26+`b') & (b_`k' <= 52))
+{txt}(5,973 real changes made)
+
+{com}. 
+. 
+. 
+. * generating post1 and post2 for low vs high scrutiny 
+
+. 
+. gen low = (scr==1)
+
+. 
+. gen high = (scr==2)
+
+. 
+. gen post1 = post0 * low
+
+. 
+. gen post2 = post0 * high
+
+. 
+. gen b_`k'_low = b_`k'*low
+
+. 
+. gen b_`k'_high = b_`k'*high
+
+. 
+. drop (low high)
+
+. 
+. 
+. 
+. sum _all
+
+{txt}    Variable {c |}        Obs        Mean    Std. Dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 8}date {c |}{res}  1,683,059    19967.28     623.459      18628      21632
+{txt}{space 4}num_dept {c |}{res}  1,683,059    1173.001    881.6174          1       2979
+{txt}{space 5}n_stops {c |}{res}  1,683,059    47.75501    358.9919          1      16188
+{txt}{space 4}n_bstops {c |}{res}  1,683,059    8.661853    50.74884          0       2056
+{txt}{space 2}n_searches {c |}{res}  1,683,059    1.023186     10.2537          0        707
+{txt}{hline 13}{c +}{hline 57}
+{space 1}n_bsearches {c |}{res}  1,683,059    .2895109    2.099165          0        133
+{txt}{space 6}n_hits {c |}{res}  1,683,059     .214346    2.471865          0        233
+{txt}{space 5}n_bhits {c |}{res}  1,683,059    .0685763    .6051216          0         58
+{txt}{space 1}bstop_share {c |}{res}  1,683,059    .2012064    .2855765          0          1
+{txt}bsearch_rate {c |}{res}    888,652    .0478806    .1703949          0          1
+{txt}{hline 13}{c +}{hline 57}
+bsearch_sh~e {c |}{res}    302,381    .3208638    .4097244          0          1
+{txt}{space 3}bhit_rate {c |}{res}    138,894    .2556636     .386555          0          1
+{txt}{space 2}bhit_share {c |}{res}    116,948    .3547309    .4380727          0          1
+{txt}bhit_bstop~o {c |}{res}    888,652     .011512    .0812335          0          1
+{txt}{space 7}fe_id {c |}{res}  1,683,059    340.2508    2321.308          0      23697
+{txt}{hline 13}{c +}{hline 57}
+{space 2}reg_edate0 {c |}{res}  1,683,059    9.79e+08    1.45e+08      18641   1.00e+09
+{txt}{space 6}treat0 {c |}{res}  1,683,059     .021862    .1462328          0          1
+{txt}{space 7}post0 {c |}{res}  1,683,059    .0102302    .1006257          0          1
+{txt}{space 5}quarter {c |}{res}  1,683,059    2.474014    1.111603          1          4
+{txt}{space 7}month {c |}{res}  1,683,059    6.414752    3.418315          1         12
+{txt}{hline 13}{c +}{hline 57}
+{space 8}week {c |}{res}  1,683,059    26.11351    14.91111          1         52
+{txt}{space 9}dow {c |}{res}  1,683,059    3.059331    2.003412          0          6
+{txt}{space 8}year {c |}{res}  1,683,059    2014.177    1.688541       2011       2019
+{txt}{space 10}yq {c |}{res}  1,683,059    218.1813    6.823298        204        236
+{txt}{space 5}year_mo {c |}{res}  1,683,059    655.5367    20.48157        612        710
+{txt}{hline 13}{c +}{hline 57}
+{space 10}yw {c |}{res}  1,683,059    2842.309    88.76221       2652       3079
+{txt}{space 1}rep_monthly {c |}{res}  1,683,059           0           0          0          0
+{txt}rep_annually {c |}{res}  1,683,059           0           0          0          0
+{txt}{space 4}memorial {c |}{res}  1,683,059    .0115866    .1070159          0          1
+{txt}{space 7}labor {c |}{res}  1,683,059    .0111274    .1048978          0          1
+{txt}{hline 13}{c +}{hline 57}
+{space 6}fourth {c |}{res}  1,683,059    .0086236     .092462          0          1
+{txt}{space 10}tg {c |}{res}  1,683,059    .0128807      .11276          0          1
+{txt}{space 8}xmas {c |}{res}  1,683,059    .0035293    .0593029          0          1
+{txt}{space 9}nye {c |}{res}  1,683,059    .0051816    .0717969          0          1
+{txt}{space 4}holidays {c |}{res}  1,683,059    .1599712    .7674506          0          6
+{txt}{hline 13}{c +}{hline 57}
+{space 7}treat {c |}{res}  1,683,059    .0214502    .1448797          0          1
+{txt}{space 2}avg_nstops {c |}{res}  1,683,059    47.66033     345.335          1   11694.23
+{txt}{space 3}statewide {c |}{res}  1,683,059    .0231085    .1502482          0          1
+{txt}{space 4}event_id {c |}{res}  1,683,059    1.091168    8.169806          0         94
+{txt}{space 2}num_events {c |}{res}  1,683,059    .0583527    .5462892          0         11
+{txt}{hline 13}{c +}{hline 57}
+{space 2}multi_dept {c |}{res}  1,683,059     .011409    .1062018          0          1
+{txt}{space 9}scr {c |}{res}  1,683,059    .0291915    .2093368          0          2
+{txt}{space 8}scr2 {c |}{res}  1,683,059    .0291772    .2092366          0          2
+{txt}{space 2}reg_etime0 {c |}{res}     36,102    -9.25788    191.4645       -364        364
+{txt}{space 8}b_14 {c |}{res}  1,683,059     .552087    4.465992          0         52
+{txt}{hline 13}{c +}{hline 57}
+{space 2}Philly_DNC {c |}{res}  1,683,059    4.75e-06    .0021802          0          1
+{txt}NOLA_Bourbon {c |}{res}  1,683,059    2.97e-06    .0017236          0          1
+{txt}{space 1}WA_mar_2017 {c |}{res}  1,683,059    .0000184    .0042917          0          1
+{txt}{space 2}FL_strange {c |}{res}  1,683,059    .0001812    .0134605          0          1
+{txt}{space 9}day {c |}{res}  1,683,059    15.69439    8.790724          1         31
+{txt}{hline 13}{c +}{hline 57}
+bellwood_s~e {c |}{res}  1,683,059    .0002715    .0164759          0          1
+{txt}{space 6}avg_br {c |}{res}  1,683,059    .1998976    .2009691          0          1
+{txt}{space 1}avg_br_half {c |}{res}  1,683,059     .200005    .2017946          0          1
+{txt}{space 1}avg_br_year {c |}{res}  1,683,059    .2000178    .2024279          0          1
+{txt}{space 3}avg_br_yq {c |}{res}  1,683,059    .2000912    .2043601          0          1
+{txt}{hline 13}{c +}{hline 57}
+{space 3}avg_br_ym {c |}{res}  1,683,059    .2001346    .2084222          0          1
+{txt}{space 3}avg_br_yw {c |}{res}  1,683,059    .2003177    .2235274          0          1
+{txt}{space 2}avg_br_day {c |}{res}  1,683,059    .2012064    .2855765          0          1
+{txt}unreliabl~ps {c |}{res}  1,683,059    .0124351    .1108173          0          1
+{txt}unreliabl~es {c |}{res}  1,683,059    .2104287    .4076133          0          1
+{txt}{hline 13}{c +}{hline 57}
+unreliabl~ts {c |}{res}  1,683,059    .1759784    .3808019          0          1
+{txt}{space 4}weak_bal {c |}{res}  1,683,059    25.80248    1.890818          0         26
+{txt}{space 5}str_bal {c |}{res}  1,683,059    25.71096    2.422246          0         26
+{txt}{space 1}pseudo_dept {c |}{res}  1,683,059    958.2341    557.2792          1       1973
+{txt}{space 1}pseudo_year {c |}{res}  1,683,059    4489.031    2475.112          1       8613
+{txt}{hline 13}{c +}{hline 57}
+{space 3}dept_year {c |}{res}  1,683,059    4478.217    2470.582          1       8580
+{txt}{space 1}log_n_stops {c |}{res}  1,683,059    1.751959    1.486655          0   9.692025
+{txt}log_n_bstops {c |}{res}    888,652    1.154267     1.34162          0   7.628518
+{txt}log_n_sear~s {c |}{res}    302,381    .6809257    1.038842          0   6.561031
+{txt}log_n_bsea~s {c |}{res}    138,850    .6360177    .9173394          0   4.890349
+{txt}{hline 13}{c +}{hline 57}
+{space 2}log_n_hits {c |}{res}    116,948    .4850318    .8341337          0   5.451038
+{txt}{space 1}log_n_bhits {c |}{res}     53,429    .4449526    .6840272          0   4.060443
+{txt}n_stops_we~t {c |}{res}  1,683,059    47.75501     345.179          1   11640.72
+{txt}n_searches~t {c |}{res}  1,683,059    1.023186    9.557701          0    382.583
+{txt}n_hits_wei~t {c |}{res}  1,683,059     .214346    1.795027          0   54.03042
+{txt}{hline 13}{c +}{hline 57}
+n_bstops_w~t {c |}{res}  1,683,059    8.661853    47.67579          0   971.1262
+{txt}n_bsearche~t {c |}{res}  1,683,059    .2895109    1.815707          0   42.17284
+{txt}n_bhits_we~t {c |}{res}  1,683,059    .0685763     .427012          0   6.709052
+{txt}{space 7}post1 {c |}{res}  1,683,059    .0063854    .0796532          0          1
+{txt}{space 7}post2 {c |}{res}  1,683,059    .0038448     .061887          0          1
+{txt}{hline 13}{c +}{hline 57}
+{space 4}b_14_low {c |}{res}  1,683,059    .3487584    3.546987          0         52
+{txt}{space 3}b_14_high {c |}{res}  1,683,059    .2033286     2.73967          0         52
+
+{com}. 
+. 
+. 
+. save "2000_data/500_working/`k'_days/reg_prep.dta", replace
+{txt}file 2000_data/500_working/14_days/reg_prep.dta saved
+
+{com}. 
+. 
+. 
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper/3000_code/04_merge/04_SMCL_logs/04c_reg_prep.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}14 Oct 2025, 11:15:39
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

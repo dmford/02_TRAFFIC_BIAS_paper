@@ -1,0 +1,112 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}C:\Users\david\coding\02_TRAFFIC_BIAS_paper\3000_code/06_graphs/06_SMCL_logs/06c_combining_graphs.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}26 Jun 2025, 10:56:54
+{txt}
+{com}. 
+. set varabbrev off
+{txt}
+{com}. 
+. local k=14
+{txt}
+{com}. 
+. forvalues s = 1(1)4 {c -(}
+{txt}  2{com}. 
+.         if (`s' == 1) local suffix = "_full"
+{txt}  3{com}.         if (`s' == 2) local suffix = "_wbal"
+{txt}  4{com}.         if (`s' == 3) local suffix = "_full_dTm1"
+{txt}  5{com}.         if (`s' == 4) local suffix = "_wbal_dTm1"
+{txt}  6{com}. 
+.         ********************************************************************************
+.         *** Combining Main Estudy & Estudy Interaction Graphs: 
+.         ********************************************************************************
+. 
+.         foreach variant in main {c -(}
+{txt}  7{com}.                 foreach o in bstop_share bsearch_share bhit_share bsearch_rate bhit_rate bhit_bstop_ratio n_stops n_bstops n_searches n_bsearches n_hits n_bhits {c -(}
+{txt}  8{com}.                         * defining graph titles: 
+.                         if ("`o'" == "bstop_share") local title = "1. Share of Stops"
+{txt}  9{com}.                         if ("`o'" == "bsearch_share") local title = "2. Share of Searches"
+{txt} 10{com}.                         if ("`o'" == "bhit_share") local title = "3. Share of Hits"
+{txt} 11{com}.                         if ("`o'" == "bsearch_rate") local title = "4. Search Rate"
+{txt} 12{com}.                         if ("`o'" == "bhit_rate") local title = "5. Hit Rate" 
+{txt} 13{com}.                         if ("`o'" == "bhit_bstop_ratio") local title = "6. Hits-to-Stops Ratio"
+{txt} 14{com}.                         if ("`o'" == "n_stops") local title = "7. Stop Volume"
+{txt} 15{com}.                         if ("`o'" == "n_bstops") local title = "8. Black Stop Volume"
+{txt} 16{com}.                         if ("`o'" == "n_searches") local title = "9. Search Volume"
+{txt} 17{com}.                         if ("`o'" == "n_bsearches") local title = "10. Black Search Volume"
+{txt} 18{com}.                         if ("`o'" == "n_hits") local title = "11. Hit Volume"
+{txt} 19{com}.                         if ("`o'" == "n_bhits") local title = "12. Black Hit Volume"
+{txt} 20{com}.                         
+.                         if ("`o'" == "bstop_share") local g = "1"
+{txt} 21{com}.                         if ("`o'" == "bsearch_share") local g = "2"
+{txt} 22{com}.                         if ("`o'" == "bhit_share") local g = "3"
+{txt} 23{com}.                         if ("`o'" == "bsearch_rate") local g = "4"
+{txt} 24{com}.                         if ("`o'" == "bhit_rate") local g = "5" 
+{txt} 25{com}.                         if ("`o'" == "bhit_bstop_ratio") local g = "6"
+{txt} 26{com}.                         if ("`o'" == "n_stops") local g = "7"
+{txt} 27{com}.                         if ("`o'" == "n_bstops") local g = "8"
+{txt} 28{com}.                         if ("`o'" == "n_searches") local g = "9"
+{txt} 29{com}.                         if ("`o'" == "n_bsearches") local g = "10"
+{txt} 30{com}.                         if ("`o'" == "n_hits") local g = "11"
+{txt} 31{com}.                         if ("`o'" == "n_bhits") local g = "12"
+{txt} 32{com}.                         
+.                         if ("`variant'" == "main") local subtitle = "All Departments"
+{txt} 33{com}.                         *if ("`variant'" == "A01") local subtitle = "Dropping T-1 Bin"
+.                         if ("`variant'" == "A02") local subtitle = "Pre-Trend Controls"
+{txt} 34{com}.                         if ("`variant'" == "A03") local subtitle = "Weakly Balanced"
+{txt} 35{com}.                         if ("`variant'" == "A04") local subtitle = "Strongly Balanced"
+{txt} 36{com}.                         if ("`variant'" == "A05") local subtitle = "Non-Statewide Departments"
+{txt} 37{com}.                         if ("`variant'" == "A06") local subtitle = "Statewide Departments"
+{txt} 38{com}.                         if ("`variant'" == "A07") local subtitle = "Single-Event Departments"
+{txt} 39{com}.                         if ("`variant'" == "A08") local subtitle = "Multi-Event Departments"
+{txt} 40{com}.                         
+.                         * combining graphs: 
+.                         graph combine "5000_figures/`k'_days/eq2/`o'/estudy_`variant'`suffix'" "5000_figures/`k'_days/eq4/`o'/estudy_`variant'`suffix'" "5000_figures/`k'_days/eq4/`o'/estudy_int_`variant'`suffix'", col(3) ycommon name("`o'_`variant'", replace) title("") subtitle("") xsize(10)  
+{txt} 41{com}.                         graph export "5000_figures/main_spec/`g'_`o'_`variant'`suffix'.pdf", replace
+{txt} 42{com}.                         graph export "6000_LaTeX/`g'_`o'_`variant'`suffix'.eps", replace
+{txt} 43{com}.                         STOP
+{txt} 44{com}.                 {c )-}
+{txt} 45{com}.                 graph drop _all
+{txt} 46{com}.         {c )-}
+{txt} 47{com}. {c )-}
+{res}{txt}{p 0 4 2}
+file {bf}
+5000_figures/main_spec/1_bstop_share_main_full.pdf{rm}
+saved as
+PDF
+format
+{p_end}
+{p 0 4 2}
+file {bf}
+6000_LaTeX/1_bstop_share_main_full.eps{rm}
+saved as
+EPS
+format
+{p_end}
+{err}command {bf}STOP{sf} is unrecognized
+{txt}{search r(199), local:r(199);}
+
+end of do-file
+
+{search r(199), local:r(199);}
+
+{com}. do "C:\Users\david\coding\02_TRAFFIC_BIAS_paper\3000_code\06_graphs\06b_estudy_graphing.do"
+{txt}
+{com}. * 06b_estudy_graphing.do
+. 
+. clear all
+{res}{txt}
+{com}. 
+. * (1) HPCC cluster, and (2) personal machine: 
+. *cd "/bigdata/mbateslab/dford013/coding/02_TRAFFIC_BIAS_paper"
+. cd "~\coding\02_TRAFFIC_BIAS_paper\"
+{res}C:\Users\david\coding\02_TRAFFIC_BIAS_paper
+{txt}
+{com}. 
+. ********************************************************************************
+. 
+. capture log close
+{smcl}
+{com}{sf}{ul off}
