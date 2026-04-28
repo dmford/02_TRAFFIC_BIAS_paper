@@ -1,0 +1,56 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{pdfpages}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{epstopdf}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{hyperref}
+
+\begin{document}
+
+\title{Event-Scrutiny Memo}
+\author{David Ford}
+\maketitle
+
+\section{Delineating High- vs Low-Scrutiny Events}
+
+Using a k-density plot, I separate events into high- vs low-scrutiny, by taking the mean deceased search level before and after their death. A large difference here implies a highly-scrutinized death-event. With a mass above 0, this resulted in a threshold of 0.2\% relative to Michael Brown's peak. \\
+
+To give some perspective, my Brown was searched in the US: 81\% as much as actor Alan Rickman, 97\% as much author as Maya Angelou, 123\% as much as the gorilla Harambe, and 185\% as much as actor Leonard Nimoy. \\
+
+
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=5.0in]{scr_nl_kdensity.eps}
+%		\caption{Caption Here}
+		\label{scr_density_nl}
+	\end{center}
+\end{figure}
+
+
+
+%\begin{figure}
+%	\begin{center}
+%		\includegraphics[width=5.5in]{scr_nl_distn.eps}
+%%		\caption{Caption Here}
+%		\label{scr_density_ln_nl}
+%	\end{center}
+%\end{figure}
+
+
+
+%\begin{figure}
+%	\begin{center}
+%		\includegraphics[width=5.5in]{scr_ln_nl_distn.eps}
+%%		\caption{Caption Here}
+%		\label{scr_density_ln_nl}
+%	\end{center}
+%\end{figure}
+
+
+
+\end{document}

@@ -1,0 +1,26 @@
+\begin{table}[htbp]\centering
+\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}
+\caption{Statewide Departments, Weakly Balanced Volume Outcomes}
+\begin{tabular}{l*{6}{c}}
+\hline\hline
+            &\multicolumn{1}{c}{(1)}&\multicolumn{1}{c}{(2)}&\multicolumn{1}{c}{(3)}&\multicolumn{1}{c}{(4)}&\multicolumn{1}{c}{(5)}&\multicolumn{1}{c}{(6)}\\
+            &\multicolumn{1}{c}{\shortstack{All\\Stops}}&\multicolumn{1}{c}{\shortstack{Black\\Stops}}&\multicolumn{1}{c}{\shortstack{All\\Searches}}&\multicolumn{1}{c}{\shortstack{Black\\Searches}}&\multicolumn{1}{c}{\shortstack{All\\Hits}}&\multicolumn{1}{c}{\shortstack{Black\\Hits}}\\
+\hline
+Treatment   &    -347.698\sym{***}&     -55.070\sym{***}&      -5.872\sym{***}&      -2.019\sym{**} &      -2.073\sym{*}  &      -0.672\sym{**} \\
+            &    (88.440)         &    (14.862)         &     (1.984)         &     (0.720)         &     (0.982)         &     (0.286)         \\
+\hline\hline
+Low Scrutiny&    -424.424\sym{***}&     -49.266\sym{***}&      -9.256\sym{***}&      -2.164\sym{**} &      -3.126\sym{*}  &      -0.756         \\
+            &   (120.476)         &    (15.028)         &     (2.810)         &     (0.865)         &     (1.499)         &     (0.432)         \\
+[1em]
+High Scrutiny&     165.012         &     -12.482         &       6.560\sym{**} &       0.282         &       2.369         &       0.189         \\
+            &   (163.029)         &    (29.683)         &     (2.884)         &     (1.339)         &     (1.605)         &     (0.562)         \\
+\hline
+Pre-Average &        3651         &         444         &        83.5         &        14.3         &        14.7         &        3.09         \\
+Dept-Year FE&         Yes         &         Yes         &         Yes         &         Yes         &         Yes         &         Yes         \\
+Cyclic FE   &         Yes         &         Yes         &         Yes         &         Yes         &         Yes         &         Yes         \\
+\#Dept-Days &       35671         &       35671         &       23377         &       23377         &       20371         &       20371         \\
+\hline\hline
+\multicolumn{7}{l}{\footnotesize Standard errors in parentheses}\\
+\multicolumn{7}{l}{\footnotesize \sym{*} \(p<0.1\), \sym{**} \(p<0.05\), \sym{***} \(p<0.01\)}\\
+\end{tabular}
+\end{table}

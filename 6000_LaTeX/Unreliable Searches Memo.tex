@@ -1,0 +1,85 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{pdfpages}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{epstopdf}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{hyperref}
+
+\begin{document}
+
+\title{Unreliable Searches Memo}
+\author{David Ford}
+\maketitle
+
+
+
+After noticing irregular search behaviors where some departments report large stop volumes without any searches for some periods of time, and then a believable number of stops at other times, I needed a method to be able to determine which departments and which time periods within departments had unreliable search reporting. For the largest departments, this is simple and the differences are stark, as with Florida Highway Patrol. As average stop volumes decrease, this becomes less straightforward where a very small department may only report 50 stops in a year with a plausible 0 searches. \\
+
+To solve the issue, I created a filter and using department search rates and stop volumes, and the overall search rate of 4.43\%. With a generous threshold of 451 stops in a given period, if a department with sufficient total, annual, quarterly, or monthly stops while reporting zero searches - I flagged that time period as unreliable for reporting searches. Noting further that some departments with large amounts of stops reported one single search, I widened my filter to flag departments with 5x the above threshold (2,255 stops) and one single search, declaring those time periods as unreliable. \\
+
+To assess this determination, I manually looked over a number of my departments and attempted to eyeball a threshold for unreliable search reporting, as shown with the dotten lines, and I plotted search volumes for my unreliable vs reliable time periods as a litmus test. It is my belief that this filtration process is an improvement on my eyeballing, and with a more consistent decision rule I am able to reduce generating undue bias from a researcher's perspective. \\
+
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{no_searches_1.eps}
+%		\caption{Caption Here}
+		\label{no_searches_1}
+	\end{center}
+\end{figure}
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{no_searches_2.eps}
+%		\caption{Caption Here}
+		\label{no_searches_2}
+	\end{center}
+\end{figure}
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{no_searches_4.eps}
+%		\caption{Caption Here}
+		\label{no_searches_4}
+	\end{center}
+\end{figure}
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{no_searches_7.eps}
+%		\caption{Caption Here}
+		\label{no_searches_7}
+	\end{center}
+\end{figure}
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{no_searches_9.eps}
+%		\caption{Caption Here}
+		\label{no_searches_9}
+	\end{center}
+\end{figure}
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{no_searches_10.eps}
+%		\caption{Caption Here}
+		\label{no_searches_10}
+	\end{center}
+\end{figure}
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{no_searches_18.eps}
+%		\caption{Caption Here}
+		\label{no_searches_18}
+	\end{center}
+\end{figure}
+
+
+
+\end{document}

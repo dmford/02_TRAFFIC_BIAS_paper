@@ -1,0 +1,51 @@
+%\newcommand{\sym}[1]{\rlap{$#1$}} % for symbols in Table
+\newcommand{\sym}[1]{{#1}} % for symbols in Table
+
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{pdfpages}
+\usepackage{indentfirst}
+\usepackage{url}
+\usepackage{float}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{caption}
+
+\begin{document}
+
+\title{Heterogeneous DiD Memo}
+\author{David Ford}
+\maketitle
+
+
+
+%	Heterogeneous Diff-in-Diff Figure: Rates 
+\newpage
+
+\begin{center}
+\input tables/DiD_rates_main_full_het.tex
+\end{center}
+
+\begin{center}
+\input tables/DiD_rates_main_wbal_het.tex
+\end{center}
+
+
+
+%	Heterogeneous Diff-in-Diff Figure: Volumes
+\newpage
+
+\begin{center}
+\input tables/DiD_volumes_main_full_het.tex
+\end{center}
+
+\begin{center}
+\input tables/DiD_volumes_main_wbal_het.tex
+\end{center}
+
+\end{document}

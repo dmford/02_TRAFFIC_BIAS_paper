@@ -1,0 +1,78 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{pdfpages}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{epstopdf}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{hyperref}
+
+\begin{document}
+
+\title{Statewide + Day of Week Interaction Memo}
+\author{David Ford}
+\maketitle
+
+
+
+When inspecting the outcome pre-period data, I noticed that highway patrols and municipal departments behave differently on the weekends, where highway patrols tend to have by far the most searches on Saturdays, and municipal departments tend to have lower numbers of searches on weekends. To this end, I have opted to include statewide-by-dow fixed effects. \\
+
+
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{non_sw_dow_n_stops.eps}
+%		\caption{Caption Here}
+		\label{non_sw_dow_n_stops}
+	\end{center}
+\end{figure}
+
+\begin{figure}[pb]
+	\begin{center}
+		\includegraphics[width=5.5in]{sw_dow_n_stops.eps}
+%		\caption{Caption Here}
+		\label{sw_dow_n_stops}
+	\end{center}
+\end{figure}
+
+
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{non_sw_dow_n_searches.eps}
+%		\caption{Caption Here}
+		\label{non_sw_dow_n_searches}
+	\end{center}
+\end{figure}
+
+\begin{figure}[pb]
+	\begin{center}
+		\includegraphics[width=5.5in]{sw_dow_n_searches.eps}
+%		\caption{Caption Here}
+		\label{sw_dow_n_searches}
+	\end{center}
+\end{figure}
+
+
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{non_sw_dow_n_hits.eps}
+%		\caption{Caption Here}
+		\label{non_sw_dow_n_hits}
+	\end{center}
+\end{figure}
+
+\begin{figure}[pb]
+	\begin{center}
+		\includegraphics[width=5.5in]{sw_dow_n_hits.eps}
+%		\caption{Caption Here}
+		\label{sw_dow_n_hits}
+	\end{center}
+\end{figure}
+
+
+
+\end{document}

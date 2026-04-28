@@ -1,0 +1,38 @@
+\begin{table}[htbp]\centering
+\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}
+\caption{Rate Outcomes, Non-Statewide Departments, Unbalanced}
+\begin{tabular}{l*{6}{c}}
+\hline\hline
+            &\multicolumn{1}{c}{(1)}&\multicolumn{1}{c}{(2)}&\multicolumn{1}{c}{(3)}&\multicolumn{1}{c}{(4)}&\multicolumn{1}{c}{(5)}&\multicolumn{1}{c}{(6)}\\
+            &\multicolumn{1}{c}{\shortstack{Stop\\Share}}&\multicolumn{1}{c}{\shortstack{Search\\Share}}&\multicolumn{1}{c}{\shortstack{Hit\\Share}}&\multicolumn{1}{c}{\shortstack{Search\\Rate}}&\multicolumn{1}{c}{\shortstack{Hit\\Rate}}&\multicolumn{1}{c}{\shortstack{Hits\\Per Stop}}\\
+\hline
+Treatment   &      -0.000         &      -0.002         &      -0.003         &      -0.002\sym{*}  &       0.005         &      -0.000         \\
+            &     (0.003)         &     (0.005)         &     (0.010)         &     (0.001)         &     (0.004)         &     (0.000)         \\
+\hline\hline
+\multicolumn{7}{l}{\footnotesize Standard errors in parentheses}\\
+\multicolumn{7}{l}{\footnotesize \sym{*} \(p<0.1\), \sym{**} \(p<0.05\), \sym{***} \(p<0.01\)}\\
+\end{tabular}
+\end{table}
+\begin{table}[htbp]\centering
+\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}
+\caption{Non-Statewide Departments, Unbalanced Rate Outcomes}
+\begin{tabular}{l*{6}{c}}
+\hline\hline
+            &\multicolumn{1}{c}{(1)}&\multicolumn{1}{c}{(2)}&\multicolumn{1}{c}{(3)}&\multicolumn{1}{c}{(4)}&\multicolumn{1}{c}{(5)}&\multicolumn{1}{c}{(6)}\\
+            &\multicolumn{1}{c}{\shortstack{Stop\\Share}}&\multicolumn{1}{c}{\shortstack{Search\\Share}}&\multicolumn{1}{c}{\shortstack{Hit\\Share}}&\multicolumn{1}{c}{\shortstack{Search\\Rate}}&\multicolumn{1}{c}{\shortstack{Hit\\Rate}}&\multicolumn{1}{c}{\shortstack{Hits\\Per Stop}}\\
+\hline
+Low Scrutiny&       0.001         &      -0.007         &      -0.011         &      -0.002         &       0.005         &      -0.000         \\
+            &     (0.004)         &     (0.006)         &     (0.008)         &     (0.001)         &     (0.004)         &     (0.000)         \\
+[1em]
+High Scrutiny&      -0.003         &       0.013         &       0.027         &       0.001         &      -0.000         &       0.000         \\
+            &     (0.004)         &     (0.009)         &     (0.019)         &     (0.001)         &     (0.009)         &     (0.001)         \\
+\hline
+Pre-Average &        .364         &         .51         &         .55         &        .081         &        .195         &       .0124         \\
+Dept-Year FE&         Yes         &         Yes         &         Yes         &         Yes         &         Yes         &         Yes         \\
+Cyclic FE   &         Yes         &         Yes         &         Yes         &         Yes         &         Yes         &         Yes         \\
+\#Dept-Days &     1618984         &      274728         &       94768         &      666862         &      107868         &      636705         \\
+\hline\hline
+\multicolumn{7}{l}{\footnotesize Standard errors in parentheses}\\
+\multicolumn{7}{l}{\footnotesize \sym{*} \(p<0.1\), \sym{**} \(p<0.05\), \sym{***} \(p<0.01\)}\\
+\end{tabular}
+\end{table}

@@ -1,0 +1,62 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{pdfpages}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{epstopdf}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{hyperref}
+
+\begin{document}
+
+\title{Investigating Pretrends: T-7/6/5 vs T-4/3/2}
+\author{David Ford}
+\maketitle
+
+%\section{Main Event Studies (No Statewide)}
+
+After noting some anomalous pretrends between T-7/6/5 and T-4/3/2, I investigated further to determine what was happening in the data. I noticed first that some large statewide-department and highly-scrutinized event was showing abnormally-low numbers of stops in bins T-4/3/2 relative to T-7/6/5 or T-1. Shown below are the mean numbers of stops for those three timeframes, where I have isolated the Florida Highway Patrol, a rather large department as the likely culprit, although so far I have not determined the underlying reason. \\ 
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=5.5in]{inv_pretrends_e77.eps}
+%		\caption{Caption Here}
+		\label{inv_pretrends_e77}
+	\end{center}
+\end{figure}
+
+Continuing as above, I looked into non-statewide low-scrutiny events and found three events that are driving an unusually-low number of stops in periods T-7/6/5. First off is Aurora Police in Colorado, who appear to have unusually-low stop numbers starting on Christmas Eve and continuing until New Years, suggesting that the period between the two holidays may need to be included in my ``Holidays'' dummy variable. \\
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=5.5in]{inv_pretrends_e56.eps}
+%		\caption{Caption Here}
+		\label{inv_pretrends_e56}
+	\end{center}
+\end{figure}
+
+Next I have New Orleans Police, who show a low number of stops which lie on the days following a shooting between civilians on Bourbon Street in June 2014, injuring 9 and killing 1. \\
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=5.5in]{inv_pretrends_e60.eps}
+%		\caption{Caption Here}
+		\label{inv_pretrends_e60}
+	\end{center}
+\end{figure}
+
+Lastly, I have the Philadelphia Police who reported a surprisingly-low number of stops surrounding the 2016 Democratic National Convention. \\
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=5.5in]{inv_pretrends_e82.eps}
+%		\caption{Caption Here}
+		\label{inv_pretrends_e82}
+	\end{center}
+\end{figure}
+
+
+
+\end{document}

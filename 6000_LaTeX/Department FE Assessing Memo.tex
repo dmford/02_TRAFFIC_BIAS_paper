@@ -1,0 +1,103 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{pdfpages}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{epstopdf}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{hyperref}
+
+\begin{document}
+
+\title{Department FE Assessing Memo}
+\author{David Ford}
+\maketitle
+
+
+
+
+In order to evaluate whether my additional department-specific FE controls are necessary for estimating treatment effects, I have ran my regressions four times with increasing degrees of department-specific FEs. First with only the department FE, then adding department-year FEs, adding department-month FEs, and finally adding department-holiday FEs. \\
+
+As shown below, it appears as though the department-year FEs are important to the estimation, but the additional FEs beyond that don't appear to make substantial differences. \\
+
+Dr Bates - to explain the graph formatting, there are three trios of graph panels. Each panel has the same rows with (Dept FEs, Adding Dept-Year, Adding Dept-Month, Adding Dept-Holiday). To avoid overwhelming you with an increible amount of graphs, I have only done this for three outcomes (Stop Share, Search Rate, and Hit Rate), and for three of my general specifications (Main, Dropping T-1, and Balanced). \\ 
+
+
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{1_bstop_share_main_grand.eps}
+%		\caption{Caption Here}
+		\label{1_bstop_share_main_grand}
+	\end{center}
+\end{figure}
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{4_bsearch_rate_main_grand.eps}
+%		\caption{Caption Here}
+		\label{4_bsearch_rate_main_grand}
+	\end{center}
+\end{figure}
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{5_bhit_rate_main_grand.eps}
+%		\caption{Caption Here}
+		\label{5_bhit_rate_main_grand}
+	\end{center}
+\end{figure}
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{1_bstop_share_A01_grand.eps}
+%		\caption{Caption Here}
+		\label{1_bstop_share_A01_grand}
+	\end{center}
+\end{figure}
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{4_bsearch_rate_A01_grand.eps}
+%		\caption{Caption Here}
+		\label{4_bsearch_rate_A01_grand}
+	\end{center}
+\end{figure}
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{5_bhit_rate_A01_grand.eps}
+%		\caption{Caption Here}
+		\label{5_bhit_rate_A01_grand}
+	\end{center}
+\end{figure}
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{1_bstop_share_A03_grand.eps}
+%		\caption{Caption Here}
+		\label{1_bstop_share_A03_grand}
+	\end{center}
+\end{figure}
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{4_bsearch_rate_A03_grand.eps}
+%		\caption{Caption Here}
+		\label{4_bsearch_rate_A03_grand}
+	\end{center}
+\end{figure}
+
+\begin{figure}[pt]
+	\begin{center}
+		\includegraphics[width=5.5in]{5_bhit_rate_A03_grand.eps}
+%		\caption{Caption Here}
+		\label{5_bhit_rate_A03_grand}
+	\end{center}
+\end{figure}
+
+
+
+\end{document}

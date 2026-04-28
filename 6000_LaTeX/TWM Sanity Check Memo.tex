@@ -1,0 +1,127 @@
+%\newcommand{\sym}[1]{\rlap{$#1$}} % for symbols in Table
+\newcommand{\sym}[1]{{#1}} % for symbols in Table
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{pdfpages}
+\usepackage{indentfirst}
+\usepackage{url}
+\usepackage{float}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{caption}
+
+\begin{document}
+
+\title{TWM Sanity Check Memo}
+\author{David Ford}
+\maketitle
+
+I was worried about the TWM results, so I ran the a series of regressions in efforts to isolate the issue. \\
+
+\begin{itemize}
+	\item main: main regression
+	\item TWM1: TWM without $post*(xbar_t - xbar) + post*(xbar_i - xbar)$ pieces
+
+	\item main0: main regression, without controls
+	\item TWM0: TWM without $post*(xbar_t - xbar) + post*(xbar_i - xbar)$ pieces, without controls
+
+	\item main2: main regression, strongly balanced
+	\item TWM2: TWM without $post*(xbar_t - xbar) + post*(xbar_i - xbar)$ pieces, strongly balanced
+
+	\item TWM3: TWM without $post*(xbar_t - xbar) + post*(xbar_i - xbar)$ pieces, strongly balanced and without controls
+	\item main3: main regression, strongly balanced and without controls
+\end{itemize}
+
+
+
+%	Diff-in-Diff Tables: MAIN vs TWM1
+\newpage 
+\begin{center}
+\input tables/DiD_rates_main_full_nocap.tex
+\end{center}
+
+\begin{center}
+\input tables/DiD_rates_TWM1_full_nocap.tex
+\end{center}
+
+\newpage 
+\begin{center}
+\input tables/DiD_volumes_main_full_nocap.tex
+\end{center}
+
+\begin{center}
+\input tables/DiD_volumes_TWM1_full_nocap.tex
+\end{center}
+
+
+
+%	Diff-in-Diff Tables: MAIN0 vs TWM0
+\newpage 
+\begin{center}
+\input tables/DiD_rates_main0_full_nocap.tex
+\end{center}
+
+\begin{center}
+\input tables/DiD_rates_TWM0_full_nocap.tex
+\end{center}
+
+\newpage 
+\begin{center}
+\input tables/DiD_volumes_main0_full_nocap.tex
+\end{center}
+
+\begin{center}
+\input tables/DiD_volumes_TWM0_full_nocap.tex
+\end{center}
+
+
+
+%	Diff-in-Diff Tables: MAIN2 vs TWM2
+\newpage 
+\begin{center}
+\input tables/DiD_rates_main2_full_nocap.tex
+\end{center}
+
+\begin{center}
+\input tables/DiD_rates_TWM2_full_nocap.tex
+\end{center}
+
+\newpage 
+\begin{center}
+\input tables/DiD_volumes_main2_full_nocap.tex
+\end{center}
+
+\begin{center}
+\input tables/DiD_volumes_TWM2_full_nocap.tex
+\end{center}
+
+
+
+%	Diff-in-Diff Tables: MAIN3 vs TWM3
+\newpage 
+\begin{center}
+\input tables/DiD_rates_main3_full_nocap.tex
+\end{center}
+
+\begin{center}
+\input tables/DiD_rates_TWM3_full_nocap.tex
+\end{center}
+
+\newpage 
+\begin{center}
+\input tables/DiD_volumes_main3_full_nocap.tex
+\end{center}
+
+\begin{center}
+\input tables/DiD_volumes_TWM3_full_nocap.tex
+\end{center}
+
+
+
+\end{document}

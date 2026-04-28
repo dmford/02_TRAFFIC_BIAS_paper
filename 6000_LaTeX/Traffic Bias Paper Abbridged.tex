@@ -1,0 +1,78 @@
+%\newcommand{\sym}[1]{\rlap{$#1$}} % for symbols in Table
+\newcommand{\sym}[1]{{#1}} % for symbols in Table
+
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{pdfpages}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{epstopdf}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{caption}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%	TRAFFIC STOP BIAS PAPER: 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Traffic Stop Bias Paper}
+\author{David Ford}
+\maketitle
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%	INTRODUCTION: 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction:} 
+
+After the 2012 death of Trayvon Martin, a 17 year-old boy who was shot to death by one of his neighbors (George Zimmerman), protests broke out nationwide. Following this, in July 2013 Zimmerman was acquitted, sparking further outrage and leading to the coining of the phrases ``Black Lives Matter'' (BLM) and ``Say Their Name''; beginning a movement as many felt that the justice system was failing. The premise is simple: these were people, they mattered, and their deaths are not simple blips in the system to be glossed-over. This paper seeks to explore the racially-different response of police officers to stopped drivers following a fatal police encounter, as well as to highlight and analyze whether traffic stop behaviors evolve differently when a death receives national focus. \\ 
+
+By resulting in a death, these are significant events, and with each successive death the possibility of dying at the hands of the police becomes more salient and concerning for many Americans. In fact, deaths by police account for 5\% of all homicides in the US (Ang \& Tebes 2023). As such, these deaths deserve attention, particularly in the context of further police interactions. To accomplish this, I will be using the open source Fatal Encounters (FE) dataset which tracks officer-involved subject-deaths in the US going back to 2000. \\
+
+In order to scrutinize the most significant type of police encounter, I combine subject-death information with traffic stop data; the most frequent police interaction with 50k/day. Merging the SOPP and FE datasets allows me to closely consider the timing of traffic stops and searches surrounding these momentous deaths and to look closely for observed changes in behavior. In my dataset, I am able to observe black vs overall stops, searches, and search successes (hits) and I am further able to combine these measures into more interesting rate-based metrics. For example, when the volume of not only black but overall traffic stops decrease, I am able to look at the black-share of stops to compare these decreases with one another. 
+
+After merging the datasets, I leverage the exogenous timing of a fatal police encounter and run a series of volume-based and rate-based Difference-in-Difference regressions, triple differences, and corresponding event studies to answer my research question. I expect to find that there are significant changes in outcomes following these death events, particularly the events which garner widespread national attention, and I expect these changes to vary disproportionately along race. To my knowledge, this is both the first paper to combine traffic stop data with fatal police encounter data, as well as the first to utilize Google Trends to infer public scrutiny levels in the wake of a police-killing. \\
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%	METHODOLOGY & RESULTS: 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Methodology \& Results:}
+
+For the purposes of this paper a specific type of death is used to define a department's treatment status - one of their officers must be observed fatally shooting, bludgeoning, or asphyxiating an unarmed black subject. Each traffic stop is then assigned an ``event time" based on the number of days to the nearest event. As a result, any department with multiple observed-events has each of its traffic stop dates matched to the \textit{nearest} event date. \\
+
+After determining treatment status, events are separated into ``high scrutiny" and ``low scrutiny" based on Google Trends data, which measures internet search volumes across 2011-2020. If a deceased person's (or offending department) name was heavily searched after an event relative to its own pre-event mean, that death-event is considered to have generated ``high scrutiny". In this way, I identify the most-watched departments and event scenarios. \\
+
+%	Diff-in-Diff Figure: Volumes 
+\begin{center}
+\input 14_days/tables/DiD_volumes_main_wbal.tex
+\end{center}
+
+%	Diff-in-Diff Figure: Rates 
+\begin{center}
+\input 14_days/tables/DiD_rates_main_wbal.tex
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%	DISCUSSION: 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Discussion:}
+
+Looking first at stop volumes, I show a significant decrease in total stops and in black stops, decreases driven by low scrutiny events. I go on to show that the black-share of stops and searches are both decreasing overall, suggesting that the decrease in black stops proportionally outpaces the decrease in total stops, as it does for searches. With these results, I am able to say that yes, traffic behaviors change differentially across race following the police-killing of an unarmed black citizen. \\ 
+
+Moving on to scrutiny level considerations, I start by noting that these disproportionate decreases are driven by low scrutiny events, with no evidence of decreases in either stops or searches under high scrutiny. In fact, this scrutiny separation allows me to see that both the black search rate and the per-stop volume of black hits decrease under low scrutiny, indicating both that police are less likely to search black-driven cars, and they are turning up fewer instances of contraband in black-driven cars following an unscrutinized event. \\
+
+However, I find that for high scrutiny events the black-share of hits decreases significantly. Keeping in mind that for high scrutiny events I found a suggestive increase in total hits under high scrutiny, this suggests that these increases to hit volume are concentrated on the non-black driving population. Further, I find suggestive evidence that the black search rate may be increasing under high scrutiny, and the black hit rate may be decreasing. While fewer stops are made, black drivers may be more likely to be searched despite a lower likelihood of being found with contraband. \\
+
+As to the underlying cause of these sweeping decreases in traffic outcomes, I consider three mechanisms. First, a decreases in officer-perceived appreciation. Under high scrutiny, this sentiment would be more damaged, but I find no evidence of a larger decrease when scrutiny levels are high. Second, an increase in officer workplace violence risk. Again, I find that the decreases are limited to low scrutiny events, and when officers have greater reason to be worried about violence under high scrutiny, if anything they are observed to increase their stops, searches, and hits. Third, it may be that officers are hesitant to escalate an already-tense situation, which I believe can explain my findings if officers consider these high scrutiny events to already by ``fully escalated''. It is possible that despite maintaining their pre-event effort levels, they shift their focus away from minor contraband carrying offenses and only report major findings, but only for black drivers. 
+
+\end{document}

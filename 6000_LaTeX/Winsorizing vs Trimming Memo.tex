@@ -1,0 +1,64 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{pdfpages}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{epstopdf}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{hyperref}
+
+\begin{document}
+
+\title{Winsorizing / Trimming Memo}
+\author{David Ford}
+\maketitle
+
+\section{Winsorizing vs Trimming Outliers}
+
+Noting spikes in the pre-period stop volumes, I looked for outliers in the data. One major example is the Arizona Department of Public Safety who report a maximum of just under 2000 stops per day, shown below, \emph{except} for on the 15th of every other month where they report a much larger number of stops. \\
+
+It is possible that some number of officers are not dating their traffic stops, and when they ``turn-in'' their paperwork bi-month, the unspecified stops are placed on the 15th of the month. \\
+
+To address these outliers, I first consider Winsorizing the data in hopes of preserving my sample size. As shown below, Winsorizing at the 96th percentile is able to preserve the shape of the majority of the data, but the problematic reported-dates remain as local outliers. Under the assumption that these dates are in fact inaccurate, it would therefore be better to drop the dates entirely, as timing is critical to my analysis. \\
+
+To this end, I have elected to trim the department at the 98th percentile, which should solve the issue with minimal sample-loss. \\
+
+
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=5.0in]{2_23_outliers.eps}
+%		\caption{Caption Here}
+		\label{2_23_outliers}
+	\end{center}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=5.0in]{2_23_win99.eps}
+%		\caption{Caption Here}
+		\label{2_23_win99}
+	\end{center}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=5.0in]{2_23_win96.eps}
+%		\caption{Caption Here}
+		\label{2_23_win96}
+	\end{center}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=5.0in]{2_23_trim98.eps}
+%		\caption{Caption Here}
+		\label{2_23_trim98}
+	\end{center}
+\end{figure}
+
+
+
+\end{document}

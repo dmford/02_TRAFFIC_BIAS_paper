@@ -1,0 +1,484 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{pdfpages}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{epstopdf}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{multirow}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{DiD Tables, No DOW or Monthly Fixed Effects}
+\author{David Ford}
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%		ALL DEPARTMENTS 									   	   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\pagebreak
+
+\section{All Departments, Unbalanced}
+
+%%% Diff-in-Diff Figures: Rates 
+\begin{center}
+\input DiD_rates_main_full_ndnm2.tex
+\end{center}
+
+%%% Event Study Figures: Rates
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{1_bstop_share_main_full_ndnm.eps}
+%		\caption{Caption Here}
+		\label{1_bstop_share_main_full_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{2_bsearch_share_main_full_ndnm.eps}
+%		\caption{Caption Here}
+		\label{2_bsearch_share_main_full_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{3_bhit_share_main_full_ndnm.eps}
+%		\caption{Caption Here}
+		\label{3_bhit_share_main_full_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{4_bsearch_rate_main_full_ndnm.eps}
+%		\caption{Caption Here}
+		\label{4_bsearch_rate_main_full_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{5_bhit_rate_main_full_ndnm.eps}
+%		\caption{Caption Here}
+		\label{5_bhit_rate_main_full_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{6_bhit_bstop_ratio_main_full_ndnm.eps}
+%		\caption{Caption Here}
+		\label{6_bhit_bstop_ratio_main_full_ndnm}
+	\end{center}
+\end{figure}
+
+%%% Diff-in-Diff Figures: Volumes 
+\begin{center}
+\input DiD_volumes_main_full_ndnm2.tex
+\end{center}
+
+%%% Event Study Figures: Volumes 
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{7_n_stops_main_full_ndnm.eps}
+%		\caption{Caption Here}
+		\label{7_n_stops_main_full_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{8_n_bstops_main_full_ndnm.eps}
+%		\caption{Caption Here}
+		\label{8_n_bstops_main_full_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{9_n_searches_main_full_ndnm.eps}
+%		\caption{Caption Here}
+		\label{9_n_searches_main_full_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{10_n_bsearches_main_full_ndnm.eps}
+%		\caption{Caption Here}
+		\label{10_n_bsearches_main_full_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{11_n_hits_main_full_ndnm.eps}
+%		\caption{Caption Here}
+		\label{11_n_hits_main_full_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{12_n_bhits_main_full_ndnm.eps}
+%		\caption{Caption Here}
+		\label{12_n_bhits_main_full_ndnm}
+	\end{center}
+\end{figure}
+
+\pagebreak
+
+
+
+\section{All Departments, Weak Balance}
+
+%%% Diff-in-Diff Figures: Rates 
+\begin{center}
+\input DiD_rates_main_wbal_ndnm2.tex
+\end{center}
+
+%%% Event Study Figures: Rates 
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{1_bstop_share_main_wbal_ndnm.eps}
+%		\caption{Caption Here}
+		\label{1_bstop_share_main_wbal_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{2_bsearch_share_main_wbal_ndnm.eps}
+%		\caption{Caption Here}
+		\label{2_bsearch_share_main_wbal_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{3_bhit_share_main_wbal_ndnm.eps}
+%		\caption{Caption Here}
+		\label{3_bhit_share_main_wbal_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{4_bsearch_rate_main_wbal_ndnm.eps}
+%		\caption{Caption Here}
+		\label{4_bsearch_rate_main_wbal_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{5_bhit_rate_main_wbal_ndnm.eps}
+%		\caption{Caption Here}
+		\label{5_bhit_rate_main_wbal_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{6_bhit_bstop_ratio_main_wbal_ndnm.eps}
+%		\caption{Caption Here}
+		\label{6_bhit_bstop_ratio_main_wbal_ndnm}
+	\end{center}
+\end{figure}
+
+%%% Diff-in-Diff Figures: Volumes 
+\begin{center}
+\input DiD_volumes_main_wbal_ndnm2.tex
+\end{center}
+
+%%% Event Study Figures: Volumes 
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{7_n_stops_main_wbal_ndnm.eps}
+%		\caption{Caption Here}
+		\label{7_n_stops_main_wbal_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{8_n_bstops_main_wbal_ndnm.eps}
+%		\caption{Caption Here}
+		\label{8_n_bstops_main_wbal_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{9_n_searches_main_wbal_ndnm.eps}
+%		\caption{Caption Here}
+		\label{9_n_searches_main_wbal_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{10_n_bsearches_main_wbal_ndnm.eps}
+%		\caption{Caption Here}
+		\label{10_n_bsearches_main_wbal_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{11_n_hits_main_wbal_ndnm.eps}
+%		\caption{Caption Here}
+		\label{11_n_hits_main_wbal_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{12_n_bhits_main_wbal_ndnm.eps}
+%		\caption{Caption Here}
+		\label{12_n_bhits_main_wbal_ndnm}
+	\end{center}
+\end{figure}
+
+\pagebreak
+
+
+
+\section{All Departments, Unbalanced, Dropping T-1}
+
+%%% Diff-in-Diff Figures: Rates 
+\begin{center}
+\input DiD_rates_main_full_dTm1_ndnm2.tex
+\end{center}
+
+%%% Event Study Figures: Rates
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{1_bstop_share_main_full_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{1_bstop_share_main_full_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{2_bsearch_share_main_full_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{2_bsearch_share_main_full_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{3_bhit_share_main_full_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{3_bhit_share_main_full_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{4_bsearch_rate_main_full_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{4_bsearch_rate_main_full_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{5_bhit_rate_main_full_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{5_bhit_rate_main_full_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{6_bhit_bstop_ratio_main_full_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{6_bhit_bstop_ratio_main_full_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+%%% Diff-in-Diff Figures: Volumes 
+\begin{center}
+\input DiD_volumes_main_full_dTm1_ndnm2.tex
+\end{center}
+
+%%% Event Study Figures: Volumes
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{7_n_stops_main_full_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{7_n_stops_main_full_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{8_n_bstops_main_full_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{8_n_bstops_main_full_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{9_n_searches_main_full_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{9_n_searches_main_full_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{10_n_bsearches_main_full_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{10_n_bsearches_main_full_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{11_n_hits_main_full_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{11_n_hits_main_full_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{12_n_bhits_main_full_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{12_n_bhits_main_full_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\pagebreak
+
+
+
+\section{All Departments, Weak Balance, Dropping T-1}
+
+%%% Diff-in-Diff Figures: Rates 
+\begin{center}
+\input DiD_rates_main_wbal_dTm1_ndnm2.tex
+\end{center}
+
+%%% Event Study Figures: Rates 
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{1_bstop_share_main_wbal_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{1_bstop_share_main_wbal_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{2_bsearch_share_main_wbal_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{2_bsearch_share_main_wbal_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{3_bhit_share_main_wbal_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{3_bhit_share_main_wbal_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{4_bsearch_rate_main_wbal_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{4_bsearch_rate_main_wbal_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{5_bhit_rate_main_wbal_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{5_bhit_rate_main_wbal_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{6_bhit_bstop_ratio_main_wbal_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{6_bhit_bstop_ratio_main_wbal_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+%%% Diff-in-Diff Figures: Volumes 
+\begin{center}
+\input DiD_volumes_main_wbal_dTm1_ndnm2.tex
+\end{center}
+
+%%% Event Study Figures: Volumes 
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{7_n_stops_main_wbal_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{7_n_stops_main_wbal_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{8_n_bstops_main_wbal_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{8_n_bstops_main_wbal_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{9_n_searches_main_wbal_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{9_n_searches_main_wbal_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{10_n_bsearches_main_wbal_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{10_n_bsearches_main_wbal_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{11_n_hits_main_wbal_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{11_n_hits_main_wbal_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.5in]{12_n_bhits_main_wbal_dTm1_ndnm.eps}
+%		\caption{Caption Here}
+		\label{12_n_bhits_main_wbal_dTm1_ndnm}
+	\end{center}
+\end{figure}
+
+\pagebreak
+
+
+
+\end{document}

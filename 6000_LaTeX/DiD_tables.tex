@@ -1,0 +1,54 @@
+%\newcommand{\sym}[1]{\rlap{$#1$}} % for symbols in Table
+\newcommand{\sym}[1]{{#1}} % for symbols in Table
+
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{pdfpages}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{epstopdf}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{caption}
+
+\begin{document}
+
+%	Main Specification: 
+%	Diff-in-Diff Figure: Rates 
+\begin{center}
+\input DiD_rates_main_wbal.tex
+\end{center}
+
+%	Diff-in-Diff Figure: Volumes
+\begin{center}
+\input DiD_volumes_main_wbal.tex
+\end{center}
+
+%	Dropping T-1 Specification: 
+%	Diff-in-Diff Figure: Rates 
+\begin{center}
+\input DiD_rates_main_wbal_dTm1.tex
+\end{center}
+
+%	Diff-in-Diff Figure: Volumes
+\begin{center}
+\input DiD_volumes_main_wbal_dTm1.tex
+\end{center}
+
+%	Unbalanced Specification: 
+%	Diff-in-Diff Figure: Rates 
+\begin{center}
+\input DiD_rates_main_full.tex
+\end{center}
+
+%	Diff-in-Diff Figure: Volumes
+\begin{center}
+\input DiD_volumes_main_full.tex
+\end{center}
+
+\end{document}

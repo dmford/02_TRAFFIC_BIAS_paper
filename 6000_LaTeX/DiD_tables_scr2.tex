@@ -1,0 +1,84 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{pdfpages}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{epstopdf}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{multirow}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{DiD Tables, Department-Based Scrutiny}
+\author{David Ford}
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%		ALL DEPARTMENTS 									   	   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\pagebreak
+
+\section{All Departments, Unbalanced}
+
+%%% Diff-in-Diff: Rates, All Departments, Unbalanced 
+\begin{center}
+\input DiD_rates_main_full_scr2.tex
+\end{center}
+
+%%% Diff-in-Diff: Volumes, All Departments, Unbalanced 
+\begin{center}
+\input DiD_volumes_main_full_scr2.tex
+\end{center}
+
+\pagebreak
+
+\section{All Departments, Weak Balance}
+
+%%% Diff-in-Diff: Rates, All Departments, Weakly Balanced
+\begin{center}
+\input DiD_rates_main_wbal_scr2.tex
+\end{center}
+
+%%% Diff-in-Diff: Volumes, All Departments, Weakly Balanced
+\begin{center}
+\input DiD_volumes_main_wbal_scr2.tex
+\end{center}
+
+\pagebreak
+
+\section{All Departments, Unbalanced, Dropping T-1}
+
+%%% Diff-in-Diff: Rates, All Departments, Unbalanced 
+\begin{center}
+\input DiD_rates_main_full_dTm1_scr2.tex
+\end{center}
+
+%%% Diff-in-Diff: Volumes, All Departments, Unbalanced 
+\begin{center}
+\input DiD_volumes_main_full_dTm1_scr2.tex
+\end{center}
+
+\pagebreak
+
+\section{All Departments, Weak Balance, Dropping T-1}
+
+%%% Diff-in-Diff: Rates, All Departments, Weakly Balanced
+\begin{center}
+\input DiD_rates_main_wbal_dTm1_scr2.tex
+\end{center}
+
+%%% Diff-in-Diff: Volumes, All Departments, Weakly Balanced
+\begin{center}
+\input DiD_volumes_main_wbal_dTm1_scr2.tex
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}

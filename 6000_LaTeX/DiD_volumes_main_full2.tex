@@ -1,0 +1,26 @@
+\begin{table}[htbp]\centering
+\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}
+\caption{All Departments, Unbalanced Volume Outcomes}
+\begin{tabular}{l*{6}{c}}
+\hline\hline
+            &\multicolumn{1}{c}{(1)}&\multicolumn{1}{c}{(2)}&\multicolumn{1}{c}{(3)}&\multicolumn{1}{c}{(4)}&\multicolumn{1}{c}{(5)}&\multicolumn{1}{c}{(6)}\\
+            &\multicolumn{1}{c}{\shortstack{All\\Stops}}&\multicolumn{1}{c}{\shortstack{Black\\Stops}}&\multicolumn{1}{c}{\shortstack{All\\Searches}}&\multicolumn{1}{c}{\shortstack{Black\\Searches}}&\multicolumn{1}{c}{\shortstack{All\\Hits}}&\multicolumn{1}{c}{\shortstack{Black\\Hits}}\\
+\hline
+Treatment   &     -65.773\sym{***}&     -12.567\sym{***}&      -2.145\sym{***}&      -0.877\sym{***}&      -0.593\sym{*}  &      -0.223\sym{**} \\
+            &    (22.854)         &     (4.045)         &     (0.775)         &     (0.329)         &     (0.351)         &     (0.110)         \\
+\hline\hline
+Low Scrutiny&     -65.125\sym{**} &      -9.948\sym{**} &      -2.438\sym{**} &      -0.859\sym{**} &      -0.677         &      -0.225         \\
+            &    (29.781)         &     (4.267)         &     (1.158)         &     (0.435)         &     (0.534)         &     (0.144)         \\
+[1em]
+High Scrutiny&     -13.691         &     -10.246         &       0.723         &      -0.099         &       0.207         &      -0.013         \\
+            &    (47.617)         &     (9.833)         &     (1.310)         &     (0.646)         &     (0.595)         &     (0.211)         \\
+\hline
+Pre-Average &         826         &         148         &        30.5         &        8.42         &        9.04         &        2.13         \\
+Dept-Year FE&         Yes         &         Yes         &         Yes         &         Yes         &         Yes         &         Yes         \\
+Cyclic FE   &         Yes         &         Yes         &         Yes         &         Yes         &         Yes         &         Yes         \\
+\#Dept-Days &     1655134         &     1655134         &     1311201         &     1311201         &     1244326         &     1244326         \\
+\hline\hline
+\multicolumn{7}{l}{\footnotesize Standard errors in parentheses}\\
+\multicolumn{7}{l}{\footnotesize \sym{*} \(p<0.1\), \sym{**} \(p<0.05\), \sym{***} \(p<0.01\)}\\
+\end{tabular}
+\end{table}

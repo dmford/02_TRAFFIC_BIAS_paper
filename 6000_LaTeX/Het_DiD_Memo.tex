@@ -1,0 +1,95 @@
+%\newcommand{\sym}[1]{\rlap{$#1$}} % for symbols in Table
+\newcommand{\sym}[1]{{#1}} % for symbols in Table
+
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{epstopdf}
+\usepackage{amsmath}
+\usepackage{pdfpages}
+\usepackage{indentfirst}
+\usepackage{url}
+\usepackage{float}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{caption}
+
+\begin{document}
+
+\title{Heterogeneous DiD Memo}
+\author{David Ford}
+\maketitle
+
+In what follows, Panel A follows more traditional Diff-in-Diff and Triple-Diff structures, while Panel B utilizes a variation of the Mundlak Device from Wooldridge (2021), stemming from Mundlak (1978). \\
+
+Equation \ref{equation1_DiD} below is what I am calling ``Panel A: Diff-in-Diff'', equation \ref{equation3_DiDiD} ``Panel B: Triple Difference'', equation \ref{equation1_TWM_DiD} ``Panel A: TWM Diff-in-Diff'', and equation \ref{equation3_TWM_DiDiD} ``Panel B: TWM Triple Difference''. \\
+
+%	Equation #1, Difference in Differences: 
+\begin{equation}
+	\begin{split}
+		Y^{o}_{d,t} = \beta Post_{d,t} + \boldsymbol{X'}_{d,t} \boldsymbol{\gamma} + \boldsymbol{\theta}_{dy} + \boldsymbol{\eta}_{ym} + u_{d,t} 
+	\label{equation1_DiD}
+	\end{split}
+\end{equation}
+
+%	Equation #3, Triple Difference: 
+\begin{equation} 
+	\begin{split}
+		Y^{o}_{d,t} = \beta_{1} Post_{d,t} + \beta_{2} Post_{d,t}*Scr_{d,t} + \boldsymbol{X'}_{d,t} \boldsymbol{\gamma} + \boldsymbol{\theta}_{dy} + \boldsymbol{\eta}_{ym} + u_{d,t} 
+	\label{equation3_DiDiD}
+	\end{split}
+\end{equation}
+
+%	Equation #1, TWM Difference in Differences: 
+\begin{equation}
+	\begin{split}
+		Y^{o}_{d,t} = \beta Post_{d,t} + \boldsymbol{X'}_{d,t} \boldsymbol{\gamma} + \boldsymbol{\bar{X}}_{ym} \boldsymbol{\theta}_1 + \boldsymbol{\bar{X}}_{d} \boldsymbol{\zeta}_2 + \\ Post_{d,t} (\boldsymbol{\bar{X}}_{ym} - \boldsymbol{\bar{X}}) + Post_{d,t} (\boldsymbol{\bar{X}}_{d} - \boldsymbol{\bar{X}}) + u_{d,t} 
+	\label{equation1_TWM_DiD}
+	\end{split}
+\end{equation}
+
+%	Equation #3, TWM Triple Difference: 
+\begin{equation} 
+	\begin{split}
+		Y^{o}_{d,t} = \beta_1 Post_{d,t} + \beta_2 Post_{d,t}*Scr + \boldsymbol{X'}_{d,t} \boldsymbol{\gamma} + \boldsymbol{\bar{X}}_{ym} \boldsymbol{\zeta}_1 + \boldsymbol{\bar{X}}_{d} \boldsymbol{\zeta}_2+ \\ Post_{d,t} (\boldsymbol{\bar{X}}_{ym} - \boldsymbol{\bar{X}}) + Post_{d,t} (\boldsymbol{\bar{X}}_{d} - \boldsymbol{\bar{X}}) + u_{d,t} 
+	\label{equation3_TWM_DiDiD}
+	\end{split}
+\end{equation}
+
+My data is aggregated to the department-day level, while I use department-year and year-month fixed effects. \\
+
+To highlight my coefficients of interest, let $\boldsymbol{X'}_{d,t}$ be the $\boldsymbol{X}_{d,t}$ vector without the $Post_{d,t}$ dummy variable.  
+
+
+
+%	Diff-in-Diff Figure: Rates 
+\begin{center}
+\input tables/DiD_rates_main_wbal_nocap.tex
+\end{center}
+
+\begin{center}
+\input tables/DiD_rates_A01_wbal_nocap.tex
+\end{center}
+
+\begin{center}
+\input tables/DiD_rates_TWM_wbal_nocap.tex
+\end{center}
+
+
+
+%	Diff-in-Diff Figure: Volumes
+\begin{center}
+\input tables/DiD_volumes_main_wbal_nocap.tex
+\end{center}
+
+\begin{center}
+\input tables/DiD_volumes_A01_wbal_nocap.tex
+\end{center}
+
+\begin{center}
+\input tables/DiD_volumes_TWM_wbal_nocap.tex
+\end{center}
+
+\end{document}

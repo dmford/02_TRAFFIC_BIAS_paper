@@ -1,0 +1,44 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{pdfpages}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{epstopdf}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{hyperref}
+
+\begin{document}
+
+\title{Event Window Memo}
+\author{David Ford}
+\maketitle
+
+\section{Determining Event and Estimation Window}
+
+Due to imperfect reporting data across this study's observation period, I need to determine how many 15-day bins to plot - what I am calling my event window. I constructed a k-density plot of nonempty department-event 15-day bins, as shown, and have chosen to use 7 bins (+/-105 days) before and after the death-event for my main event study plots. \\
+
+In order to maintain as much of the usable data as possible, I construct an estimation window where department-date observations outside of +/- 105 days and inside of +/- 240 days will be kept and used in my main estimations. \\
+
+
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=5.5in]{nonempty_bin_kdensity.eps}
+%		\caption{Caption Here}
+		\label{nonempty_bin_kdensity}
+	\end{center}
+\end{figure}
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=5.5in]{etime_kdensity.eps}
+%		\caption{Caption Here}
+		\label{etime_kdensity}
+	\end{center}
+\end{figure}
+
+
+
+\end{document}

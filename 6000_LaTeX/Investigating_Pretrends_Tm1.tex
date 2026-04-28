@@ -1,0 +1,64 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{pdfpages}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{epstopdf}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{hyperref}
+
+\begin{document}
+
+\title{Investigating Pretrends: T-1}
+\author{David Ford}
+\maketitle
+
+%\section{Main Event Studies (No Statewide)}
+
+Noting unusual T-1 stop volumes, I looked into which departments are driving the unusual pattern. To this end, I plot numbers of stops in the preperiod with the average T-1 and T-7 through T-2 volumes overlaid. \\
+
+First is the South Carolina Highway Patrol, which reported a very high number of stops during the week of July 4th, suggesting that my July 3rd through July 5th indicator variables may be insufficient to capture the abnormal holiday behaviors. \\
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=5.5in]{inv_pretrends_Tm1_e13.eps}
+%		\caption{Caption Here}
+		\label{inv_pretrends_Tm1_e13}
+	\end{center}
+\end{figure}
+
+Next is the Charlotte-Mecklenburg Police Department which report an increase in stop volume in early September 2013, roughly a week and a half in advance of the event, although as of yet I have been unable to discover anything that would lead to this. \\
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=5.5in]{inv_pretrends_Tm1_e32.eps}
+%		\caption{Caption Here}
+		\label{inv_pretrends_Tm1_e32}
+	\end{center}
+\end{figure}
+
+Then there is the Madison Police Department who report a pronounced number of stops leading up to their event. In this case, I believe this may be driven by a shart decrease in stop volume roughly 60 days earlier in December 2014 and early January 2015, which would fall a few days after a school shooting in that jurisdiction. \\
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=5.5in]{inv_pretrends_Tm1_e61.eps}
+%		\caption{Caption Here}
+		\label{inv_pretrends_Tm1_e61}
+	\end{center}
+\end{figure}
+
+Finally, I once again have the Florida Highway Patrol, which again I am unable to find a concrete explanation for so far. It may be due to summer vacation beginning and an increase in tourism to the state, but this is unconfirmed as of yet. \\
+
+\begin{figure}[h!]
+	\begin{center}
+		\includegraphics[width=5.5in]{inv_pretrends_Tm1_e77.eps}
+%		\caption{Caption Here}
+		\label{inv_pretrends_Tm1_e77}
+	\end{center}
+\end{figure}
+
+
+
+\end{document}

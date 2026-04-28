@@ -1,0 +1,57 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{pdfpages}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{epstopdf}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{multirow}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{New DiD Tables}
+\author{David Ford}
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textbf{\underline{DiD Estimates:}} \\
+
+%%% Diff in Diff Figures: %%%
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.0in]{DiD_main_1_dy.eps}
+%		\caption{Caption Here}
+		\label{DiD_main_1}
+	\end{center}
+\end{figure}
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[width=5.0in]{DiD_main_2_dy.eps}
+%		\caption{Caption Here}
+		\label{DiD_main_2}
+	\end{center}
+\end{figure}
+
+\begin{center}
+\input DiD_rates.tex
+\end{center}
+
+\pagebreak
+
+\begin{center}
+\input DiD_volumes.tex
+\end{center}
+
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
