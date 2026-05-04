@@ -29,6 +29,7 @@ pciv/
 
 # Ignore PDFs
 *.pdf
+!Traffic Bias Paper.pdf
 
 # Ignore LaTeX/generated clutter
 *.aux
