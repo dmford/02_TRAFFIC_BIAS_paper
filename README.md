@@ -1,11 +1,19 @@
 # 02_TRAFFIC_BIAS_paper
 
-This repository contains replication materials for the traffic stop policing bias dissertation chapter.
+## Overview
+Research project analyzing racial disparities in traffic stops using empirical methods and administrative data.
 
-## Structure
-- `1000_scripts/` : Cleaning, regression, and analysis scripts
-- `2000_data/` : Original source files and processed traffic stop datasets
-- `6000_LaTeX/` : Chapter manuscript and outputs
+## Contents
+- `2000_data/` — raw and processed datasets  
+- `3000_code/` — Stata analysis scripts  
+- `6000_LaTeX/` — manuscript files, tables, and figures  
 
-## Notes
-Some large files may require Git LFS or external storage due to GitHub size limits.
+## Purpose
+Reproduces the empirical analysis, tables, figures, and written results for the paper.
+
+## Tools
+- Stata
+- LaTeX
+
+## Author
+David Ford
