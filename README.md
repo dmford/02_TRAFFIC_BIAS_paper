@@ -1,22 +1,78 @@
-# 02_TRAFFIC_BIAS_paper
+# Traffic Stops, Public Scrutiny, and Police Behavior
 
-## Overview
-Research project analyzing racial disparities in traffic stops using empirical methods and administrative data.
+This research project examines how high-profile police shootings influence subsequent law enforcement activity and civilian behavior.
 
-## Abstract
-- This paper investigates how lethal police shootings of unarmed black individuals influence subsequent police and civilian driver behaviors. I combine tens of millions of traffic stop records with police shooting timings to examine changes in policing patterns and intensity following such events. Using a difference-in-differences framework and event study design, I causally identify a significant decline in police activity - as measured by traffic stop volumes - after the occurrence of a local shooting of an unarmed black subject. These reductions suggest a behavioral or institutional response by officers and departments in the aftermath of high-salience incidents. Secondary analyses provide suggestive evidence that the magnitude of these declines varies with the level of national media scrutiny that each event receives. Together, the results highlight how public attention and accountability pressures can shape day-to-day law enforcement practices and driver responses and contribute to fluctuations in police effort and citizen contact. 
+Using large-scale observational administrative data and causal inference methods, the analysis evaluates whether local police shootings of unarmed Black individuals affect future traffic stop activity, and whether those effects vary with the level of public and media scrutiny surrounding each event.
 
-## Contents
-- `2000_data/` — raw and processed datasets  
-- `3000_code/` — Stata analysis scripts  
-- `6000_LaTeX/` — manuscript files, tables, and figures  
+The project combines tens of millions of traffic stop records with the timing and location of police shootings to study behavioral responses within law enforcement agencies and affected communities.
 
-## Purpose
-Reproduces the empirical analysis, tables, figures, and written results for the paper.
+## Main Finding
+
+Traffic stop activity declines following local police shootings involving unarmed Black individuals. The results suggest that public scrutiny and accountability pressures can meaningfully influence day-to-day law enforcement behavior.
+
+Additional analyses indicate that these declines may be larger for incidents receiving greater national media attention, providing evidence that public visibility influences the magnitude of behavioral responses.
+
+## Methodology
+
+The analysis uses observational administrative data and quasi-experimental research designs to estimate changes in police activity following high-profile police shootings.
+
+Key empirical approaches include:
+
+* Difference-in-differences estimation
+* Event-study analysis
+* Administrative data integration
+* Heterogeneity analysis based on media attention and public scrutiny
+* Robustness checks across alternative specifications
+
+The identification strategy exploits variation in the timing and location of police shootings to estimate subsequent changes in traffic stop activity and related behavioral outcomes.
+
+## Data
+
+The project combines:
+
+* Tens of millions of traffic stop records
+* Police shooting event data
+* Geographic matching procedures
+* Measures of national media attention and public scrutiny
+
+The resulting dataset allows for the analysis of behavioral responses across jurisdictions and over time.
+
+## Research Motivation
+
+Understanding how public accountability affects government behavior is a central question in applied microeconomics and public policy.
+
+This project contributes to that literature by examining whether highly visible police shootings alter subsequent policing patterns and citizen interactions, and whether public scrutiny amplifies those effects.
+
+## Repository Structure
+
+```text
+2000_data/
+    Raw and processed datasets
+
+3000_code/
+    Stata data preparation and analysis scripts
+
+6000_LaTeX/
+    Manuscript files, tables, figures, and paper outputs
+```
+
+## Reproducibility
+
+This repository contains the empirical workflow used to generate the paper's statistical analyses, tables, figures, and written results.
+
+Outputs include:
+
+* Difference-in-differences estimates
+* Event-study figures
+* Heterogeneity analyses
+* Regression tables
+* Publication-ready manuscript outputs
 
 ## Tools
-- Stata
-- LaTeX
+
+* Stata
+* LaTeX
 
 ## Author
+
 David Ford
